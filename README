@@ -1,0 +1,11 @@
+== What is libFIX?
+
+LibFIX is a FIX protocol implementation written in C.
+
+== What's FIX?
+
+The Financial Information eXchange (FIX) Protocol is the de factor messaging
+protocol used in electronic trading. See the following URL for more details on
+the protocol:
+
+  http://fixprotocol.org/

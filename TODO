@@ -1,0 +1,17 @@
+- Make message format comply with the spec
+	+ BodyLength, CheckSum
+	+ wireshark compatibility
+- Don't do direct malloc() - we need to able to use mlock()'d memory pool
+- xread()/xwrite()
+- make check requires clean
+- Licensing (GPL + linking exception, BSD?)
+- cleanup perror() with die()
+- unit test for fix_field_unparse()
+- Write list of features to README
+	+ no message resend, etc.
+- nuke assert()
+- Fix overflows in message parsing
+- bin/fix-console
+- bin/fix-server
+- TCP_NODELAY
+- Latency test

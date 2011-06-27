@@ -1,0 +1,5 @@
+*.d
+*.o
+tags
+latency-test
+libfix.a
