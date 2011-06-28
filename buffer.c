@@ -25,6 +25,17 @@ void buffer_delete(struct buffer *self)
 	free(self);
 }
 
+uint8_t buffer_checksum(struct buffer *self)
+{
+	unsigned long sum = 0;
+	int i;
+
+	for (i = 0; i < self->offset; i++)
+		sum += self->data[i];
+
+	return sum % 256;
+}
+
 //! Formatted output to 'struct buffer'
 /*!
   \return true if @format was appended to @self - false upon error of if

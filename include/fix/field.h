@@ -11,6 +11,7 @@ enum fix_type {
 	FIX_TYPE_FLOAT,
 	FIX_TYPE_CHAR,
 	FIX_TYPE_STRING,
+	FIX_TYPE_CHECKSUM,
 };
 
 enum fix_tag {
@@ -39,7 +40,7 @@ struct fix_field {
 #define FIX_INT_FIELD(t, v)				\
 	(struct fix_field) {				\
 		.tag		= t,			\
-		.type		= FIX_TYPE_INT,	\
+		.type		= FIX_TYPE_INT,		\
 		{ .int_value	= v },			\
 	}
 
@@ -48,6 +49,13 @@ struct fix_field {
 		.tag		= t,			\
 		.type		= FIX_TYPE_STRING,	\
 		{ .string_value	= s },			\
+	}
+
+#define FIX_CHECKSUM_FIELD(t, v)			\
+	(struct fix_field) {				\
+		.tag		= t,			\
+		.type		= FIX_TYPE_CHECKSUM,	\
+		{ .int_value	= v },			\
 	}
 
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer);

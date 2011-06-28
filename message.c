@@ -54,7 +54,9 @@ static void fix_message_unparse(struct fix_message *self)
 	struct fix_field target_comp_id;
 	struct fix_field begin_string;
 	struct fix_field body_length;
+	struct fix_field check_sum;
 	struct fix_field msg_type;
+	unsigned long cksum;
 
 	/* body */
 	sender_comp_id	= FIX_STRING_FIELD(SenderCompID, self->sender_comp_id);
@@ -71,6 +73,11 @@ static void fix_message_unparse(struct fix_message *self)
 	fix_field_unparse(&begin_string, self->head_buf);
 	fix_field_unparse(&body_length, self->head_buf);
 	fix_field_unparse(&msg_type, self->head_buf);
+
+	/* trailer */
+	cksum		= buffer_checksum(self->head_buf) + buffer_checksum(self->body_buf);
+	check_sum	= FIX_CHECKSUM_FIELD(CheckSum, cksum);
+	fix_field_unparse(&check_sum, self->body_buf);
 }
 
 int fix_message_send(struct fix_message *self, int sockfd, int flags)
