@@ -1,11 +1,18 @@
-== What is libFIX?
+					libfix
+				a FIX protocol library
 
-LibFIX is a FIX protocol implementation written in C.
+== What is libfix?
 
-== What's FIX?
+Libfix is a FIX protocol library written in C for POSIX-ish operating systems.
 
-The Financial Information eXchange (FIX) Protocol is the de factor messaging
-protocol used in electronic trading. See the following URL for more details on
-the protocol:
+== Features
+
+- FIX 4.4
+
+== What is the FIX protocol?
+
+The Financial Information eXchange (FIX) Protocol is the de facto messaging
+protocol used in electronic trading. See the following URL for further
+information on FIX:
 
   http://fixprotocol.org/
