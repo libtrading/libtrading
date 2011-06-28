@@ -12,7 +12,9 @@
 /*
  * Maximum FIX message size
  */
-#define MAX_MESSAGE_SIZE	128
+#define MAX_HEAD_LEN		32UL
+#define MAX_BODY_LEN		128UL
+#define MAX_MESSAGE_SIZE	(MAX_HEAD_LEN + MAX_BODY_LEN)
 
 struct fix_message *fix_message_new(void)
 {
@@ -29,8 +31,11 @@ void fix_message_free(struct fix_message *self)
 	if (!self)
 		return;
 
-	if (self->buffer)
-		buffer_delete(self->buffer);
+	if (self->head_buf)
+		buffer_delete(self->head_buf);
+
+	if (self->body_buf)
+		buffer_delete(self->body_buf);
 
 	free(self);
 }
@@ -43,7 +48,7 @@ bool fix_message_type_is(struct fix_message *self, const char *expected_type)
 	return strncmp(self->msg_type, expected_type, strlen(expected_type)) == 0;
 }
 
-static void fix_message_unparse(struct fix_message *self, struct buffer *buffer)
+static void fix_message_unparse(struct fix_message *self)
 {
 	struct fix_field sender_comp_id;
 	struct fix_field target_comp_id;
@@ -55,29 +60,44 @@ static void fix_message_unparse(struct fix_message *self, struct buffer *buffer)
 	sender_comp_id	= FIX_STRING_FIELD(SenderCompID, self->sender_comp_id);
 	target_comp_id	= FIX_STRING_FIELD(TargetCompID, self->target_comp_id);
 
-	fix_field_unparse(&begin_string, buffer);
+	fix_field_unparse(&begin_string, self->head_buf);
 	/* XXX: BodyLength */
-	fix_field_unparse(&msg_type, buffer);
-	fix_field_unparse(&sender_comp_id, buffer);
-	fix_field_unparse(&target_comp_id, buffer);
+	fix_field_unparse(&msg_type, self->head_buf);
+
+	fix_field_unparse(&sender_comp_id, self->body_buf);
+	fix_field_unparse(&target_comp_id, self->body_buf);
 }
 
 int fix_message_send(struct fix_message *self, int sockfd, int flags)
 {
-	struct buffer *buffer;
+	int ret = 0;
 
-	buffer = buffer_new(MAX_MESSAGE_SIZE);
-	if (!buffer) {
+	self->head_buf = buffer_new(MAX_HEAD_LEN);
+	if (!self->head_buf) {
 		errno = ENOMEM;
-		return -1;
+		ret = -1;
+		goto error_out;
 	}
 
-	fix_message_unparse(self, buffer);
-	buffer_write(buffer, sockfd);
+	self->body_buf = buffer_new(MAX_HEAD_LEN);
+	if (!self->body_buf) {
+		errno = ENOMEM;
+		ret = -1;
+		goto error_out;
+	}
 
-	buffer_delete(buffer);
+	fix_message_unparse(self);
 
-	return 0;
+	/* TODO: use writev() */
+	buffer_write(self->head_buf, sockfd);
+	buffer_write(self->body_buf, sockfd);
+
+error_out:
+	buffer_delete(self->head_buf);
+	buffer_delete(self->body_buf);
+	self->head_buf = self->body_buf = NULL;
+
+	return ret;
 }
 
 struct fix_message *fix_message_recv(int sockfd, int flags)

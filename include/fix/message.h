@@ -28,9 +28,10 @@ struct fix_message {
 	/* XXX: SendingTime */
 
 	/*
-	 * This buffer is used for wire protocol parsing and unparsing.
+	 * These buffers are used for wire protocol parsing and unparsing.
 	 */
-	struct buffer			*buffer;
+	struct buffer			*head_buf;	/* first three fields */
+	struct buffer			*body_buf;	/* rest of the fields including checksum */
 };
 
 struct fix_message *fix_message_new(void);

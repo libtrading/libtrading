@@ -69,25 +69,25 @@ static bool checksum(struct fix_message *self, struct buffer *buffer)
 	return true;
 }
 
-static bool msg_type(struct fix_message *self, struct buffer *buffer)
+static bool msg_type(struct fix_message *self)
 {
-	self->msg_type = parse_field(buffer, MsgType);
+	self->msg_type = parse_field(self->head_buf, MsgType);
 
 	// if third field is not MsgType -> garbled
 
 	return self->msg_type != NULL;
 }
 
-static bool body_length(struct fix_message *self, struct buffer *buffer)
+static bool body_length(struct fix_message *self)
 {
 	// if second field is not BodyLength -> garbled
 
 	return true;
 }
 
-static bool begin_string(struct fix_message *self, struct buffer *buffer)
+static bool begin_string(struct fix_message *self)
 {
-	self->begin_string = parse_field(buffer, BeginString);
+	self->begin_string = parse_field(self->head_buf, BeginString);
 
 	// if first field is not BeginString -> garbled
 	// if BeginString is invalid or empty -> garbled
@@ -95,15 +95,15 @@ static bool begin_string(struct fix_message *self, struct buffer *buffer)
 	return self->begin_string != NULL;
 }
 
-static bool first_three_fields(struct fix_message *self, struct buffer *buffer)
+static bool first_three_fields(struct fix_message *self)
 {
-	if (!begin_string(self, buffer))
+	if (!begin_string(self))
 		return false;
 
-	if (!body_length(self, buffer))
+	if (!body_length(self))
 		return false;
 
-	return msg_type(self, buffer);
+	return msg_type(self);
 }
 
 struct fix_message *fix_message_parse(struct buffer *buffer)
@@ -114,9 +114,9 @@ struct fix_message *fix_message_parse(struct buffer *buffer)
 	if (!self)
 		return NULL;
 
-	self->buffer = buffer;
+	self->head_buf = buffer;
 
-	if (!first_three_fields(self, buffer))
+	if (!first_three_fields(self))
 		goto garbled;
 
 	if (!checksum(self, buffer))
