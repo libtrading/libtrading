@@ -25,7 +25,7 @@ void buffer_delete(struct buffer *self)
 	free(self);
 }
 
-uint8_t buffer_checksum(struct buffer *self)
+uint8_t buffer_sum(struct buffer *self)
 {
 	unsigned long sum = 0;
 	int i;
@@ -33,7 +33,7 @@ uint8_t buffer_checksum(struct buffer *self)
 	for (i = 0; i < self->offset; i++)
 		sum += self->data[i];
 
-	return sum % 256;
+	return sum;
 }
 
 //! Formatted output to 'struct buffer'

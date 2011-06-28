@@ -75,8 +75,8 @@ static void fix_message_unparse(struct fix_message *self)
 	fix_field_unparse(&msg_type, self->head_buf);
 
 	/* trailer */
-	cksum		= buffer_checksum(self->head_buf) + buffer_checksum(self->body_buf);
-	check_sum	= FIX_CHECKSUM_FIELD(CheckSum, cksum);
+	cksum		= buffer_sum(self->head_buf) + buffer_sum(self->body_buf);
+	check_sum	= FIX_CHECKSUM_FIELD(CheckSum, cksum % 256);
 	fix_field_unparse(&check_sum, self->body_buf);
 }
 

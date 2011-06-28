@@ -17,7 +17,7 @@ struct buffer *buffer_new(unsigned long capacity);
 void buffer_delete(struct buffer *self);
 bool buffer_printf(struct buffer *self, const char *format, ...);
 char *buffer_find(struct buffer *self, char delim);
-uint8_t buffer_checksum(struct buffer *self);
+uint8_t buffer_sum(struct buffer *self);
 
 ssize_t buffer_read(struct buffer *self, int fd);
 ssize_t buffer_write(struct buffer *self, int fd);
