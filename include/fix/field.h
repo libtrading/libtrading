@@ -36,6 +36,13 @@ struct fix_field {
 	};
 };
 
+#define FIX_INT_FIELD(t, v)				\
+	(struct fix_field) {				\
+		.tag		= t,			\
+		.type		= FIX_TYPE_INT,	\
+		{ .int_value	= v },			\
+	}
+
 #define FIX_STRING_FIELD(t, s)				\
 	(struct fix_field) {				\
 		.tag		= t,			\

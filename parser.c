@@ -80,6 +80,8 @@ static bool msg_type(struct fix_message *self)
 
 static bool body_length(struct fix_message *self)
 {
+	parse_field(self->head_buf, BodyLength);
+
 	// if second field is not BodyLength -> garbled
 
 	return true;
@@ -111,8 +113,10 @@ struct fix_message *fix_message_parse(struct buffer *buffer)
 	struct fix_message *self;
 
 	self		= fix_message_new();
-	if (!self)
+	if (!self) {
+		buffer_delete(buffer);
 		return NULL;
+	}
 
 	self->head_buf = buffer;
 

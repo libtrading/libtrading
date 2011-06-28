@@ -53,19 +53,24 @@ static void fix_message_unparse(struct fix_message *self)
 	struct fix_field sender_comp_id;
 	struct fix_field target_comp_id;
 	struct fix_field begin_string;
+	struct fix_field body_length;
 	struct fix_field msg_type;
 
-	begin_string	= FIX_STRING_FIELD(BeginString, self->begin_string);
-	msg_type	= FIX_STRING_FIELD(MsgType, self->msg_type);
+	/* body */
 	sender_comp_id	= FIX_STRING_FIELD(SenderCompID, self->sender_comp_id);
 	target_comp_id	= FIX_STRING_FIELD(TargetCompID, self->target_comp_id);
 
-	fix_field_unparse(&begin_string, self->head_buf);
-	/* XXX: BodyLength */
-	fix_field_unparse(&msg_type, self->head_buf);
-
 	fix_field_unparse(&sender_comp_id, self->body_buf);
 	fix_field_unparse(&target_comp_id, self->body_buf);
+
+	/* head */
+	begin_string	= FIX_STRING_FIELD(BeginString, self->begin_string);
+	body_length	= FIX_INT_FIELD(BodyLength, buffer_size(self->body_buf));
+	msg_type	= FIX_STRING_FIELD(MsgType, self->msg_type);
+
+	fix_field_unparse(&begin_string, self->head_buf);
+	fix_field_unparse(&body_length, self->head_buf);
+	fix_field_unparse(&msg_type, self->head_buf);
 }
 
 int fix_message_send(struct fix_message *self, int sockfd, int flags)
@@ -102,7 +107,6 @@ error_out:
 
 struct fix_message *fix_message_recv(int sockfd, int flags)
 {
-	struct fix_message *msg;
 	struct buffer *buf;
 	ssize_t nr;
 
@@ -114,11 +118,7 @@ struct fix_message *fix_message_recv(int sockfd, int flags)
 	if (nr <= 0)
 		goto out_error;
 
-	msg = fix_message_parse(buf);
-	if (!msg)
-		goto out_error;
-
-	return msg;
+	return fix_message_parse(buf);
 
 out_error:
 	buffer_delete(buf);

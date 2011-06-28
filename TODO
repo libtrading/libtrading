@@ -1,5 +1,6 @@
 - Make message format comply with the spec
-	+ BodyLength, CheckSum
+	+ CheckSum
+	+ use writev() for head_buf and body_buf
 	+ wireshark compatibility
 - Don't do direct malloc() - we need to able to use mlock()'d memory pool
 - xread()/xwrite()

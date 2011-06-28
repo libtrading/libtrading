@@ -40,6 +40,11 @@ static inline void buffer_advance(struct buffer *self)
 	self->offset++;
 }
 
+static inline unsigned long buffer_size(struct buffer *self)
+{
+	return self->offset;
+}
+
 static inline unsigned long buffer_remaining(struct buffer *self)
 {
 	assert(self->offset <= self->capacity);
