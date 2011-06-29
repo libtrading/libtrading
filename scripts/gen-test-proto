@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo "#ifndef TEST_SUITE_H"
+echo "#define TEST_SUITE_H"
+
+grep -h "^void test_" $1|sed -e "s/^void /extern void /g"|sed -e "s/(void)/(void);/g"
+
+echo "#endif"

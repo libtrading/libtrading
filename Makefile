@@ -112,10 +112,7 @@ TEST_RUNNER_C	:= test/test-runner.c
 TEST_RUNNER_OBJ := test/test-runner.o
 
 TEST_OBJS += harness.o
-TEST_OBJS += test/csv-test.o
-ifneq ($(uname_S),Darwin)
-TEST_OBJS += test/mmap-window-test.o
-endif
+TEST_OBJS += test/unparse-test.o
 
 TEST_SRC	:= $(patsubst %.o,%.c,$(TEST_OBJS))
 TEST_DEPS	:= $(patsubst %.o,%.d,$(TEST_OBJS))
@@ -183,8 +180,10 @@ $(TEST_PROGRAM): $(TEST_SUITE_H) $(TEST_DEPS) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(
 	$(E) "  LINK    " $<
 	$(Q) $(CC) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(TEST_LIBS) -o $(TEST_PROGRAM)
 
-check: all
-	$(PYTHON) tools/test.py
+check: $(TEST_PROGRAM) $(PROGRAM)
+	$(E) "  CHECK"
+	$(Q) ./$(TEST_PROGRAM)
+	$(Q) $(PYTHON) tools/test.py
 .PHONY: check
 
 clean:

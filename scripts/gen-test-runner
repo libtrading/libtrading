@@ -1,0 +1,14 @@
+#!/bin/sh
+
+echo "#include \"test-suite.h\""
+
+echo \
+'
+int main(int argc, char *argv[])
+{'
+grep -h "^void test_" $1|sed -e "s/^void //g"|sed -e "s/(void)/();/g"
+
+echo \
+'
+	return 0;
+}'

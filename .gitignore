@@ -4,3 +4,6 @@ tags
 latency-test
 libfix.a
 /fix
+/test-fix
+test/test-runner.c
+test/test-suite.h
