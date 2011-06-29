@@ -10,8 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <errno.h>
+#include <netdb.h>
+#include <stdio.h>
 
 static void usage(void)
 {
@@ -25,31 +26,48 @@ int cmd_client(int argc, char *argv[])
 	struct fix_message logon_msg;
 	struct fix_session *session;
 	struct sockaddr_in sa;
-	int sockfd;
+	int saved_errno = 0;
+	struct hostent *he;
+	const char *host;
+	int sockfd = -1;
 	int retval;
+	char **ap;
 	int port;
-	int err;
 
 	if (argc != 4)
 		usage();
 
-	sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sockfd < 0)
-		die("can not create socket");
-
+	host = argv[2];
 	port = atoi(argv[3]);
 
-	sa = (struct sockaddr_in) {
-		.sin_family		= AF_INET,
-		.sin_port		= htons(port),
-	};
+	he = gethostbyname(argv[2]);
+	if (!he)
+		error("Unable to look up %s (%s)", host, hstrerror(h_errno));
 
-	err = inet_pton(AF_INET, argv[2], &sa.sin_addr);
-	if (err <= 0)
-		die("inet_pton failed");
+	for (ap = he->h_addr_list; *ap; ap++) {
+		sockfd = socket(he->h_addrtype, SOCK_STREAM, IPPROTO_TCP);
+		if (sockfd < 0) {
+			saved_errno = errno;
+			continue;
+		}
 
-	if (connect(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0)
-		error("Unable to connect to a socket (%s)", strerror(errno));
+		sa = (struct sockaddr_in) {
+			.sin_family		= he->h_addrtype,
+			.sin_port		= htons(port),
+		};
+		memcpy(&sa.sin_addr, *ap, he->h_length);
+
+		if (connect(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0) {
+			saved_errno = errno;
+			close(sockfd);
+			sockfd = -1;
+			continue;
+		}
+		break;
+	}
+
+	if (sockfd < 0)
+		error("Unable to connect to a socket (%s)", strerror(saved_errno));
 
 	session		= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
 

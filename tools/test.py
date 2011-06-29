@@ -17,7 +17,7 @@ def main():
   time.sleep(1)
   result = 1
   try:
-    start("./fix", "client", "127.0.0.1", "9000")
+    start("./fix", "client", "localhost", "9000")
     result = os.wait()[1] >> 8
   finally:
     os.kill(server_pid, signal.SIGKILL)
