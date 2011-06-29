@@ -6,4 +6,7 @@
 void do_die(const char *format, ...) __attribute__ ((noreturn))
     __attribute__ ((format (printf, 1, 2)));
 
+void error(const char *format, ...) __attribute__ ((noreturn))
+    __attribute__ ((format (printf, 1, 2)));
+
 #endif /* FIX_DIE_H */

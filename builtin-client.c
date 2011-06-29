@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
 
 int cmd_client(int argc, char *argv[])
 {
@@ -36,7 +37,7 @@ int cmd_client(int argc, char *argv[])
 		die("inet_pton failed");
 
 	if (connect(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0)
-		die("connect failed");
+		error("%s", strerror(errno));
 
 	session		= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
 

@@ -16,3 +16,17 @@ void do_die(const char *format, ...)
 
 	exit(EXIT_FAILURE);
 }
+
+void error(const char *format, ...)
+{
+	va_list ap;
+
+	printf("error: ");
+	va_start(ap, format);
+	vprintf(format, ap);
+	va_end(ap);
+
+	printf("\n");
+
+	exit(EXIT_FAILURE);
+}
