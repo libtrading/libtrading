@@ -13,6 +13,12 @@
 #include <stdio.h>
 #include <errno.h>
 
+static void usage(void)
+{
+	printf("\n  usage: fix client [hostname] [port]\n\n");
+	exit(EXIT_FAILURE);
+}
+
 int cmd_client(int argc, char *argv[])
 {
 	struct fix_message *response;
@@ -21,18 +27,24 @@ int cmd_client(int argc, char *argv[])
 	struct sockaddr_in sa;
 	int sockfd;
 	int retval;
+	int port;
 	int err;
-	
+
+	if (argc != 4)
+		usage();
+
 	sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd < 0)
 		die("can not create socket");
 
+	port = atoi(argv[3]);
+
 	sa = (struct sockaddr_in) {
 		.sin_family		= AF_INET,
-		.sin_port		= htons(9000),
+		.sin_port		= htons(port),
 	};
 
-	err = inet_pton(AF_INET, "127.0.0.1", &sa.sin_addr);
+	err = inet_pton(AF_INET, argv[2], &sa.sin_addr);
 	if (err <= 0)
 		die("inet_pton failed");
 
