@@ -1,6 +1,7 @@
 #include "fix/builtins.h"
 #include "fix/message.h"
 #include "fix/session.h"
+#include "fix/die.h"
 
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -45,15 +46,11 @@ int cmd_server(int argc, char *argv[])
 	}
 
 	sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sockfd < 0) {
-		perror("can not create socket");
-		exit(EXIT_FAILURE);
-	}
+	if (sockfd < 0)
+		die("cannot create socket");
 
-	if (socket_setopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 1) < 0) {
-		perror("can not set socket option SO_REUSEADDR");
-		exit(EXIT_FAILURE);
-	}
+	if (socket_setopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 1) < 0)
+		die("cannot set socket option SO_REUSEADDR");
 
 	sa = (struct sockaddr_in) {
 		.sin_family		= AF_INET,
@@ -63,19 +60,13 @@ int cmd_server(int argc, char *argv[])
 		},
 	};
 
-	if (bind(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0) {
-		perror("error bind failed");
-		close(sockfd);
-		exit(EXIT_FAILURE);
-	}
+	if (bind(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0)
+		die("bind failed");
 
 	printf("FIX server is listening to port %d...\n", port);
 
-	if (listen(sockfd, 10) < 0) {
-		perror("error listen failed");
-		close(sockfd);
-		exit(EXIT_FAILURE);
-	}
+	if (listen(sockfd, 10) < 0)
+		die("listen failed");
 
 	for (;;) {
 		struct fix_message logon_msg;
@@ -84,11 +75,8 @@ int cmd_server(int argc, char *argv[])
 		int incoming_fd;
 		
 		incoming_fd = accept(sockfd, NULL, NULL);
-		if (incoming_fd < 0) {
-			perror("error accept failed");
-			close(sockfd);
-			exit(EXIT_FAILURE);
-		}
+		if (incoming_fd < 0)
+			die("accept failed");
 
 		session		= fix_session_new(incoming_fd, FIX_4_4, "BUYSIDE", "SELLSIDE");
 
@@ -109,5 +97,6 @@ int cmd_server(int argc, char *argv[])
 	}
 
 	close(sockfd);
+
 	return 0;
 }

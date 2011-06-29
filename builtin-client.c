@@ -1,6 +1,7 @@
 #include "fix/builtins.h"
 #include "fix/message.h"
 #include "fix/session.h"
+#include "fix/die.h"
 
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -22,10 +23,8 @@ int cmd_client(int argc, char *argv[])
 	int err;
 	
 	sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sockfd < 0) {
-		perror("cannot create socket");
-		exit(EXIT_FAILURE);
-	}
+	if (sockfd < 0)
+		die("can not create socket");
 
 	sa = (struct sockaddr_in) {
 		.sin_family		= AF_INET,
@@ -33,22 +32,11 @@ int cmd_client(int argc, char *argv[])
 	};
 
 	err = inet_pton(AF_INET, "127.0.0.1", &sa.sin_addr);
-	if (0 > err) {
-		perror("error: first parameter is not a valid address family");
-		close(sockfd);
-		exit(EXIT_FAILURE);
-	} else if (0 == err) {
-		perror
-		    ("char string (second parameter does not contain valid ipaddress");
-		close(sockfd);
-		exit(EXIT_FAILURE);
-	}
+	if (err <= 0)
+		die("inet_pton failed");
 
-	if (connect(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0) {
-		perror("connect failed");
-		close(sockfd);
-		exit(EXIT_FAILURE);
-	}
+	if (connect(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0)
+		die("connect failed");
 
 	session		= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
 
@@ -73,7 +61,8 @@ int cmd_client(int argc, char *argv[])
 
 	shutdown(sockfd, SHUT_RDWR);
 
-	close(sockfd);
+	if (close(sockfd) < 0)
+		die("close");
 
 	return retval;
 }

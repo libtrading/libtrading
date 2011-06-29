@@ -78,6 +78,7 @@ endif
 
 OBJS += builtin-client.o
 OBJS += builtin-server.o
+OBJS += die.o
 OBJS += fix.o
 
 OBJS += $(COMPAT_OBJS)

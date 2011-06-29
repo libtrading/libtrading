@@ -6,7 +6,6 @@
 - xread()/xwrite()
 - make check requires clean
 - Licensing (GPL + linking exception, BSD?)
-- cleanup perror() with die()
 - unit test for fix_field_unparse()
 - Write list of features to README
 	+ no message resend, etc.
