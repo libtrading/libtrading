@@ -13,11 +13,11 @@ def wait():
   return os.wait()[1]
 
 def main():
-  server_pid = start("examples/server/fix-server", "-p", "9000")
+  server_pid = start("./fix", "server", "-p", "9000")
   time.sleep(1)
   result = 1
   try:
-    start("examples/client/fix-client")
+    start("./fix", "client")
     result = os.wait()[1] >> 8
   finally:
     os.kill(server_pid, signal.SIGKILL)

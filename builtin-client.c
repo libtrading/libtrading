@@ -1,3 +1,4 @@
+#include "fix/builtins.h"
 #include "fix/message.h"
 #include "fix/session.h"
 
@@ -10,7 +11,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
-int main(int argc, char *argv[])
+int cmd_client(int argc, char *argv[])
 {
 	struct fix_message *response;
 	struct fix_message logon_msg;

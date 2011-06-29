@@ -1,3 +1,4 @@
+#include "fix/builtins.h"
 #include "fix/message.h"
 #include "fix/session.h"
 
@@ -10,9 +11,9 @@
 #include <unistd.h>
 #include <stdio.h>
 
-static void usage(const char *program)
+static void usage(void)
 {
-	printf("\n  usage: %s -p [port]\n\n", program);
+	printf("\n  usage: fix server -p [port]\n\n");
 }
 
 static int socket_setopt(int sockfd, int level, int optname, int optval)
@@ -20,7 +21,7 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
-int main(int argc, char *argv[])
+int cmd_server(int argc, char *argv[])
 {
 	struct sockaddr_in sa;
 	int port = 0;
@@ -33,13 +34,13 @@ int main(int argc, char *argv[])
 			port = atoi(optarg);
 			break;
 		default: /* '?' */
-			usage(argv[0]);
+			usage();
 			exit(EXIT_FAILURE);
 		}
 	}
 
 	if (!port) {
-		usage(argv[0]);
+		usage();
 		exit(EXIT_FAILURE);
 	}
 
@@ -88,8 +89,6 @@ int main(int argc, char *argv[])
 			close(sockfd);
 			exit(EXIT_FAILURE);
 		}
-
-		fprintf(stderr, "Accepted connection from socket.\n");
 
 		session		= fix_session_new(incoming_fd, FIX_4_4, "BUYSIDE", "SELLSIDE");
 

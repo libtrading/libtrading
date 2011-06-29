@@ -12,7 +12,5 @@
 	+ no message resend, etc.
 - nuke assert()
 - Fix overflows in message parsing
-- bin/fix-console
-- bin/fix-server
 - TCP_NODELAY
 - Latency test
