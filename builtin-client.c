@@ -49,7 +49,7 @@ int cmd_client(int argc, char *argv[])
 		die("inet_pton failed");
 
 	if (connect(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0)
-		error("%s", strerror(errno));
+		error("Unable to connect to a socket (%s)", strerror(errno));
 
 	session		= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
 
