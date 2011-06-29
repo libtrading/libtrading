@@ -1,15 +1,11 @@
-- Make message format comply with the spec
-	+ CheckSum
-	+ use writev() for head_buf and body_buf
-	+ wireshark compatibility
 - Don't do direct malloc() - we need to able to use mlock()'d memory pool
+- TLSF - 'realtime' malloc()
 - xread()/xwrite()
 - make check requires clean
 - Licensing (GPL + linking exception, BSD?)
 - unit test for fix_field_unparse()
-- Write list of features to README
-	+ no message resend, etc.
 - nuke assert()
 - Fix overflows in message parsing
 - TCP_NODELAY
 - Latency test
+- use writev() for head_buf and body_buf
