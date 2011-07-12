@@ -3,7 +3,6 @@
 - xread()/xwrite()
 - make check requires clean
 - Licensing (GPL + linking exception, BSD?)
-- nuke assert()
 - Fix overflows in message parsing
 - TCP_NODELAY
 - Latency test

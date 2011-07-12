@@ -18,7 +18,8 @@ static int parse_tag(struct buffer *self)
 	if (!delim)
 		return 0;
 
-	assert(*delim == '=');
+	if (*delim != '=')
+		return 0;
 
 	ret = strtol(start, &end, 10);
 	if (end != delim)
@@ -31,16 +32,17 @@ static int parse_tag(struct buffer *self)
 
 static const char *parse_value(struct buffer *self)
 {
-	const char *start;
-	char *end;
+	char *start, *end;
 
 	start = buffer_start(self);
+
 	end = buffer_find(self, 0x01);
 
 	if (!end)
 		return NULL;
 
-	assert(*end == 0x01);
+	if (*end != 0x01)
+		return NULL;
 
 	*end = '\0';
 
