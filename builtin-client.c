@@ -3,6 +3,7 @@
 #include "fix/session.h"
 #include "fix/die.h"
 
+#include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -18,6 +19,11 @@ static void usage(void)
 {
 	printf("\n  usage: fix client [hostname] [port]\n\n");
 	exit(EXIT_FAILURE);
+}
+
+static int socket_setopt(int sockfd, int level, int optname, int optval)
+{
+	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
 int cmd_client(int argc, char *argv[])
@@ -68,6 +74,9 @@ int cmd_client(int argc, char *argv[])
 
 	if (sockfd < 0)
 		error("Unable to connect to a socket (%s)", strerror(saved_errno));
+
+	if (socket_setopt(sockfd, SOL_TCP, TCP_NODELAY, 1) < 0)
+		die("cannot set socket option TCP_NODELAY");
 
 	session		= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
 

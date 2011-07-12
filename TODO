@@ -4,6 +4,5 @@
 - make check requires clean
 - Licensing (GPL + linking exception, BSD?)
 - Fix overflows in message parsing
-- TCP_NODELAY
 - Latency test
 - use writev() for head_buf and body_buf
