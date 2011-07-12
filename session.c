@@ -41,3 +41,25 @@ int fix_session_send(struct fix_session *self, struct fix_message *msg, int flag
 
 	return fix_message_send(msg, self->sockfd, flags);
 }
+
+bool fix_session_logon(struct fix_session *session)
+{
+	struct fix_message *response;
+	struct fix_message logon_msg;
+	bool ret;
+
+	logon_msg	= (struct fix_message) {
+		.msg_type	= Logon,
+	};
+	fix_session_send(session, &logon_msg, 0);
+
+	response = fix_message_recv(session->sockfd, 0);
+	if (!response)
+		return false;
+
+	ret = fix_message_type_is(response, Logon);
+
+	fix_message_free(response);
+
+	return ret;
+}

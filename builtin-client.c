@@ -28,8 +28,6 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 
 int cmd_client(int argc, char *argv[])
 {
-	struct fix_message *response;
-	struct fix_message logon_msg;
 	struct fix_session *session;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
@@ -78,24 +76,17 @@ int cmd_client(int argc, char *argv[])
 	if (socket_setopt(sockfd, SOL_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	session		= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
+	session	= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
+	if (!session)
+		die("unable to allocate fix session");
 
-	logon_msg	= (struct fix_message) {
-		.msg_type	= Logon,
-	};
-	fix_session_send(session, &logon_msg, 0);
-
-	response	= fix_message_recv(sockfd, 0);
-	if (response && fix_message_type_is(response, Logon)) {
+	if (fix_session_logon(session)) {
 		printf("Logon OK\n");
 		retval = 0;
 	} else {
 		printf("Logon FAILED\n");
 		retval = 1;
 	}
-
-	if (response)
-		fix_message_free(response);
 
 	fix_session_free(session);
 
