@@ -1,7 +1,10 @@
 #include "fix/message.h"
 
+#include "fix/read-write.h"
 #include "fix/buffer.h"
+#include "fix/core.h"
 
+#include <sys/uio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -81,6 +84,7 @@ static void fix_message_unparse(struct fix_message *self)
 
 int fix_message_send(struct fix_message *self, int sockfd, int flags)
 {
+	struct iovec iov[2];
 	int ret = 0;
 
 	self->head_buf = buffer_new(MAX_HEAD_LEN);
@@ -99,9 +103,13 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 
 	fix_message_unparse(self);
 
-	/* TODO: use writev() */
-	buffer_write(self->head_buf, sockfd);
-	buffer_write(self->body_buf, sockfd);
+	buffer_to_iovec(self->head_buf, &iov[0]);
+	buffer_to_iovec(self->body_buf, &iov[1]);
+
+	if (xwritev(sockfd, iov, ARRAY_SIZE(iov)) < 0) {
+		ret = -1;
+		goto error_out;
+	}
 
 error_out:
 	buffer_delete(self->head_buf);

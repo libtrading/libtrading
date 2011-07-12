@@ -1,6 +1,7 @@
 #ifndef FIX__BUFFER_H
 #define FIX__BUFFER_H
 
+#include <sys/uio.h>	/* for struct iovec */
 #include <stdbool.h>
 #include <assert.h>
 #include <stdarg.h>
@@ -52,6 +53,12 @@ static inline unsigned long buffer_remaining(struct buffer *self)
 	assert(self->offset <= self->capacity);
 
 	return self->capacity - self->offset;
+}
+
+static inline void buffer_to_iovec(struct buffer *b, struct iovec *iov)
+{
+	iov->iov_base	= b->data;
+	iov->iov_len	= b->offset;
 }
 
 #endif /* FIX__BUFFER_H */

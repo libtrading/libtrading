@@ -5,4 +5,3 @@
 - Licensing (GPL + linking exception, BSD?)
 - Fix overflows in message parsing
 - Latency test
-- use writev() for head_buf and body_buf
