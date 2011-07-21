@@ -96,6 +96,23 @@ int cmd_server(int argc, char *argv[])
 
 		fix_message_free(msg);
 
+		for (;;) {
+			struct fix_message logout_msg;
+
+			msg = fix_message_recv(incoming_fd, 0);
+			if (!msg || !fix_message_type_is(msg, Logout)) {
+				fix_message_free(msg);
+				continue;
+			}
+			fix_message_free(msg);
+
+			logout_msg	= (struct fix_message) {
+				.msg_type	= Logout,
+			};
+			fix_session_send(session, &logout_msg, 0);
+			break;
+		}
+
 		fix_session_free(session);
 
 		shutdown(incoming_fd, SHUT_RDWR);

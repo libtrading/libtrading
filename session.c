@@ -63,3 +63,25 @@ bool fix_session_logon(struct fix_session *session)
 
 	return ret;
 }
+
+bool fix_session_logout(struct fix_session *session)
+{
+	struct fix_message *response;
+	struct fix_message logout_msg;
+	bool ret;
+
+	logout_msg	= (struct fix_message) {
+		.msg_type	= Logout,
+	};
+	fix_session_send(session, &logout_msg, 0);
+
+	response = fix_message_recv(session->sockfd, 0);
+	if (!response)
+		return false;
+
+	ret = fix_message_type_is(response, Logout);
+
+	fix_message_free(response);
+
+	return ret;
+}

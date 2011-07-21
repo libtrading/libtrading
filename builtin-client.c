@@ -88,6 +88,14 @@ int cmd_client(int argc, char *argv[])
 		retval = 1;
 	}
 
+	if (fix_session_logout(session)) {
+		printf("Logout OK\n");
+		retval = 0;
+	} else {
+		printf("Logout FAILED\n");
+		retval = 1;
+	}
+
 	fix_session_free(session);
 
 	shutdown(sockfd, SHUT_RDWR);
