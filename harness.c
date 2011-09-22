@@ -28,10 +28,23 @@ void do_assert_false(const char *filename, int line, bool value)
 	}
 }
 
-void assert_int_equals(int expected, int actual)
+void assert_int_equals(long long expected, long long actual)
 {
 	if (expected != actual) {
-		printf("Expected: %d, but was %d\n", expected, actual);
+		printf("Expected: %Ld, but was %Ld\n", expected, actual);
+		exit(EXIT_FAILURE);
+	}
+}
+
+void assert_mem_equals(const void *s1, const void *s2, size_t len)
+{
+	if (!s2) {
+		printf("Expected: '%s', but was: NULL\n", (const char *) s1);
+		exit(EXIT_FAILURE);
+	}
+
+	if (memcmp(s1, s2, len)) {
+		printf("Expected: '%s', but was: '%s'\n", (const char *) s1, (const char *) s2);
 		exit(EXIT_FAILURE);
 	}
 }

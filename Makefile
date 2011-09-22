@@ -98,6 +98,7 @@ DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 
 LIB_FILE := libfix.a
 
+LIB_OBJS	+= boe.o
 LIB_OBJS	+= buffer.o
 LIB_OBJS	+= field.o
 LIB_OBJS	+= message.o
@@ -113,6 +114,7 @@ TEST_RUNNER_C	:= test/test-runner.c
 TEST_RUNNER_OBJ := test/test-runner.o
 
 TEST_OBJS += harness.o
+TEST_OBJS += test/boe-test.o
 TEST_OBJS += test/unparse-test.o
 
 TEST_SRC	:= $(patsubst %.o,%.c,$(TEST_OBJS))

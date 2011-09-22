@@ -23,6 +23,44 @@ uint8_t buffer_sum(struct buffer *self);
 ssize_t buffer_read(struct buffer *self, int fd);
 ssize_t buffer_write(struct buffer *self, int fd);
 
+static inline uint8_t buffer_get_8(struct buffer *self)
+{
+	return self->data[self->offset++];
+}
+
+static inline uint16_t buffer_get_le16(struct buffer *self)
+{
+	return buffer_get_8(self) | buffer_get_8(self) << 8;
+}
+
+static inline uint32_t buffer_get_le32(struct buffer *self)
+{
+	return buffer_get_8(self)
+		| buffer_get_8(self) << 8
+		| buffer_get_8(self) << 16
+		| buffer_get_8(self) << 24;
+}
+
+static inline uint64_t buffer_get_le64(struct buffer *self)
+{
+	return (uint64_t) buffer_get_8(self)
+		| (uint64_t) buffer_get_8(self) << 8
+		| (uint64_t) buffer_get_8(self) << 16
+		| (uint64_t) buffer_get_8(self) << 24
+		| (uint64_t) buffer_get_8(self) << 32
+		| (uint64_t) buffer_get_8(self) << 40
+		| (uint64_t) buffer_get_8(self) << 48
+		| (uint64_t) buffer_get_8(self) << 56;
+}
+
+static inline void buffer_get_n(struct buffer *self, int n, char *dst)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		*dst++ = buffer_get_8(self);
+}
+
 static inline char *buffer_start(struct buffer *self)
 {
 	return &self->data[self->offset];
