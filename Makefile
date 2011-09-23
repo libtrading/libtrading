@@ -4,6 +4,7 @@ uname_R	:= $(shell sh -c 'uname -r 2>/dev/null || echo not')
 # External programs
 CC	:= gcc
 CXX	:= g++
+LD	:= gcc
 AR	:= ar
 
 # Set up source directory for GNU Make
@@ -50,7 +51,7 @@ endif
 export E Q
 
 # Project files
-PROGRAM := fix 
+PROGRAMS := fix 
 
 DEFINES =
 INCLUDES =
@@ -76,15 +77,12 @@ ifeq ($(uname_S),SunOS)
 	COMPAT_OBJS += compat/strndup.o
 endif
 
-OBJS += builtin-client.o
-OBJS += builtin-server.o
-OBJS += die.o
-OBJS += fix.o
+fix_EXTRA_DEPS += builtin-client.o
+fix_EXTRA_DEPS += builtin-server.o
+fix_EXTRA_DEPS += die.o
+fix_EXTRA_DEPS += fix.o
 
-OBJS += $(COMPAT_OBJS)
-
-LIBS := -L. -lfix
-LIBS += $(EXTRA_LIBS)
+fix_EXTRA_DEPS += $(COMPAT_DEPS)
 
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
@@ -97,6 +95,8 @@ CXXFLAGS += $(CONFIG_OPTS)
 DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 
 LIB_FILE := libfix.a
+
+LIBS := $(LIB_FILE)
 
 LIB_OBJS	+= boe.o
 LIB_OBJS	+= buffer.o
@@ -134,7 +134,7 @@ else
 sub-make: _all
 endif
 
-_all: $(PROGRAM) $(LIB_FILE)
+_all: $(LIB_FILE) $(PROGRAMS)
 .PHONY: _all
 
 $(O):
@@ -157,15 +157,17 @@ endif
 	$(E) "  CXX     " $@
 	$(Q) $(CXX) -c $(CXXFLAGS) $< -o $@
 
-$(PROGRAM): $(DEPS) $(LIB_FILE) $(OBJS)
+
+$(foreach p,$(PROGRAMS),$(eval $(p): $($(p)_EXTRA_DEPS) $(LIBS)))
+$(PROGRAMS): % : %.o
 	$(E) "  LINK    " $@
-	$(Q) $(CC) $(OBJS) $(LIBS) -o $(PROGRAM)
+	$(Q) $(LD) $(LDFLAGS) -o $@ $^ $($@_EXTRA_OBJS)
 
 $(LIB_FILE): $(LIB_DEPS) $(LIB_OBJS)
 	$(E) "  AR      " $@
 	$(Q) rm -f $@ && $(AR) rcs $@ $(LIB_OBJS)
 
-test: $(TEST_PROGRAM)
+test: $(TEST_PROGRAMS)
 	$(E) "  CHECK"
 	$(Q) ./$(TEST_PROGRAM)
 .PHONY: test
@@ -183,7 +185,7 @@ $(TEST_PROGRAM): $(TEST_SUITE_H) $(TEST_DEPS) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(
 	$(E) "  LINK    " $<
 	$(Q) $(CC) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(TEST_LIBS) -o $(TEST_PROGRAM)
 
-check: $(TEST_PROGRAM) $(PROGRAM)
+check: $(TEST_PROGRAM) $(PROGRAMS)
 	$(E) "  CHECK"
 	$(Q) ./$(TEST_PROGRAM)
 	$(Q) $(PYTHON) tools/test.py
@@ -192,7 +194,7 @@ check: $(TEST_PROGRAM) $(PROGRAM)
 clean:
 	$(E) "  CLEAN"
 	$(Q) rm -f $(LIB_FILE) $(LIB_OBJS) $(LIB_DEPS)
-	$(Q) rm -f $(PROGRAM) $(OBJS) $(DEPS) $(TEST_PROGRAM) $(TEST_SUITE_H) $(TEST_OBJS) $(TEST_DEPS) $(TEST_RUNNER_C) $(TEST_RUNNER_OBJ)
+	$(Q) rm -f $(PROGRAMS) $(OBJS) $(DEPS) $(TEST_PROGRAM) $(TEST_SUITE_H) $(TEST_OBJS) $(TEST_DEPS) $(TEST_RUNNER_C) $(TEST_RUNNER_OBJ)
 .PHONY: clean
 
 tags: FORCE
