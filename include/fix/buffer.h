@@ -73,12 +73,12 @@ static inline char buffer_first_char(struct buffer *self)
 	return *start;
 }
 
-static inline void buffer_advance(struct buffer *self)
+static inline void buffer_advance(struct buffer *self, unsigned long n)
 {
 	/* FIXME: overflow */
 	assert(self->offset < self->capacity);
 
-	self->offset++;
+	self->offset += n;
 }
 
 static inline unsigned long buffer_size(struct buffer *self)

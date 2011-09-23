@@ -25,7 +25,7 @@ static int parse_tag(struct buffer *self)
 	if (end != delim)
 		return 0;
 
-	buffer_advance(self);
+	buffer_advance(self, 1);
 
 	return ret;
 }
@@ -46,7 +46,7 @@ static const char *parse_value(struct buffer *self)
 
 	*end = '\0';
 
-	buffer_advance(self);
+	buffer_advance(self, 1);
 
 	return start;
 }

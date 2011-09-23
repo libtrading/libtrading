@@ -2,13 +2,13 @@
 
 #include "fix/buffer.h"
 
+#include <string.h>
+
 int boe_decode_header(struct buffer *buf, struct boe_header *header)
 {
-	header->StartOfMessage	= buffer_get_le16(buf);
-	header->MessageLength	= buffer_get_le16(buf);
-	header->MessageType	= buffer_get_8(buf);
-	header->MatchingUnit	= buffer_get_8(buf);
-	header->SequenceNumber	= buffer_get_le32(buf);
+	memcpy(header, buffer_start(buf), sizeof *header);
+
+	buffer_advance(buf, sizeof *header);
 
 	return 0;
 }

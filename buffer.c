@@ -69,7 +69,7 @@ char *buffer_find(struct buffer *self, char delim)
 		if (!buffer_remaining(self))
 			return NULL;
 
-		buffer_advance(self);
+		buffer_advance(self, 1);
 	}
 
 	return buffer_start(self);
