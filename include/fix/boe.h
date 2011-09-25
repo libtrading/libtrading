@@ -104,6 +104,11 @@ struct boe_header {
 #define BOE_USERNAME_LEN		4
 #define BOE_PASSWORD_LEN		10
 
+struct boe_login_request_unit {
+	uint8_t				UnitNumber;
+	uint32_t			UnitSequence;
+} packed;
+
 struct boe_login_request {
 	char				SessionSubID[BOE_SESSION_SUB_ID_LEN];
 	char				Username[BOE_USERNAME_LEN];
@@ -121,10 +126,10 @@ struct boe_login_request {
 	uint64_t			ReservedBitfields1;
 	uint64_t			ReservedBitfields2;
 	uint8_t				NumberOfUnits;
-	/* TODO: units */
-};
+	struct boe_login_request_unit	Units[];
+} packed;
 
 int boe_decode_header(struct buffer *buf, struct boe_header *header);
-int boe_decode_login_request(struct buffer *buf, struct boe_login_request *login);
+struct boe_login_request *boe_decode_login_request(struct boe_header *header, struct buffer *buf);
 
 #endif /* FIX__BOE_H */
