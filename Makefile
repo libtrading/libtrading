@@ -6,6 +6,7 @@ CC	:= gcc
 CXX	:= g++
 LD	:= gcc
 AR	:= ar
+XXD	?= xxd
 
 # Set up source directory for GNU Make
 srcdir		:= $(CURDIR)
@@ -171,6 +172,14 @@ test: $(TEST_PROGRAMS)
 	$(Q) ./$(TEST_PROGRAM)
 .PHONY: test
 
+BOE_TEST_DATA += test/protocol/boe/login-request-message.bin
+
+%.bin: %.hexdump
+	$(E) "  XXD     " $@
+	$(Q) $(XXD) -p -r $< > $@
+
+BOE_TEST_DATA:
+
 $(TEST_RUNNER_C): $(FORCE)
 	$(E) "  GEN     " $@
 	$(Q) sh scripts/gen-test-runner "$(TEST_SRC)" > $@
@@ -179,7 +188,7 @@ $(TEST_SUITE_H): $(FORCE)
 	$(E) "  GEN     " $@
 	$(Q) sh scripts/gen-test-proto "$(TEST_SRC)" > $@
 
-$(TEST_PROGRAM): $(TEST_SUITE_H) $(TEST_DEPS) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(LIB_FILE)
+$(TEST_PROGRAM): $(TEST_SUITE_H) $(TEST_DEPS) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(LIB_FILE) $(BOE_TEST_DATA)
 	$(E) "  LINK    " $@
 	$(E) "  LINK    " $<
 	$(Q) $(CC) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(TEST_LIBS) -o $(TEST_PROGRAM)
@@ -194,6 +203,7 @@ clean:
 	$(E) "  CLEAN"
 	$(Q) rm -f $(LIB_FILE) $(LIB_OBJS) $(LIB_DEPS)
 	$(Q) rm -f $(PROGRAMS) $(OBJS) $(DEPS) $(TEST_PROGRAM) $(TEST_SUITE_H) $(TEST_OBJS) $(TEST_DEPS) $(TEST_RUNNER_C) $(TEST_RUNNER_OBJ)
+	$(Q) rm -f $(BOE_TEST_DATA)
 .PHONY: clean
 
 tags: FORCE

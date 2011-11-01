@@ -7,3 +7,4 @@ libfix.a
 /test-fix
 test/test-runner.c
 test/test-suite.h
+test/protocol/boe/*.bin

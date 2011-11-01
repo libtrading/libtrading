@@ -20,7 +20,7 @@ void test_boe(void)
 
 	buf = buffer_new(1024);
 
-	fd = open("test/protocol/boe/login-request-message", O_RDONLY);
+	fd = open("test/protocol/boe/login-request-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
 	fail_if(buffer_read(buf, fd) < 0);
