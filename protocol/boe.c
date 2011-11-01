@@ -30,3 +30,21 @@ struct boe_login_request *boe_decode_login_request(struct boe_header *header, st
 
 	return login;
 }
+
+struct boe_logout *boe_decode_logout(struct boe_header *header, struct buffer *buf)
+{
+	struct boe_logout *logout;
+	size_t size;
+
+	size = header->MessageLength - sizeof(header);
+
+	logout = malloc(size);
+	if (!logout)
+		return NULL;
+
+	memcpy(logout, buffer_start(buf), size);
+
+	buffer_advance(buf, size);
+
+	return logout;
+}

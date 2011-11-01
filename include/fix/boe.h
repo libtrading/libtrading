@@ -129,7 +129,18 @@ struct boe_login_request {
 	struct boe_login_request_unit	Units[];
 } packed;
 
+#define BOE_LOGOUT_REASON_TEXT_LEN	60
+
+struct boe_logout {
+	uint8_t				LogoutReason;
+	char				LogoutReasonText[BOE_LOGOUT_REASON_TEXT_LEN];
+	uint32_t			LastReceivedSequenceNumber;
+	uint8_t				NumberOfUnits;
+	struct boe_login_request_unit	Units[];
+} packed;
+
 int boe_decode_header(struct buffer *buf, struct boe_header *header);
 struct boe_login_request *boe_decode_login_request(struct boe_header *header, struct buffer *buf);
+struct boe_logout *boe_decode_logout(struct boe_header *header, struct buffer *buf);
 
 #endif /* FIX__BOE_H */

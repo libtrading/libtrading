@@ -173,6 +173,7 @@ test: $(TEST_PROGRAMS)
 .PHONY: test
 
 BOE_TEST_DATA += test/protocol/boe/login-request-message.bin
+BOE_TEST_DATA += test/protocol/boe/logout-message.bin
 
 %.bin: %.hexdump
 	$(E) "  XXD     " $@

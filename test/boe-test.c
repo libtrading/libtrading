@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-void test_boe(void)
+void test_boe_login_request(void)
 {
 	struct boe_login_request *login;
 	struct boe_header header;
@@ -67,4 +67,52 @@ void test_boe(void)
 	fail_if(close(fd) < 0);
 
 	free(login);
+}
+
+/* BATS to Participant */
+void test_boe_logout(void)
+{
+	struct boe_logout *logout;
+	struct boe_header header;
+	struct buffer *buf;
+	int fd;
+
+	buf = buffer_new(1024);
+
+	fd = open("test/protocol/boe/logout-message.bin", O_RDONLY);
+	fail_if(fd < 0);
+
+	fail_if(buffer_read(buf, fd) < 0);
+
+	fail_if(boe_decode_header(buf, &header) < 0);
+
+	assert_int_equals(BOE_MAGIC, header.StartOfMessage);
+	assert_int_equals(89, header.MessageLength);
+	assert_int_equals(Logout, header.MessageType);
+	assert_int_equals(0, header.MatchingUnit);
+	assert_int_equals(0, header.SequenceNumber);
+
+	logout = boe_decode_logout(&header, buf);
+	assert_true(logout != NULL);
+
+	assert_int_equals('U', logout->LogoutReason);
+	assert_mem_equals("User", logout->LogoutReasonText, 4);
+	assert_int_equals(103231, logout->LastReceivedSequenceNumber);
+
+	assert_int_equals(3, logout->NumberOfUnits);
+
+	assert_int_equals(1, logout->Units[0].UnitNumber);
+	assert_int_equals(113482, logout->Units[0].UnitSequence);
+
+	assert_int_equals(2, logout->Units[1].UnitNumber);
+	assert_int_equals(0, logout->Units[1].UnitSequence);
+
+	assert_int_equals(4, logout->Units[2].UnitNumber);
+	assert_int_equals(41337, logout->Units[2].UnitSequence);
+
+	buffer_delete(buf);
+
+	fail_if(close(fd) < 0);
+
+	free(logout);
 }
