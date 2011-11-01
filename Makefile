@@ -98,13 +98,13 @@ LIB_FILE := libfix.a
 
 LIBS := $(LIB_FILE)
 
-LIB_OBJS	+= boe.o
 LIB_OBJS	+= buffer.o
-LIB_OBJS	+= field.o
-LIB_OBJS	+= message.o
-LIB_OBJS	+= parser.o
+LIB_OBJS	+= protocol/boe.o
+LIB_OBJS	+= protocol/fix/field.o
+LIB_OBJS	+= protocol/fix/message.o
+LIB_OBJS	+= protocol/fix/parser.o
+LIB_OBJS	+= protocol/fix/session.o
 LIB_OBJS	+= read-write.o
-LIB_OBJS	+= session.o
 
 LIB_DEPS	:= $(patsubst %.o,%.d,$(LIB_OBJS))
 
