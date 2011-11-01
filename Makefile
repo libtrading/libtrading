@@ -100,7 +100,6 @@ LIBS := $(LIB_FILE)
 
 LIB_OBJS	+= buffer.o
 LIB_OBJS	+= protocol/boe.o
-LIB_OBJS	+= protocol/fix/field.o
 LIB_OBJS	+= protocol/fix/message.o
 LIB_OBJS	+= protocol/fix/parser.o
 LIB_OBJS	+= protocol/fix/session.o

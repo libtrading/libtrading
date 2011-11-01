@@ -2,8 +2,10 @@
 
 #include "fix/read-write.h"
 #include "fix/buffer.h"
+#include "fix/field.h"
 #include "fix/core.h"
 
+#include <inttypes.h>
 #include <sys/uio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +50,27 @@ bool fix_message_type_is(struct fix_message *self, const char *expected_type)
 		return false;
 
 	return strncmp(self->msg_type, expected_type, strlen(expected_type)) == 0;
+}
+
+bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
+{
+	switch (self->type) {
+	case FIX_TYPE_STRING:
+		return buffer_printf(buffer, "%d=%s\x01", self->tag, self->string_value);
+	case FIX_TYPE_CHAR:
+		return buffer_printf(buffer, "%d=%c\x01", self->tag, self->char_value);
+	case FIX_TYPE_FLOAT:
+		return buffer_printf(buffer, "%d=%f\x01", self->tag, self->float_value);
+	case FIX_TYPE_INT:
+		return buffer_printf(buffer, "%d=%" PRId64 "\x01", self->tag, self->int_value);
+	case FIX_TYPE_CHECKSUM:
+		return buffer_printf(buffer, "%d=%03" PRId64 "\x01", self->tag, self->int_value);
+	default:
+		/* unknown type */
+		break;
+	};
+
+	return false;
 }
 
 static void fix_message_unparse(struct fix_message *self)
