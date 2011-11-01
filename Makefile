@@ -94,7 +94,7 @@ CXXFLAGS += $(CONFIG_OPTS)
 
 DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 
-LIB_FILE := libfix.a
+LIB_FILE := libtrading.a
 
 LIBS := $(LIB_FILE)
 
