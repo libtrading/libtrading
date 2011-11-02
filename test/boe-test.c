@@ -95,6 +95,32 @@ void test_boe_logout_request(void)
 	fail_if(close(fd) < 0);
 }
 
+void test_boe_client_heartbeat(void)
+{
+	struct boe_header header;
+	struct buffer *buf;
+	int fd;
+
+	buf = buffer_new(1024);
+
+	fd = open("test/protocol/boe/client-heartbeat-message.bin", O_RDONLY);
+	fail_if(fd < 0);
+
+	fail_if(buffer_read(buf, fd) < 0);
+
+	fail_if(boe_decode_header(buf, &header) < 0);
+
+	assert_int_equals(BOE_MAGIC, header.StartOfMessage);
+	assert_int_equals(8, header.MessageLength);
+	assert_int_equals(ClientHeartbeat, header.MessageType);
+	assert_int_equals(0, header.MatchingUnit);
+	assert_int_equals(0, header.SequenceNumber);
+
+	buffer_delete(buf);
+
+	fail_if(close(fd) < 0);
+}
+
 void test_boe_logout(void)
 {
 	struct boe_logout *logout;
