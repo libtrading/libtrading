@@ -2,7 +2,7 @@
 *.o
 tags
 latency-test
-libfix.a
+libtrading.a
 /fix
 /test-fix
 test/test-runner.c
