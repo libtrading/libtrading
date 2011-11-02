@@ -46,6 +46,10 @@ struct boe_header {
 	uint32_t			SequenceNumber;
 } packed;
 
+struct boe_message {
+	struct boe_header		header;
+};
+
 /*
  *	List of Return Bitfields
  */
@@ -169,9 +173,11 @@ struct boe_logout {
 	struct boe_login_request_unit	Units[];
 } packed;
 
-int boe_decode_header(struct buffer *buf, struct boe_header *header);
-struct boe_login_request *boe_decode_login_request(struct boe_header *header, struct buffer *buf);
-struct boe_login_response *boe_decode_login_response(struct boe_header *header, struct buffer *buf);
-struct boe_logout *boe_decode_logout(struct boe_header *header, struct buffer *buf);
+struct boe_message *boe_decode_message(struct buffer *buf);
+
+static inline void *boe_message_payload(struct boe_message *msg)
+{
+	return (void *) msg + sizeof(struct boe_header);
+}
 
 #endif /* FIX__BOE_H */

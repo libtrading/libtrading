@@ -2,67 +2,36 @@
 
 #include "fix/buffer.h"
 
+#include <stdlib.h>
 #include <string.h>
 
-int boe_decode_header(struct buffer *buf, struct boe_header *header)
+#define BOE_MAGIC_LEN		sizeof(uint16_t)
+#define BOE_MSG_LENGTH_LEN	sizeof(uint16_t)
+
+struct boe_message *boe_decode_message(struct buffer *buf)
 {
-	memcpy(header, buffer_start(buf), sizeof *header);
-
-	buffer_advance(buf, sizeof *header);
-
-	return 0;
-}
-
-struct boe_login_request *boe_decode_login_request(struct boe_header *header, struct buffer *buf)
-{
-	struct boe_login_request *login;
+	struct boe_message *msg;
+	uint16_t magic, len;
+	void *start;
 	size_t size;
 
-	size = header->MessageLength - sizeof(header);
+	start = buffer_start(buf);
 
-	login = malloc(size);
-	if (!login)
+	magic = buffer_get_le16(buf);
+	if (magic != BOE_MAGIC)
 		return NULL;
 
-	memcpy(login, buffer_start(buf), size);
+	len = buffer_get_le16(buf);
 
-	buffer_advance(buf, size);
+	size = BOE_MAGIC_LEN + len;
 
-	return login;
-}
-
-struct boe_login_response *boe_decode_login_response(struct boe_header *header, struct buffer *buf)
-{
-	struct boe_login_response *login;
-	size_t size;
-
-	size = header->MessageLength - sizeof(header);
-
-	login = malloc(size);
-	if (!login)
+	msg = malloc(size);
+	if (!msg)
 		return NULL;
 
-	memcpy(login, buffer_start(buf), size);
+	memcpy(msg, start, size);
 
-	buffer_advance(buf, size);
+	buffer_advance(buf, len - BOE_MSG_LENGTH_LEN);
 
-	return login;
-}
-
-struct boe_logout *boe_decode_logout(struct boe_header *header, struct buffer *buf)
-{
-	struct boe_logout *logout;
-	size_t size;
-
-	size = header->MessageLength - sizeof(header);
-
-	logout = malloc(size);
-	if (!logout)
-		return NULL;
-
-	memcpy(logout, buffer_start(buf), size);
-
-	buffer_advance(buf, size);
-
-	return logout;
+	return msg;
 }

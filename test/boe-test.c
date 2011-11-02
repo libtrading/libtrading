@@ -15,7 +15,7 @@
 void test_boe_login_request(void)
 {
 	struct boe_login_request *login;
-	struct boe_header header;
+	struct boe_message *msg;
 	struct buffer *buf;
 	int fd;
 
@@ -26,16 +26,16 @@ void test_boe_login_request(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	fail_if(boe_decode_header(buf, &header) < 0);
+	msg = boe_decode_message(buf);
+	fail_if(msg == NULL);
 
-	assert_int_equals(BOE_MAGIC, header.StartOfMessage);
-	assert_int_equals(131, header.MessageLength);
-	assert_int_equals(LoginRequest, header.MessageType);
-	assert_int_equals(0, header.MatchingUnit);
-	assert_int_equals(0, header.SequenceNumber);
+	login = boe_message_payload(msg);
 
-	login = boe_decode_login_request(&header, buf);
-	assert_true(login != NULL);
+	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
+	assert_int_equals(131, msg->header.MessageLength);
+	assert_int_equals(LoginRequest, msg->header.MessageType);
+	assert_int_equals(0, msg->header.MatchingUnit);
+	assert_int_equals(0, msg->header.SequenceNumber);
 
 	assert_mem_equals("0001", login->SessionSubID, BOE_SESSION_SUB_ID_LEN);
 	assert_mem_equals("TEST", login->Username, BOE_USERNAME_LEN);
@@ -67,13 +67,13 @@ void test_boe_login_request(void)
 
 	fail_if(close(fd) < 0);
 
-	free(login);
+	free(msg);
 }
 
 void test_boe_login_response(void)
 {
 	struct boe_login_response *login;
-	struct boe_header header;
+	struct boe_message *msg;
 	struct buffer *buf;
 	int fd;
 
@@ -84,16 +84,16 @@ void test_boe_login_response(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	fail_if(boe_decode_header(buf, &header) < 0);
+	msg = boe_decode_message(buf);
+	fail_if(msg == NULL);
 
-	assert_int_equals(BOE_MAGIC, header.StartOfMessage);
-	assert_int_equals(183, header.MessageLength);
-	assert_int_equals(LoginResponse, header.MessageType);
-	assert_int_equals(0, header.MatchingUnit);
-	assert_int_equals(0, header.SequenceNumber);
+	login = boe_message_payload(msg);
 
-	login = boe_decode_login_response(&header, buf);
-	assert_true(login != NULL);
+	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
+	assert_int_equals(183, msg->header.MessageLength);
+	assert_int_equals(LoginResponse, msg->header.MessageType);
+	assert_int_equals(0, msg->header.MatchingUnit);
+	assert_int_equals(0, msg->header.SequenceNumber);
 
 	assert_int_equals('A', login->LoginResponseStatus);
 	assert_mem_equals("Accepted", login->LoginResponseText, strlen("Accepted"));
@@ -127,12 +127,12 @@ void test_boe_login_response(void)
 
 	fail_if(close(fd) < 0);
 
-	free(login);
+	free(msg);
 }
 
 void test_boe_logout_request(void)
 {
-	struct boe_header header;
+	struct boe_message *msg;
 	struct buffer *buf;
 	int fd;
 
@@ -143,13 +143,16 @@ void test_boe_logout_request(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	fail_if(boe_decode_header(buf, &header) < 0);
+	msg = boe_decode_message(buf);
+	fail_if(msg == NULL);
 
-	assert_int_equals(BOE_MAGIC, header.StartOfMessage);
-	assert_int_equals(8, header.MessageLength);
-	assert_int_equals(LogoutRequest, header.MessageType);
-	assert_int_equals(0, header.MatchingUnit);
-	assert_int_equals(0, header.SequenceNumber);
+	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
+	assert_int_equals(8, msg->header.MessageLength);
+	assert_int_equals(LogoutRequest, msg->header.MessageType);
+	assert_int_equals(0, msg->header.MatchingUnit);
+	assert_int_equals(0, msg->header.SequenceNumber);
+
+	free(msg);
 
 	buffer_delete(buf);
 
@@ -158,7 +161,7 @@ void test_boe_logout_request(void)
 
 void test_boe_client_heartbeat(void)
 {
-	struct boe_header header;
+	struct boe_message *msg;
 	struct buffer *buf;
 	int fd;
 
@@ -169,13 +172,16 @@ void test_boe_client_heartbeat(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	fail_if(boe_decode_header(buf, &header) < 0);
+	msg = boe_decode_message(buf);
+	fail_if(msg == NULL);
 
-	assert_int_equals(BOE_MAGIC, header.StartOfMessage);
-	assert_int_equals(8, header.MessageLength);
-	assert_int_equals(ClientHeartbeat, header.MessageType);
-	assert_int_equals(0, header.MatchingUnit);
-	assert_int_equals(0, header.SequenceNumber);
+	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
+	assert_int_equals(8, msg->header.MessageLength);
+	assert_int_equals(ClientHeartbeat, msg->header.MessageType);
+	assert_int_equals(0, msg->header.MatchingUnit);
+	assert_int_equals(0, msg->header.SequenceNumber);
+
+	free(msg);
 
 	buffer_delete(buf);
 
@@ -185,7 +191,7 @@ void test_boe_client_heartbeat(void)
 void test_boe_logout(void)
 {
 	struct boe_logout *logout;
-	struct boe_header header;
+	struct boe_message *msg;
 	struct buffer *buf;
 	int fd;
 
@@ -196,16 +202,16 @@ void test_boe_logout(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	fail_if(boe_decode_header(buf, &header) < 0);
+	msg = boe_decode_message(buf);
+	fail_if(msg == NULL);
 
-	assert_int_equals(BOE_MAGIC, header.StartOfMessage);
-	assert_int_equals(89, header.MessageLength);
-	assert_int_equals(Logout, header.MessageType);
-	assert_int_equals(0, header.MatchingUnit);
-	assert_int_equals(0, header.SequenceNumber);
+	logout = boe_message_payload(msg);
 
-	logout = boe_decode_logout(&header, buf);
-	assert_true(logout != NULL);
+	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
+	assert_int_equals(89, msg->header.MessageLength);
+	assert_int_equals(Logout, msg->header.MessageType);
+	assert_int_equals(0, msg->header.MatchingUnit);
+	assert_int_equals(0, msg->header.SequenceNumber);
 
 	assert_int_equals('U', logout->LogoutReason);
 	assert_mem_equals("User", logout->LogoutReasonText, 4);
@@ -222,9 +228,9 @@ void test_boe_logout(void)
 	assert_int_equals(4, logout->Units[2].UnitNumber);
 	assert_int_equals(41337, logout->Units[2].UnitSequence);
 
+	free(msg);
+
 	buffer_delete(buf);
 
 	fail_if(close(fd) < 0);
-
-	free(logout);
 }
