@@ -189,7 +189,7 @@ $(TEST_SUITE_H): $(FORCE)
 	$(E) "  GEN     " $@
 	$(Q) sh scripts/gen-test-proto "$(TEST_SRC)" > $@
 
-$(TEST_PROGRAM): $(TEST_SUITE_H) $(TEST_DEPS) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(LIB_FILE) $(BOE_TEST_DATA)
+$(TEST_PROGRAM): $(TEST_SUITE_H) $(TEST_RUNNER_C) $(TEST_DEPS) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(LIB_FILE) $(BOE_TEST_DATA)
 	$(E) "  LINK    " $@
 	$(E) "  LINK    " $<
 	$(Q) $(CC) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(TEST_LIBS) -o $(TEST_PROGRAM)
