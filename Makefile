@@ -175,6 +175,7 @@ test: $(TEST_PROGRAMS)
 BOE_TEST_DATA += test/protocol/boe/login-request-message.bin
 BOE_TEST_DATA += test/protocol/boe/logout-request-message.bin
 BOE_TEST_DATA += test/protocol/boe/client-heartbeat-message.bin
+BOE_TEST_DATA += test/protocol/boe/login-response-message.bin
 BOE_TEST_DATA += test/protocol/boe/logout-message.bin
 
 %.bin: %.hexdump

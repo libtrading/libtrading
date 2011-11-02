@@ -104,6 +104,10 @@ struct boe_header {
 #define BOE_USERNAME_LEN		4
 #define BOE_PASSWORD_LEN		10
 
+/*
+ *	Participant to BATS
+ */
+
 struct boe_login_request_unit {
 	uint8_t				UnitNumber;
 	uint32_t			UnitSequence;
@@ -129,6 +133,32 @@ struct boe_login_request {
 	struct boe_login_request_unit	Units[];
 } packed;
 
+/*
+ *	BATS to Participant
+ */
+
+#define BOE_LOGIN_RESPONSE_TEXT_LEN	60
+
+struct boe_login_response {
+	uint8_t				LoginResponseStatus;
+	char				LoginResponseText[BOE_LOGIN_RESPONSE_TEXT_LEN];
+	uint8_t				NoUnspecifiedUnitReplay;
+	uint64_t			OrderAcknowledgementBitfields;
+	uint64_t			OrderRejectedBitfields;
+	uint64_t			OrderModifiedBitfields;
+	uint64_t			OrderRestatedBitfields;
+	uint64_t			UserModifyRejectedBitfields;
+	uint64_t			OrderCancelledBitfields;
+	uint64_t			CancelRejectedBitfields;
+	uint64_t			OrderExecutionBitfields;
+	uint64_t			TradeCancelOrCorrectBitfields;
+	uint64_t			ReservedBitfields1;
+	uint64_t			ReservedBitfields2;
+	uint32_t			LastReceivedSequenceNumber;
+	uint8_t				NumberOfUnits;
+	struct boe_login_request_unit	Units[];
+} packed;
+
 #define BOE_LOGOUT_REASON_TEXT_LEN	60
 
 struct boe_logout {
@@ -141,6 +171,7 @@ struct boe_logout {
 
 int boe_decode_header(struct buffer *buf, struct boe_header *header);
 struct boe_login_request *boe_decode_login_request(struct boe_header *header, struct buffer *buf);
+struct boe_login_response *boe_decode_login_response(struct boe_header *header, struct buffer *buf);
 struct boe_logout *boe_decode_logout(struct boe_header *header, struct buffer *buf);
 
 #endif /* FIX__BOE_H */
