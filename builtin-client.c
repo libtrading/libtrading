@@ -1,6 +1,7 @@
 #include "fix/builtins.h"
 #include "fix/message.h"
 #include "fix/session.h"
+#include "fix/core.h"
 #include "fix/die.h"
 
 #include <netinet/tcp.h>
@@ -15,9 +16,62 @@
 #include <netdb.h>
 #include <stdio.h>
 
+struct protocol_info {
+	const char		*name;
+	int			(*session_initiate)(int incoming_fd);
+};
+
+static int fix_session_initiate(int sockfd)
+{
+	struct fix_session *session;
+	int retval;
+
+	session	= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
+	if (!session)
+		die("unable to allocate fix session");
+
+	if (fix_session_logon(session)) {
+		printf("Logon OK\n");
+		retval = 0;
+	} else {
+		printf("Logon FAILED\n");
+		retval = 1;
+	}
+
+	if (fix_session_logout(session)) {
+		printf("Logout OK\n");
+		retval = 0;
+	} else {
+		printf("Logout FAILED\n");
+		retval = 1;
+	}
+
+	fix_session_free(session);
+
+	return retval;
+}
+
+static const struct protocol_info protocols[] = {
+	{ "fix",		fix_session_initiate },
+	{ NULL,			NULL }
+};
+
+static const struct protocol_info *lookup_protocol_info(const char *name)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(protocols); i++) {
+		const struct protocol_info *proto_info = &protocols[i];
+
+		if (!strcmp(proto_info->name, name))
+			return proto_info;
+	}
+	return NULL;
+}
+
 static void usage(void)
 {
-	printf("\n  usage: fix client [hostname] [port]\n\n");
+	printf("\n  usage: fix client [hostname] [port] [protocol]\n\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -28,21 +82,29 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 
 int cmd_client(int argc, char *argv[])
 {
-	struct fix_session *session;
+	const struct protocol_info *proto_info;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
 	struct hostent *he;
+	const char *proto;
 	const char *host;
 	int sockfd = -1;
 	int retval;
 	char **ap;
 	int port;
 
-	if (argc != 4)
+	if (argc != 5)
 		usage();
 
-	host = argv[2];
-	port = atoi(argv[3]);
+	host	= argv[2];
+	port	= atoi(argv[3]);
+	proto	= argv[4];
+
+	proto_info = lookup_protocol_info(proto);
+	if (!proto_info) {
+		printf("Unsupported protocol '%s'\n", proto);
+		exit(EXIT_FAILURE);
+	}
 
 	he = gethostbyname(argv[2]);
 	if (!he)
@@ -76,27 +138,7 @@ int cmd_client(int argc, char *argv[])
 	if (socket_setopt(sockfd, SOL_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	session	= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
-	if (!session)
-		die("unable to allocate fix session");
-
-	if (fix_session_logon(session)) {
-		printf("Logon OK\n");
-		retval = 0;
-	} else {
-		printf("Logon FAILED\n");
-		retval = 1;
-	}
-
-	if (fix_session_logout(session)) {
-		printf("Logout OK\n");
-		retval = 0;
-	} else {
-		printf("Logout FAILED\n");
-		retval = 1;
-	}
-
-	fix_session_free(session);
+	retval = proto_info->session_initiate(sockfd);
 
 	shutdown(sockfd, SHUT_RDWR);
 
