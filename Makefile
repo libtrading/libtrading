@@ -177,6 +177,7 @@ BOE_TEST_DATA += test/protocol/boe/logout-request-message.bin
 BOE_TEST_DATA += test/protocol/boe/client-heartbeat-message.bin
 BOE_TEST_DATA += test/protocol/boe/login-response-message.bin
 BOE_TEST_DATA += test/protocol/boe/logout-message.bin
+BOE_TEST_DATA += test/protocol/boe/server-heartbeat-message.bin
 
 %.bin: %.hexdump
 	$(E) "  XXD     " $@
