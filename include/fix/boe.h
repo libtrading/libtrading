@@ -1,6 +1,8 @@
 #ifndef FIX__BOE_H
 #define FIX__BOE_H
 
+#include "trading/types.h"
+
 #include <stdint.h>
 
 struct buffer;
@@ -39,11 +41,11 @@ enum {
 #define packed				__attribute__ ((packed))
 
 struct boe_header {
-	uint16_t			StartOfMessage;
-	uint16_t			MessageLength;
-	uint8_t				MessageType;
-	uint8_t				MatchingUnit;
-	uint32_t			SequenceNumber;
+	le16				StartOfMessage;
+	le16				MessageLength;
+	u8				MessageType;
+	u8				MatchingUnit;
+	le32				SequenceNumber;
 } packed;
 
 struct boe_message {
@@ -113,27 +115,27 @@ struct boe_message {
  */
 
 struct boe_login_request_unit {
-	uint8_t				UnitNumber;
-	uint32_t			UnitSequence;
+	u8				UnitNumber;
+	le32				UnitSequence;
 } packed;
 
 struct boe_login_request {
 	char				SessionSubID[BOE_SESSION_SUB_ID_LEN];
 	char				Username[BOE_USERNAME_LEN];
 	char				Password[BOE_PASSWORD_LEN];
-	uint8_t				NoUnspecifiedUnitReplay;
-	uint64_t			OrderAcknowledgementBitfields;
-	uint64_t			OrderRejectedBitfields;
-	uint64_t			OrderModifiedBitfields;
-	uint64_t			OrderRestatedBitfields;
-	uint64_t			UserModifyRejectedBitfields;
-	uint64_t			OrderCancelledBitfields;
-	uint64_t			CancelRejectedBitfields;
-	uint64_t			OrderExecutionBitfields;
-	uint64_t			TradeCancelOrCorrectBitfields;
-	uint64_t			ReservedBitfields1;
-	uint64_t			ReservedBitfields2;
-	uint8_t				NumberOfUnits;
+	u8				NoUnspecifiedUnitReplay;
+	le64				OrderAcknowledgementBitfields;
+	le64				OrderRejectedBitfields;
+	le64				OrderModifiedBitfields;
+	le64				OrderRestatedBitfields;
+	le64				UserModifyRejectedBitfields;
+	le64				OrderCancelledBitfields;
+	le64				CancelRejectedBitfields;
+	le64				OrderExecutionBitfields;
+	le64				TradeCancelOrCorrectBitfields;
+	le64				ReservedBitfields1;
+	le64				ReservedBitfields2;
+	u8				NumberOfUnits;
 	struct boe_login_request_unit	Units[];
 } packed;
 
@@ -144,32 +146,32 @@ struct boe_login_request {
 #define BOE_LOGIN_RESPONSE_TEXT_LEN	60
 
 struct boe_login_response {
-	uint8_t				LoginResponseStatus;
+	u8				LoginResponseStatus;
 	char				LoginResponseText[BOE_LOGIN_RESPONSE_TEXT_LEN];
-	uint8_t				NoUnspecifiedUnitReplay;
-	uint64_t			OrderAcknowledgementBitfields;
-	uint64_t			OrderRejectedBitfields;
-	uint64_t			OrderModifiedBitfields;
-	uint64_t			OrderRestatedBitfields;
-	uint64_t			UserModifyRejectedBitfields;
-	uint64_t			OrderCancelledBitfields;
-	uint64_t			CancelRejectedBitfields;
-	uint64_t			OrderExecutionBitfields;
-	uint64_t			TradeCancelOrCorrectBitfields;
-	uint64_t			ReservedBitfields1;
-	uint64_t			ReservedBitfields2;
-	uint32_t			LastReceivedSequenceNumber;
-	uint8_t				NumberOfUnits;
+	u8				NoUnspecifiedUnitReplay;
+	le64				OrderAcknowledgementBitfields;
+	le64				OrderRejectedBitfields;
+	le64				OrderModifiedBitfields;
+	le64				OrderRestatedBitfields;
+	le64				UserModifyRejectedBitfields;
+	le64				OrderCancelledBitfields;
+	le64				CancelRejectedBitfields;
+	le64				OrderExecutionBitfields;
+	le64				TradeCancelOrCorrectBitfields;
+	le64				ReservedBitfields1;
+	le64				ReservedBitfields2;
+	le32				LastReceivedSequenceNumber;
+	u8				NumberOfUnits;
 	struct boe_login_request_unit	Units[];
 } packed;
 
 #define BOE_LOGOUT_REASON_TEXT_LEN	60
 
 struct boe_logout {
-	uint8_t				LogoutReason;
+	u8				LogoutReason;
 	char				LogoutReasonText[BOE_LOGOUT_REASON_TEXT_LEN];
-	uint32_t			LastReceivedSequenceNumber;
-	uint8_t				NumberOfUnits;
+	le32				LastReceivedSequenceNumber;
+	u8				NumberOfUnits;
 	struct boe_login_request_unit	Units[];
 } packed;
 
