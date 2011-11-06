@@ -1,7 +1,5 @@
 - Don't do direct malloc() - we need to able to use mlock()'d memory pool
 - TLSF - 'realtime' malloc()
 - xread()/xwrite()
-- make check requires clean
-- Licensing (GPL + linking exception, BSD?)
 - Fix overflows in message parsing
 - Latency test
