@@ -114,7 +114,7 @@ struct boe_message {
  *	Participant to BATS
  */
 
-struct boe_login_request_unit {
+struct boe_unit {
 	u8				UnitNumber;
 	le32				UnitSequence;
 } packed;
@@ -136,7 +136,7 @@ struct boe_login_request {
 	le64				ReservedBitfields1;
 	le64				ReservedBitfields2;
 	u8				NumberOfUnits;
-	struct boe_login_request_unit	Units[];
+	struct boe_unit			Units[];
 } packed;
 
 /*
@@ -162,7 +162,7 @@ struct boe_login_response {
 	le64				ReservedBitfields2;
 	le32				LastReceivedSequenceNumber;
 	u8				NumberOfUnits;
-	struct boe_login_request_unit	Units[];
+	struct boe_unit			Units[];
 } packed;
 
 #define BOE_LOGOUT_REASON_TEXT_LEN	60
@@ -172,7 +172,7 @@ struct boe_logout {
 	char				LogoutReasonText[BOE_LOGOUT_REASON_TEXT_LEN];
 	le32				LastReceivedSequenceNumber;
 	u8				NumberOfUnits;
-	struct boe_login_request_unit	Units[];
+	struct boe_unit			Units[];
 } packed;
 
 struct boe_message *boe_decode_message(struct buffer *buf);
