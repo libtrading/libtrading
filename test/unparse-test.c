@@ -1,8 +1,8 @@
 #include "fix/test/harness.h"
 #include "test-suite.h"
 
+#include "trading/fix_message.h"
 #include "fix/buffer.h"
-#include "fix/field.h"
 
 #include <string.h>
 

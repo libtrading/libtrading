@@ -1,8 +1,10 @@
 #include "fix/builtins.h"
-#include "fix/message.h"
-#include "fix/session.h"
+
 #include "fix/core.h"
 #include "fix/die.h"
+
+#include "trading/fix_message.h"
+#include "trading/fix_session.h"
 
 #include <netinet/tcp.h>
 #include <netinet/in.h>

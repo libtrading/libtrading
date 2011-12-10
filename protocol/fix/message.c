@@ -1,8 +1,7 @@
-#include "fix/message.h"
+#include "trading/fix_message.h"
 
 #include "fix/read-write.h"
 #include "fix/buffer.h"
-#include "fix/field.h"
 #include "fix/core.h"
 
 #include <inttypes.h>

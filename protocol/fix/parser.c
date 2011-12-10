@@ -1,4 +1,4 @@
-#include "fix/message.h"
+#include "trading/fix_message.h"
 
 #include "fix/buffer.h"
 

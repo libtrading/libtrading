@@ -1,6 +1,6 @@
-#include "fix/session.h"
+#include "trading/fix_session.h"
 
-#include "fix/message.h"
+#include "trading/fix_message.h"
 
 #include <stdlib.h>
 
