@@ -3,8 +3,8 @@
 tags
 latency-test
 libtrading.a
-/fix
-/test-fix
+/trade
+/test-trade
 test/test-runner.c
 test/test-suite.h
 test/protocol/boe/*.bin

@@ -52,7 +52,7 @@ endif
 export E Q
 
 # Project files
-PROGRAMS := fix 
+PROGRAMS := trade 
 
 DEFINES =
 INCLUDES =
@@ -78,12 +78,12 @@ ifeq ($(uname_S),SunOS)
 	COMPAT_OBJS += compat/strndup.o
 endif
 
-fix_EXTRA_DEPS += builtin-client.o
-fix_EXTRA_DEPS += builtin-server.o
-fix_EXTRA_DEPS += die.o
-fix_EXTRA_DEPS += fix.o
+trade_EXTRA_DEPS += builtin-client.o
+trade_EXTRA_DEPS += builtin-server.o
+trade_EXTRA_DEPS += die.o
+trade_EXTRA_DEPS += trade.o
 
-fix_EXTRA_DEPS += $(COMPAT_DEPS)
+trade_EXTRA_DEPS += $(COMPAT_DEPS)
 
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
@@ -108,7 +108,7 @@ LIB_OBJS	+= read-write.o
 
 LIB_DEPS	:= $(patsubst %.o,%.d,$(LIB_OBJS))
 
-TEST_PROGRAM	:= test-fix
+TEST_PROGRAM	:= test-trade
 TEST_SUITE_H	:= test/test-suite.h
 TEST_RUNNER_C	:= test/test-runner.c
 TEST_RUNNER_OBJ := test/test-runner.o
