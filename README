@@ -1,18 +1,17 @@
-					libfix
-				a FIX protocol library
+libtrading - an electronic trading library
 
-== What is libfix?
+About
+=====
 
-Libfix is a FIX protocol library written in C for POSIX-ish operating systems.
+Libtrading is a library that attempts to implement all protocols used for
+electronic trading across the world.
 
-== Features
 
-- FIX 4.4
+Features
+========
 
-== What is the FIX protocol?
+The following protocols are supported:
 
-The Financial Information eXchange (FIX) Protocol is the de facto messaging
-protocol used in electronic trading. See the following URL for further
-information on FIX:
-
-  http://fixprotocol.org/
+- BOE (incomplete)
+- FIX 4.4 (incomplete)
+- ITCH 4.1 (incomplete)
