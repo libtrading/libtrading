@@ -8,7 +8,7 @@
 #define BOE_MAGIC_LEN		sizeof(uint16_t)
 #define BOE_MSG_LENGTH_LEN	sizeof(uint16_t)
 
-struct boe_message *boe_decode_message(struct buffer *buf)
+struct boe_message *boe_message_decode(struct buffer *buf)
 {
 	struct boe_message *msg;
 	uint16_t magic, len;

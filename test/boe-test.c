@@ -26,7 +26,7 @@ void test_boe_login_request(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_decode_message(buf);
+	msg = boe_message_decode(buf);
 	fail_if(msg == NULL);
 
 	login = boe_message_payload(msg);
@@ -84,7 +84,7 @@ void test_boe_login_response(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_decode_message(buf);
+	msg = boe_message_decode(buf);
 	fail_if(msg == NULL);
 
 	login = boe_message_payload(msg);
@@ -143,7 +143,7 @@ void test_boe_logout_request(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_decode_message(buf);
+	msg = boe_message_decode(buf);
 	fail_if(msg == NULL);
 
 	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
@@ -172,7 +172,7 @@ void test_boe_client_heartbeat(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_decode_message(buf);
+	msg = boe_message_decode(buf);
 	fail_if(msg == NULL);
 
 	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
@@ -202,7 +202,7 @@ void test_boe_logout(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_decode_message(buf);
+	msg = boe_message_decode(buf);
 	fail_if(msg == NULL);
 
 	logout = boe_message_payload(msg);
@@ -248,7 +248,7 @@ void test_boe_server_heartbeat(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_decode_message(buf);
+	msg = boe_message_decode(buf);
 	fail_if(msg == NULL);
 
 	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
@@ -277,7 +277,7 @@ void test_boe_replay_complete(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_decode_message(buf);
+	msg = boe_message_decode(buf);
 	fail_if(msg == NULL);
 
 	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);

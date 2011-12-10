@@ -173,7 +173,7 @@ struct boe_logout {
 	struct boe_unit			Units[];
 } packed;
 
-struct boe_message *boe_decode_message(struct buffer *buf);
+struct boe_message *boe_message_decode(struct buffer *buf);
 
 static inline void *boe_message_payload(struct boe_message *msg)
 {
