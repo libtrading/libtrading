@@ -1,5 +1,5 @@
-#ifndef FIX__SESSION_H
-#define FIX__SESSION_H
+#ifndef LIBTRADING_FIX_SESSION_H
+#define LIBTRADING_FIX_SESSION_H
 
 #include <stdbool.h>
 
@@ -27,4 +27,4 @@ int fix_session_send(struct fix_session *self, struct fix_message *msg, int flag
 bool fix_session_logon(struct fix_session *session);
 bool fix_session_logout(struct fix_session *session);
 
-#endif /* FIX__SESSION_H */
+#endif /* LIBTRADING_FIX_SESSION_H */
