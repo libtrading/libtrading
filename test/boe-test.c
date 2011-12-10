@@ -1,8 +1,8 @@
 #include "fix/test/harness.h"
 #include "test-suite.h"
 
+#include "trading/boe_message.h"
 #include "fix/buffer.h"
-#include "fix/boe.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

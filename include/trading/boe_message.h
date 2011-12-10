@@ -1,5 +1,5 @@
-#ifndef FIX__BOE_H
-#define FIX__BOE_H
+#ifndef LIBTRADING_BOE_MESSAGE_H
+#define LIBTRADING_BOE_MESSAGE_H
 
 #include "trading/types.h"
 
@@ -180,4 +180,4 @@ static inline void *boe_message_payload(struct boe_message *msg)
 	return (void *) msg + sizeof(struct boe_header);
 }
 
-#endif /* FIX__BOE_H */
+#endif /* LIBTRADING_BOE_MESSAGE_H */

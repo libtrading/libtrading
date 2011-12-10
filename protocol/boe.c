@@ -1,4 +1,4 @@
-#include "fix/boe.h"
+#include "trading/boe_message.h"
 
 #include "fix/buffer.h"
 
