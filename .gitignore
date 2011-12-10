@@ -8,3 +8,4 @@ libtrading.a
 test/test-runner.c
 test/test-suite.h
 test/protocol/boe/*.bin
+/docs

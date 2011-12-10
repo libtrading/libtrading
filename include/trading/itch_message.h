@@ -3,8 +3,10 @@
 
 struct buffer;
 
+/** @file */
+
 /*
- *	ITCH 4.1 protocol data structures
+ *	ITCH 4.1 protocol implementation
  */
 
 #include "trading/types.h"
@@ -205,6 +207,16 @@ struct itch_msg_noii {
 	char			PriceVariationIndicator;
 } packed;
 
+/**
+ * Decode an ITCH message.
+ *
+ * This function decodes.
+ *
+ * @param buf buffer to decode message from
+ * @return pointer to struct itch_message if successful, or NULL if an error occurred
+ * @note If this function returns a non-NULL pointer, the message is consumed
+ * from the buffer.
+ */
 struct itch_message *itch_message_decode(struct buffer *buf);
 
 #endif /* LIBTRADING_ITCH_MESSAGE_H */
