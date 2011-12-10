@@ -1,8 +1,8 @@
 #include "trading/fix_message.h"
 
-#include "fix/read-write.h"
-#include "fix/buffer.h"
-#include "fix/core.h"
+#include "trading/read-write.h"
+#include "trading/buffer.h"
+#include "trading/core.h"
 
 #include <inttypes.h>
 #include <sys/uio.h>

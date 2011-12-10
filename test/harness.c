@@ -1,4 +1,4 @@
-#include "fix/test/harness.h"
+#include "test/harness.h"
 
 #include <stdlib.h>
 #include <string.h>

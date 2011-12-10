@@ -1,6 +1,6 @@
-#include "fix/builtins.h"
-#include "fix/core.h"
-#include "fix/die.h"
+#include "trading/builtins.h"
+#include "trading/core.h"
+#include "trading/die.h"
 
 #include "trading/fix_message.h"
 #include "trading/fix_session.h"

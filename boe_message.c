@@ -1,6 +1,6 @@
 #include "trading/boe_message.h"
 
-#include "fix/buffer.h"
+#include "trading/buffer.h"
 
 #include <stdlib.h>
 #include <string.h>
