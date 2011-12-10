@@ -15,3 +15,11 @@ The following protocols are supported:
 - BOE (incomplete)
 - FIX 4.4 (incomplete)
 - ITCH 4.1 (incomplete)
+
+
+References
+==========
+
+ [BOE]  http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf
+
+ [ITCH] http://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTV-ITCH-V4_1.pdf
