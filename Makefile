@@ -104,6 +104,7 @@ LIB_OBJS	+= protocol/boe.o
 LIB_OBJS	+= protocol/fix/message.o
 LIB_OBJS	+= protocol/fix/parser.o
 LIB_OBJS	+= protocol/fix/session.o
+LIB_OBJS	+= protocol/itch.o
 LIB_OBJS	+= read-write.o
 
 LIB_DEPS	:= $(patsubst %.o,%.d,$(LIB_OBJS))

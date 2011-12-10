@@ -38,8 +38,6 @@ enum {
 	TradeCancelOrCorrect		= 0x12,
 };
 
-#define packed				__attribute__ ((packed))
-
 struct boe_header {
 	le16				StartOfMessage;
 	le16				MessageLength;
