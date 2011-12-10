@@ -207,6 +207,7 @@ check: $(TEST_PROGRAM) $(PROGRAMS)
 
 clean:
 	$(E) "  CLEAN"
+	$(Q) find -name "*.o" | xargs rm -f
 	$(Q) rm -f $(LIB_FILE) $(LIB_OBJS) $(LIB_DEPS)
 	$(Q) rm -f $(PROGRAMS) $(OBJS) $(DEPS) $(TEST_PROGRAM) $(TEST_SUITE_H) $(TEST_OBJS) $(TEST_DEPS) $(TEST_RUNNER_C) $(TEST_RUNNER_OBJ)
 	$(Q) rm -f $(BOE_TEST_DATA)
