@@ -167,8 +167,8 @@ $(LIB_FILE): $(LIB_DEPS) $(LIB_OBJS)
 	$(E) "  AR      " $@
 	$(Q) rm -f $@ && $(AR) rcs $@ $(LIB_OBJS)
 
-test: $(TEST_PROGRAMS)
-	$(E) "  CHECK"
+test: $(TEST_PROGRAM)
+	$(E) "  TEST"
 	$(Q) ./$(TEST_PROGRAM)
 .PHONY: test
 
