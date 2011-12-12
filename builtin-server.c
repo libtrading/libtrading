@@ -77,7 +77,7 @@ static const struct protocol_info *lookup_protocol_info(const char *name)
 
 static void usage(void)
 {
-	printf("\n  usage: fix server -p [port] -c [protocol]\n\n");
+	printf("\n  usage: trade server -p [port] -c [protocol]\n\n");
 }
 
 static int socket_setopt(int sockfd, int level, int optname, int optval)

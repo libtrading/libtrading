@@ -73,7 +73,7 @@ static const struct protocol_info *lookup_protocol_info(const char *name)
 
 static void usage(void)
 {
-	printf("\n  usage: fix client [hostname] [port] [protocol]\n\n");
+	printf("\n  usage: trade client [hostname] [port] [protocol]\n\n");
 	exit(EXIT_FAILURE);
 }
 

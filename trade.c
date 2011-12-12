@@ -34,10 +34,10 @@ static struct builtin_cmd *parse_builtin_cmd(int argc, char *argv[])
 
 static void usage(void)
 {
-	printf("\n usage: fix COMMAND [ARGS]\n");
+	printf("\n usage: trade COMMAND [ARGS]\n");
 	printf("\n The commands are:\n");
-	printf("   client    FIX client\n");
-	printf("   server    FIX server\n");
+	printf("   client    start a client\n");
+	printf("   server    start a server\n");
 	printf("\n");
 	exit(EXIT_FAILURE);
 }
