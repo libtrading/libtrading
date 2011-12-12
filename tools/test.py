@@ -10,7 +10,7 @@ def start(program, *args):
   return pid
 
 def wait():
-  return os.wait()[1]
+  return os.wait()[1] >> 8
 
 def main():
   server_pid = start("./trade", "server", "-p", "9000", "-c", "fix")
@@ -18,7 +18,7 @@ def main():
   result = 1
   try:
     start("./trade", "client", "localhost", "9000", "fix")
-    result = os.wait()[1] >> 8
+    result = wait()
   finally:
     os.kill(server_pid, signal.SIGKILL)
     sys.exit(result)
