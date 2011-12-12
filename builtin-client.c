@@ -137,7 +137,7 @@ int cmd_client(int argc, char *argv[])
 	if (sockfd < 0)
 		error("Unable to connect to a socket (%s)", strerror(saved_errno));
 
-	if (socket_setopt(sockfd, SOL_TCP, TCP_NODELAY, 1) < 0)
+	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
 	retval = proto_info->session_initiate(sockfd);

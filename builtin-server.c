@@ -123,7 +123,7 @@ int cmd_server(int argc, char *argv[])
 	if (sockfd < 0)
 		die("cannot create socket");
 
-	if (socket_setopt(sockfd, SOL_TCP, TCP_NODELAY, 1) < 0)
+	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
 	if (socket_setopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 1) < 0)
@@ -152,7 +152,7 @@ int cmd_server(int argc, char *argv[])
 		if (incoming_fd < 0)
 			die("accept failed");
 
-		if (socket_setopt(incoming_fd, SOL_TCP, TCP_NODELAY, 1) < 0)
+		if (socket_setopt(incoming_fd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 			die("cannot set socket option TCP_NODELAY");
 
 		proto_info->session_accept(incoming_fd);
