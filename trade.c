@@ -53,5 +53,5 @@ int main(int argc, char *argv[])
 	if (!cmd)
 		usage();
 
-	return cmd->cmd_fn(argc, argv);
+	return cmd->cmd_fn(argc - 1, argv + 1);
 }

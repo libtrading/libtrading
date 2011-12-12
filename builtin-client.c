@@ -95,12 +95,12 @@ int cmd_client(int argc, char *argv[])
 	char **ap;
 	int port;
 
-	if (argc != 5)
+	if (argc != 4)
 		usage();
 
-	host	= argv[2];
-	port	= atoi(argv[3]);
-	proto	= argv[4];
+	host	= argv[1];
+	port	= atoi(argv[2]);
+	proto	= argv[3];
 
 	proto_info = lookup_protocol_info(proto);
 	if (!proto_info) {
@@ -108,7 +108,7 @@ int cmd_client(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	he = gethostbyname(argv[2]);
+	he = gethostbyname(host);
 	if (!he)
 		error("Unable to look up %s (%s)", host, hstrerror(h_errno));
 
