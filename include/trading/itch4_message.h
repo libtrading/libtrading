@@ -15,23 +15,23 @@ struct buffer;
  *	ITCH 4.1 Message Types
  */
 enum itch4_msg_type {
-	ITCH_MSG_TIMESTAMP_SECONDS		= 'T',	/* Section 4.1 */
-	ITCH_MSG_SYSTEM_EVENT			= 'S',	/* Section 4.2 */
-	ITCH_MSG_STOCK_DIRECTORY		= 'R',	/* Section 4.3.1. */
-	ITCH_MSG_STOCK_TRADING_ACTION		= 'H',	/* Section 4.3.2. */
-	ITCH_MSG_REG_SHO_RESTRICTION		= 'Y',	/* Section 4.3.3. */
-	ITCH_MSG_MARKET_PARTICIPANT_POS		= 'L',	/* Section 4.3.4. */
-	ITCH_MSG_ADD_ORDER			= 'A',	/* Section 4.4.1. */
-	ITCH_MSG_ADD_ORDER_MPID			= 'F',	/* Section 4.4.2. */
-	ITCH_MSG_ORDER_EXECUTED			= 'E',	/* Section 4.5.1. */
-	ITCH_MSG_ORDER_EXECUTED_WITH_PRICE	= 'C',	/* Section 4.5.2. */
-	ITCH_MSG_ORDER_CANCEL			= 'X',	/* Section 4.5.3. */
-	ITCH_MSG_ORDER_DELETE			= 'D',	/* Section 4.5.4. */
-	ITCH_MSG_ORDER_REPLACE			= 'U',	/* Section 4.5.5. */
-	ITCH_MSG_TRADE				= 'P',	/* Section 4.6.1. */
-	ITCH_MSG_CROSS_TRADE			= 'Q',	/* Section 4.6.2. */
-	ITCH_MSG_BROKEN_TRADE			= 'B',	/* Section 4.6.3. */
-	ITCH_MSG_NOII				= 'I',	/* Section 4.7. */
+	ITCH4_MSG_TIMESTAMP_SECONDS		= 'T',	/* Section 4.1 */
+	ITCH4_MSG_SYSTEM_EVENT			= 'S',	/* Section 4.2 */
+	ITCH4_MSG_STOCK_DIRECTORY		= 'R',	/* Section 4.3.1. */
+	ITCH4_MSG_STOCK_TRADING_ACTION		= 'H',	/* Section 4.3.2. */
+	ITCH4_MSG_REG_SHO_RESTRICTION		= 'Y',	/* Section 4.3.3. */
+	ITCH4_MSG_MARKET_PARTICIPANT_POS	= 'L',	/* Section 4.3.4. */
+	ITCH4_MSG_ADD_ORDER			= 'A',	/* Section 4.4.1. */
+	ITCH4_MSG_ADD_ORDER_MPID		= 'F',	/* Section 4.4.2. */
+	ITCH4_MSG_ORDER_EXECUTED		= 'E',	/* Section 4.5.1. */
+	ITCH4_MSG_ORDER_EXECUTED_WITH_PRICE	= 'C',	/* Section 4.5.2. */
+	ITCH4_MSG_ORDER_CANCEL			= 'X',	/* Section 4.5.3. */
+	ITCH4_MSG_ORDER_DELETE			= 'D',	/* Section 4.5.4. */
+	ITCH4_MSG_ORDER_REPLACE			= 'U',	/* Section 4.5.5. */
+	ITCH4_MSG_TRADE				= 'P',	/* Section 4.6.1. */
+	ITCH4_MSG_CROSS_TRADE			= 'Q',	/* Section 4.6.2. */
+	ITCH4_MSG_BROKEN_TRADE			= 'B',	/* Section 4.6.3. */
+	ITCH4_MSG_NOII				= 'I',	/* Section 4.7. */
 };
 
 /*
@@ -39,17 +39,17 @@ enum itch4_msg_type {
  */
 enum itch4_event_code {
 	/* Daily */
-	ITCH_EVENT_START_OF_MESSAGES		= 'O',
-	ITCH_EVENT_START_OF_SYSTEM_HOURS	= 'S',
-	ITCH_EVENT_START_OF_MARKET_HOURS	= 'Q',
-	ITCH_EVENT_END_OF_MARKET_HOURS		= 'M',
-	ITCH_EVENT_END_OF_SYSTEM_HOURS		= 'E',
-	ITCH_EVENT_END_OF_MESSAGES		= 'C',
+	ITCH4_EVENT_START_OF_MESSAGES		= 'O',
+	ITCH4_EVENT_START_OF_SYSTEM_HOURS	= 'S',
+	ITCH4_EVENT_START_OF_MARKET_HOURS	= 'Q',
+	ITCH4_EVENT_END_OF_MARKET_HOURS		= 'M',
+	ITCH4_EVENT_END_OF_SYSTEM_HOURS		= 'E',
+	ITCH4_EVENT_END_OF_MESSAGES		= 'C',
 
 	/* As needed */
-	ITCH_EVENT_EMERGENCY_HALT		= 'A',
-	ITCH_EVENT_EMERGENCY_QUOTE_ONLY		= 'R',
-	ITCH_EVENT_EMERGENCY_RESUMPTION		= 'B',
+	ITCH4_EVENT_EMERGENCY_HALT		= 'A',
+	ITCH4_EVENT_EMERGENCY_QUOTE_ONLY	= 'R',
+	ITCH4_EVENT_EMERGENCY_RESUMPTION	= 'B',
 };
 
 struct itch4_message {

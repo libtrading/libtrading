@@ -8,39 +8,39 @@
 static unsigned long itch4_message_size(u8 type)
 {
 	switch (type) {
-        case ITCH_MSG_TIMESTAMP_SECONDS:
+        case ITCH4_MSG_TIMESTAMP_SECONDS:
 		return sizeof(struct itch4_msg_timestamp_seconds);
-        case ITCH_MSG_SYSTEM_EVENT:
+        case ITCH4_MSG_SYSTEM_EVENT:
 		return sizeof(struct itch4_msg_system_event);
-        case ITCH_MSG_STOCK_DIRECTORY:
+        case ITCH4_MSG_STOCK_DIRECTORY:
 		return sizeof(struct itch4_msg_stock_directory);
-        case ITCH_MSG_STOCK_TRADING_ACTION:
+        case ITCH4_MSG_STOCK_TRADING_ACTION:
 		return sizeof(struct itch4_msg_stock_trading_action);
-        case ITCH_MSG_REG_SHO_RESTRICTION:
+        case ITCH4_MSG_REG_SHO_RESTRICTION:
 		return sizeof(struct itch4_msg_reg_sho_restriction);
-        case ITCH_MSG_MARKET_PARTICIPANT_POS:
+        case ITCH4_MSG_MARKET_PARTICIPANT_POS:
 		return sizeof(struct itch4_msg_market_participant_pos);
-        case ITCH_MSG_ADD_ORDER:
+        case ITCH4_MSG_ADD_ORDER:
 		return sizeof(struct itch4_msg_add_order);
-        case ITCH_MSG_ADD_ORDER_MPID:
+        case ITCH4_MSG_ADD_ORDER_MPID:
 		return sizeof(struct itch4_msg_add_order_mpid);
-        case ITCH_MSG_ORDER_EXECUTED:
+        case ITCH4_MSG_ORDER_EXECUTED:
 		return sizeof(struct itch4_msg_order_executed);
-        case ITCH_MSG_ORDER_EXECUTED_WITH_PRICE:
+        case ITCH4_MSG_ORDER_EXECUTED_WITH_PRICE:
 		return sizeof(struct itch4_msg_order_executed_with_price);
-        case ITCH_MSG_ORDER_CANCEL:
+        case ITCH4_MSG_ORDER_CANCEL:
 		return sizeof(struct itch4_msg_order_cancel);
-        case ITCH_MSG_ORDER_DELETE:
+        case ITCH4_MSG_ORDER_DELETE:
 		return sizeof(struct itch4_msg_order_delete);
-        case ITCH_MSG_ORDER_REPLACE:
+        case ITCH4_MSG_ORDER_REPLACE:
 		return sizeof(struct itch4_msg_order_replace);
-        case ITCH_MSG_TRADE:
+        case ITCH4_MSG_TRADE:
 		return sizeof(struct itch4_msg_trade);
-        case ITCH_MSG_CROSS_TRADE:
+        case ITCH4_MSG_CROSS_TRADE:
 		return sizeof(struct itch4_msg_cross_trade);
-        case ITCH_MSG_BROKEN_TRADE:
+        case ITCH4_MSG_BROKEN_TRADE:
 		return sizeof(struct itch4_msg_broken_trade);
-        case ITCH_MSG_NOII:
+        case ITCH4_MSG_NOII:
 		return sizeof(struct itch4_msg_noii);
 	default:
 		break;
