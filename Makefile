@@ -18,7 +18,6 @@ EXTRA_WARNINGS += -Wformat-security
 EXTRA_WARNINGS += -Wformat-y2k
 EXTRA_WARNINGS += -Wshadow
 EXTRA_WARNINGS += -Winit-self
-EXTRA_WARNINGS += -Wpacked
 EXTRA_WARNINGS += -Wredundant-decls
 EXTRA_WARNINGS += -Wstrict-aliasing=3
 EXTRA_WARNINGS += -Wswitch-default
