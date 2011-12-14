@@ -102,7 +102,7 @@ LIB_OBJS	+= boe_message.o
 LIB_OBJS	+= buffer.o
 LIB_OBJS	+= fix_message.o
 LIB_OBJS	+= fix_session.o
-LIB_OBJS	+= itch_message.o
+LIB_OBJS	+= itch4_message.o
 LIB_OBJS	+= read-write.o
 
 LIB_DEPS	:= $(patsubst %.o,%.d,$(LIB_OBJS))
