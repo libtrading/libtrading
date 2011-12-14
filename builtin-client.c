@@ -1,10 +1,11 @@
 #include "trading/builtins.h"
 
-#include "trading/core.h"
-#include "trading/die.h"
-
+#include "trading/soupbin_session.h"
+#include "trading/itch4_message.h"
 #include "trading/fix_message.h"
 #include "trading/fix_session.h"
+#include "trading/core.h"
+#include "trading/die.h"
 
 #include <netinet/tcp.h>
 #include <netinet/in.h>
@@ -30,7 +31,7 @@ static int fix_session_initiate(int sockfd)
 
 	session	= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
 	if (!session)
-		die("unable to allocate fix session");
+		die("unable to allocate memory for session");
 
 	if (fix_session_logon(session)) {
 		printf("Logon OK\n");
@@ -53,8 +54,66 @@ static int fix_session_initiate(int sockfd)
 	return retval;
 }
 
+static int soupbin_itch4_session_initiate(int sockfd)
+{
+	struct soupbin_session *session;
+
+	session = soupbin_session_new(sockfd);
+	if (!session)
+		die("unable to allocate memory for session");
+
+	for (;;) {
+		struct soupbin_packet *packet;
+
+		packet = soupbin_session_recv(session);
+		if (!packet)
+			break;
+
+		switch (packet->PacketType) {
+		case SOUPBIN_PACKET_DEBUG:
+			puts("Debug Packet");
+			break;
+		case SOUPBIN_PACKET_LOGIN_ACCEPTED:
+			puts("Login Accepted Packet");
+			break;
+		case SOUPBIN_PACKET_LOGIN_REJECTED:
+			puts("Login Rejected Packet");
+			break;
+		case SOUPBIN_PACKET_SEQ_DATA:
+			puts("Sequenced Data Packet");
+			break;
+		case SOUPBIN_PACKET_SERVER_HEARTBEAT:
+			puts("Server Heartbeat Packet");
+			break;
+		case SOUPBIN_PACKET_END_OF_SESSION:
+			puts("End of Session Packet");
+			break;
+		case SOUPBIN_PACKET_LOGIN_REQUEST:
+			puts("Login Request Packet");
+			break;
+		case SOUPBIN_PACKET_UNSEQ_DATA:
+			puts("Unsequenced Data Packet");
+			break;
+		case SOUPBIN_PACKET_CLIENT_HEARTBEAT:
+			puts("Client Heartbeat Packet");
+			break;
+		case SOUPBIN_PACKET_LOGOUT_REQUEST:
+			puts("Logout Request Packet");
+			break;
+		default:
+			printf("Unknown Packet: %c\n", packet->PacketType);
+			break;
+		}
+	}
+
+	soupbin_session_delete(session);
+
+	return 0;
+}
+
 static const struct protocol_info protocols[] = {
-	{ "fix",	fix_session_initiate },
+	{ "fix",		fix_session_initiate },
+	{ "soupbin-itch4",	soupbin_itch4_session_initiate },
 };
 
 static const struct protocol_info *lookup_protocol_info(const char *name)

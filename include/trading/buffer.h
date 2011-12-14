@@ -53,6 +53,11 @@ static inline uint64_t buffer_get_le64(struct buffer *self)
 		| (uint64_t) buffer_get_8(self) << 56;
 }
 
+static inline uint16_t buffer_get_be16(struct buffer *self)
+{
+	return buffer_get_8(self) << 8 | buffer_get_8(self);
+}
+
 static inline void buffer_get_n(struct buffer *self, int n, char *dst)
 {
 	int i;
@@ -97,6 +102,11 @@ static inline void buffer_to_iovec(struct buffer *b, struct iovec *iov)
 {
 	iov->iov_base	= b->data;
 	iov->iov_len	= b->offset;
+}
+
+static inline void buffer_reset(struct buffer *buf)
+{
+	buf->offset = 0;
 }
 
 #endif /* FIX__BUFFER_H */

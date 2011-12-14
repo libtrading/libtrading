@@ -6,95 +6,10 @@ struct buffer;
 /** @file */
 
 /*
- *	ITCH 4.1 / SOUP BIN TCP protocol implementation
+ *	ITCH 4.1 protocol implementation
  */
 
 #include "trading/types.h"
-
-/*
- * 	SOUP BIN TCP Packet Types
- */
-enum soup_packet_type {
-	SOUP_PACKET_DEBUG			= '+', /* Section 2.1 */
-
-	/* Section 2.2. - Packets Sent by the Server */
-	SOUP_PACKET_LOGIN_ACCEPTED		= 'A', /* Section 2.2.1. */
-	SOUP_PACKET_LOGIN_REJECTED		= 'J', /* Section 2.2.2. */
-	SOUP_PACKET_SEQ_DATA		= 'S', /* Section 2.2.3. */
-	SOUP_PACKET_SERVER_HEARTBEAT		= 'H', /* Section 2.2.4. */
-	SOUP_PACKET_END_OF_SESSION		= 'Z', /* Section 2.2.5. */
-
-	/* Section 2.3. - Packets Sent by the Client */
-	SOUP_PACKET_LOGIN_REQUEST		= 'L', /* Section 2.3.1. */
-	SOUP_PACKET_UNSEQ_DATA			= 'U', /* Section 2.3.2. */
-	SOUP_PACKET_CLIENT_HEARTBEAT		= 'R', /* Section 2.3.3. */
-	SOUP_PACKET_LOGOUT_REQUEST		= 'O', /* Section 2.3.4. */
-};
-
-struct soup_packet {
-	be16			PacketLength;
-	char			PacketType;	/* enum soup_packet_type */
-};
-
-struct soup_packet_debug {
-	be16			PacketLength;
-	char			PacketType;	/* SOUP_PACKET_DEBUG */
-	char			Text[];
-} packed;
-
-struct soup_packet_login_accepted {
-	be16			PacketLength;
-	char			PacketType;	/* SOUP_PACKET_LOGIN_ACCEPTED */
-	char			Session[10];
-	char			SequenceNumber[20];
-} packed;
-
-struct soup_packet_login_rejected {
-	be16			PacketLength;
-	char			PacketType;	/* SOUP_PACKET_LOGIN_REJECTED */
-	char			RejectReasonCode;
-} packed;
-
-struct soup_packet_seq_data {
-	be16			PacketLength;
-	char			PacketType;	/* SOUP_PACKET_SEQ_DATA */
-	char			Message[];
-} packed;
-
-struct soup_packet_server_heartbeat {
-	be16			PacketLength;
-	char			PacketType;	/* SOUP_PACKET_SERVER_HEARTBEAT */
-} packed;
-
-struct soup_packet_end_of_session {
-	be16			PacketLength;
-	char			PacketType;	/* SOUP_PACKET_END_OF_SESSION */
-} packed;
-
-struct soup_packet_login_request {
-	be16			PacketLength;
-	char			PacketType;	/* SOUP_PACKET_LOGIN_REQUEST */
-	char			Username[6];
-	char			Password[10];
-	char			RequestedSession[10];
-	char			RequestedSequenceNumber[20];
-} packed;
-
-struct soup_packet_unseq_data {
-	be16			PacketLength;
-	char			PacketType;	/* SOUP_PACKET_UNSEQ_DATA */
-	char			Message[];
-} packed;
-
-struct soup_packet_client_heartbeat {
-	be16			PacketLength;
-	char			PacketType;	/* SOUP_PACKET_CLIENT_HEARTBEAT */
-} packed;
-
-struct soup_packet_logout_request {
-	be16			PacketLength;
-	char			PacketType;	/* SOUP_PACKET_LOGOUT_REQUEST */
-} packed;
 
 /*
  *	ITCH 4.1 Message Types
