@@ -54,8 +54,7 @@ static int fix_session_initiate(int sockfd)
 }
 
 static const struct protocol_info protocols[] = {
-	{ "fix",		fix_session_initiate },
-	{ NULL,			NULL }
+	{ "fix",	fix_session_initiate },
 };
 
 static const struct protocol_info *lookup_protocol_info(const char *name)
