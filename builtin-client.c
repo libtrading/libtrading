@@ -1,6 +1,6 @@
 #include "trading/builtins.h"
 
-#include "trading/soupbin_session.h"
+#include "trading/soupbin3_session.h"
 #include "trading/itch4_message.h"
 #include "trading/fix_message.h"
 #include "trading/fix_session.h"
@@ -54,50 +54,50 @@ static int fix_session_initiate(int sockfd)
 	return retval;
 }
 
-static int soupbin_itch4_session_initiate(int sockfd)
+static int soupbin3_itch4_session_initiate(int sockfd)
 {
-	struct soupbin_session *session;
+	struct soupbin3_session *session;
 
-	session = soupbin_session_new(sockfd);
+	session = soupbin3_session_new(sockfd);
 	if (!session)
 		die("unable to allocate memory for session");
 
 	for (;;) {
-		struct soupbin_packet *packet;
+		struct soupbin3_packet *packet;
 
-		packet = soupbin_session_recv(session);
+		packet = soupbin3_session_recv(session);
 		if (!packet)
 			break;
 
 		switch (packet->PacketType) {
-		case SOUPBIN_PACKET_DEBUG:
+		case SOUPBIN3_PACKET_DEBUG:
 			puts("Debug Packet");
 			break;
-		case SOUPBIN_PACKET_LOGIN_ACCEPTED:
+		case SOUPBIN3_PACKET_LOGIN_ACCEPTED:
 			puts("Login Accepted Packet");
 			break;
-		case SOUPBIN_PACKET_LOGIN_REJECTED:
+		case SOUPBIN3_PACKET_LOGIN_REJECTED:
 			puts("Login Rejected Packet");
 			break;
-		case SOUPBIN_PACKET_SEQ_DATA:
+		case SOUPBIN3_PACKET_SEQ_DATA:
 			puts("Sequenced Data Packet");
 			break;
-		case SOUPBIN_PACKET_SERVER_HEARTBEAT:
+		case SOUPBIN3_PACKET_SERVER_HEARTBEAT:
 			puts("Server Heartbeat Packet");
 			break;
-		case SOUPBIN_PACKET_END_OF_SESSION:
+		case SOUPBIN3_PACKET_END_OF_SESSION:
 			puts("End of Session Packet");
 			break;
-		case SOUPBIN_PACKET_LOGIN_REQUEST:
+		case SOUPBIN3_PACKET_LOGIN_REQUEST:
 			puts("Login Request Packet");
 			break;
-		case SOUPBIN_PACKET_UNSEQ_DATA:
+		case SOUPBIN3_PACKET_UNSEQ_DATA:
 			puts("Unsequenced Data Packet");
 			break;
-		case SOUPBIN_PACKET_CLIENT_HEARTBEAT:
+		case SOUPBIN3_PACKET_CLIENT_HEARTBEAT:
 			puts("Client Heartbeat Packet");
 			break;
-		case SOUPBIN_PACKET_LOGOUT_REQUEST:
+		case SOUPBIN3_PACKET_LOGOUT_REQUEST:
 			puts("Logout Request Packet");
 			break;
 		default:
@@ -106,14 +106,14 @@ static int soupbin_itch4_session_initiate(int sockfd)
 		}
 	}
 
-	soupbin_session_delete(session);
+	soupbin3_session_delete(session);
 
 	return 0;
 }
 
 static const struct protocol_info protocols[] = {
 	{ "fix",		fix_session_initiate },
-	{ "soupbin-itch4",	soupbin_itch4_session_initiate },
+	{ "soupbin3-itch4",	soupbin3_itch4_session_initiate },
 };
 
 static const struct protocol_info *lookup_protocol_info(const char *name)
