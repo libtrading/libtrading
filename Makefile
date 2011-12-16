@@ -55,26 +55,10 @@ PROGRAMS := trade
 
 DEFINES =
 INCLUDES =
-CONFIG_OPTS =
-COMPAT_OBJS =
 EXTRA_LIBS =
 
-ifeq ($(uname_S),Darwin)
-	CONFIG_OPTS += -DCONFIG_NEED_STRNDUP=1
-	COMPAT_OBJS += compat/strndup.o
-
-	CONFIG_OPTS += -DCONFIG_NEED_POSIX_FALLOCATE=1
-	CONFIG_OPTS += -DCONFIG_NEED_POSIX_FADVISE=1
-endif
 ifeq ($(uname_S),Linux)
-	DEFINES += -D_FILE_OFFSET_BITS=64
 	DEFINES += -D_GNU_SOURCE
-endif
-ifeq ($(uname_S),SunOS)
-	DEFINES += -D_FILE_OFFSET_BITS=64
-
-	CONFIG_OPTS += -DCONFIG_NEED_STRNDUP=1
-	COMPAT_OBJS += compat/strndup.o
 endif
 
 trade_EXTRA_DEPS += builtin-client.o
@@ -86,11 +70,9 @@ trade_EXTRA_DEPS += $(COMPAT_DEPS)
 
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
-CFLAGS += $(CONFIG_OPTS)
 
 CXXFLAGS += $(DEFINES)
 CXXFLAGS += $(INCLUDES)
-CXXFLAGS += $(CONFIG_OPTS)
 
 DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 
