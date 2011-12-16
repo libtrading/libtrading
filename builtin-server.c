@@ -59,7 +59,6 @@ static void fix_session_accept(int incoming_fd)
 
 static const struct protocol_info protocols[] = {
 	{ "fix",		fix_session_accept },
-	{ NULL,			NULL }
 };
 
 static const struct protocol_info *lookup_protocol_info(const char *name)
