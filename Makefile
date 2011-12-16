@@ -3,7 +3,6 @@ uname_R	:= $(shell sh -c 'uname -r 2>/dev/null || echo not')
 
 # External programs
 CC	:= gcc
-CXX	:= g++
 LD	:= gcc
 AR	:= ar
 XXD	?= xxd
@@ -71,9 +70,6 @@ trade_EXTRA_DEPS += $(COMPAT_DEPS)
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
 
-CXXFLAGS += $(DEFINES)
-CXXFLAGS += $(INCLUDES)
-
 DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 
 LIB_FILE := libtrading.a
@@ -128,16 +124,9 @@ endif
 %.d: %.c
 	$(Q) $(CC) -M -MT $(patsubst %.d,%.o,$@) $(CFLAGS) $< -o $@
 
-%.d: %.cc
-	$(Q) $(CXX) -M -MT $(patsubst %.d,%.o,$@) $(CXXFLAGS) $< -o $@
-
 %.o: %.c
 	$(E) "  CC      " $@
 	$(Q) $(CC) -c $(CFLAGS) $< -o $@
-
-%.o: %.cc
-	$(E) "  CXX     " $@
-	$(Q) $(CXX) -c $(CXXFLAGS) $< -o $@
 
 
 $(foreach p,$(PROGRAMS),$(eval $(p): $($(p)_EXTRA_DEPS) $(LIBS)))
