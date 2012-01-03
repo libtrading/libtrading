@@ -1,5 +1,5 @@
-#ifndef FIX__BUFFER_H
-#define FIX__BUFFER_H
+#ifndef LIBTRADING_BUFFER_H
+#define LIBTRADING_BUFFER_H
 
 #include <sys/uio.h>	/* for struct iovec */
 #include <stdbool.h>
@@ -109,4 +109,4 @@ static inline void buffer_reset(struct buffer *buf)
 	buf->offset = 0;
 }
 
-#endif /* FIX__BUFFER_H */
+#endif /* LIBTRADING_BUFFER_H */

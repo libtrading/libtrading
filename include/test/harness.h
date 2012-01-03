@@ -1,5 +1,5 @@
-#ifndef FIX_HARNESS_H
-#define FIX_HARNESS_H
+#ifndef LIBTRADING_HARNESS_H
+#define LIBTRADING_HARNESS_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -19,4 +19,4 @@ void assert_str_equals(const char *s1, const char *s2, size_t len);
 void do_assert_true(const char *filename, int line, bool value);
 void do_assert_false(const char *filename, int line, bool value);
 
-#endif /* FIX_HARNESS_H */
+#endif /* LIBTRADING_HARNESS_H */
