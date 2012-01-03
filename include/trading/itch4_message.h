@@ -1,5 +1,5 @@
-#ifndef LIBTRADING_ITCH_MESSAGE_H
-#define LIBTRADING_ITCH_MESSAGE_H
+#ifndef LIBTRADING_ITCH4_MESSAGE_H
+#define LIBTRADING_ITCH4_MESSAGE_H
 
 struct buffer;
 
@@ -57,18 +57,18 @@ struct itch4_message {
 };
 
 struct itch4_msg_timestamp_seconds {
-	u8			MessageType;	/* ITCH_MSG_TIMESTAMP_SECONDS */
+	u8			MessageType;	/* ITCH4_MSG_TIMESTAMP_SECONDS */
 	be32			Second;	
 } packed;
 
 struct itch4_msg_system_event {
-	u8			MessageType;	/* ITCH_MSG_SYSTEM_EVENT */
+	u8			MessageType;	/* ITCH4_MSG_SYSTEM_EVENT */
 	be32			Timestamp;
 	char			EventCode;	/* enum itch4_system_event_code */
 } packed;
 
 struct itch4_msg_stock_directory {
-	u8			MessageType;	/* ITCH_MSG_STOCK_DIRECTORY */
+	u8			MessageType;	/* ITCH4_MSG_STOCK_DIRECTORY */
 	be32			TimestampNanoseconds;
 	char			Stock[8];
 	char			MarketCategory;
@@ -78,7 +78,7 @@ struct itch4_msg_stock_directory {
 } packed;
 
 struct itch4_msg_stock_trading_action {
-	u8			MessageType;	/* ITCH_MSG_STOCK_TRADING_ACTION */
+	u8			MessageType;	/* ITCH4_MSG_STOCK_TRADING_ACTION */
 	be32			TimestampNanoseconds;
 	char			Stock[8];
 	char			TradingState;
@@ -87,14 +87,14 @@ struct itch4_msg_stock_trading_action {
 } packed;
 
 struct itch4_msg_reg_sho_restriction {
-	u8			MessageType;	/* ITCH_MSG_REG_SHO_RESTRICTION */
+	u8			MessageType;	/* ITCH4_MSG_REG_SHO_RESTRICTION */
 	be32			TimestampNanoseconds;
 	char			Stock[8];
 	char			RegSHOAction;
 } packed;
 
 struct itch4_msg_market_participant_pos {
-	u8			MessageType;	/* ITCH_MSG_MARKET_PARTICIPANT_POS */
+	u8			MessageType;	/* ITCH4_MSG_MARKET_PARTICIPANT_POS */
 	be32			TimestampNanoseconds;
 	char			MPID[4];
 	char			Stock[8];
@@ -104,7 +104,7 @@ struct itch4_msg_market_participant_pos {
 } packed;
 
 struct itch4_msg_add_order {
-	u8			MessageType;	/* ITCH_MSG_ADD_ORDER */
+	u8			MessageType;	/* ITCH4_MSG_ADD_ORDER */
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	char			BuySellIndicator;
@@ -114,7 +114,7 @@ struct itch4_msg_add_order {
 } packed;
 
 struct itch4_msg_add_order_mpid {
-	u8			MessageType;	/* ITCH_MSG_ADD_ORDER_MPID */
+	u8			MessageType;	/* ITCH4_MSG_ADD_ORDER_MPID */
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	char			BuySellIndicator;
@@ -125,7 +125,7 @@ struct itch4_msg_add_order_mpid {
 } packed;
 
 struct itch4_msg_order_executed {
-	u8			MessageType;	/* ITCH_MSG_ORDER_EXECUTED */
+	u8			MessageType;	/* ITCH4_MSG_ORDER_EXECUTED */
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	be32			ExecutedShares;
@@ -133,7 +133,7 @@ struct itch4_msg_order_executed {
 } packed;
 
 struct itch4_msg_order_executed_with_price {
-	u8			MessageType;	/* ITCH_MSG_ORDER_EXECUTED_WITH_PRICE */
+	u8			MessageType;	/* ITCH4_MSG_ORDER_EXECUTED_WITH_PRICE */
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	be32			ExecutedShares;
@@ -143,20 +143,20 @@ struct itch4_msg_order_executed_with_price {
 } packed;
 
 struct itch4_msg_order_cancel {
-	u8			MessageType;	/* ITCH_MSG_ORDER_CANCEL */
+	u8			MessageType;	/* ITCH4_MSG_ORDER_CANCEL */
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	be32			CanceledShares;
 } packed;
 
 struct itch4_msg_order_delete {
-	u8			MessageType;	/* ITCH_MSG_ORDER_DELETE */
+	u8			MessageType;	/* ITCH4_MSG_ORDER_DELETE */
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 } packed;
 
 struct itch4_msg_order_replace {
-	u8			MessageType;	/* ITCH_MSG_ORDER_REPLACE */
+	u8			MessageType;	/* ITCH4_MSG_ORDER_REPLACE */
 	be32			TimestampNanoseconds;
 	be64			OriginalOrderReferenceNumber;
 	be64			NewOrderReferenceNumber;
@@ -165,7 +165,7 @@ struct itch4_msg_order_replace {
 } packed;
 
 struct itch4_msg_trade {
-	u8			MessageType;	/* ITCH_MSG_TRADE */
+	u8			MessageType;	/* ITCH4_MSG_TRADE */
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	char			BuySellIndicator;
@@ -176,7 +176,7 @@ struct itch4_msg_trade {
 } packed;
 
 struct itch4_msg_cross_trade {
-	u8			MessageType;	/* ITCH_MSG_CROSS_TRADE */
+	u8			MessageType;	/* ITCH4_MSG_CROSS_TRADE */
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	char			BuySellIndicator;
@@ -188,13 +188,13 @@ struct itch4_msg_cross_trade {
 } packed;
 
 struct itch4_msg_broken_trade {
-	u8			MessageType;	/* ITCH_MSG_BROKEN_TRADE */
+	u8			MessageType;	/* ITCH4_MSG_BROKEN_TRADE */
 	be32			TimestampNanoseconds;
 	be64			MatchNumber;
 } packed;
 
 struct itch4_msg_noii {
-	u8			MessageType;	/* ITCH_MSG_NOII */
+	u8			MessageType;	/* ITCH4_MSG_NOII */
 	be32			TimestampNanoseconds;
 	be64			PairedShares;
 	be64			ImbalanceShares;
@@ -219,4 +219,4 @@ struct itch4_msg_noii {
  */
 struct itch4_message *itch4_message_decode(struct buffer *buf);
 
-#endif /* LIBTRADING_ITCH_MESSAGE_H */
+#endif /* LIBTRADING_ITCH4_MESSAGE_H */
