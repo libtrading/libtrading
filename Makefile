@@ -81,6 +81,7 @@ LIB_OBJS	+= buffer.o
 LIB_OBJS	+= fix_message.o
 LIB_OBJS	+= fix_session.o
 LIB_OBJS	+= itch4_message.o
+LIB_OBJS	+= mbt_quote_message.o
 LIB_OBJS	+= soupbin3_session.o
 LIB_OBJS	+= read-write.o
 
@@ -91,8 +92,9 @@ TEST_SUITE_H	:= test/test-suite.h
 TEST_RUNNER_C	:= test/test-runner.c
 TEST_RUNNER_OBJ := test/test-runner.o
 
-TEST_OBJS += test/harness.o
 TEST_OBJS += test/boe-test.o
+TEST_OBJS += test/harness.o
+TEST_OBJS += test/mbt_quote_message-test.o
 TEST_OBJS += test/unparse-test.o
 
 TEST_SRC	:= $(patsubst %.o,%.c,$(TEST_OBJS))

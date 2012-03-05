@@ -28,6 +28,10 @@ static inline uint8_t buffer_get_8(struct buffer *self)
 	return self->data[self->offset++];
 }
 
+static inline char buffer_get_char(struct buffer *self)
+{
+	return buffer_get_8(self);
+}
 static inline uint16_t buffer_get_le16(struct buffer *self)
 {
 	return buffer_get_8(self) | buffer_get_8(self) << 8;
