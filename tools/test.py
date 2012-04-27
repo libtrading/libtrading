@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from threading import Thread
 import os, signal, sys, time
 
 def start(program, *args):
