@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-from threading import Thread
-import os, signal, sys, time
+import os
+import signal
+import sys
+import time
 
 def start(program, *args):
   pid = os.fork()
