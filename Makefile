@@ -2,8 +2,8 @@ uname_S	:= $(shell sh -c 'uname -s 2>/dev/null || echo not')
 uname_R	:= $(shell sh -c 'uname -r 2>/dev/null || echo not')
 
 # External programs
-CC	:= gcc
-LD	:= gcc
+CC	?= gcc
+LD	:= $(CC)
 AR	:= ar
 XXD	?= xxd
 
@@ -18,7 +18,6 @@ EXTRA_WARNINGS += -Wformat-y2k
 EXTRA_WARNINGS += -Wshadow
 EXTRA_WARNINGS += -Winit-self
 EXTRA_WARNINGS += -Wredundant-decls
-EXTRA_WARNINGS += -Wstrict-aliasing=3
 EXTRA_WARNINGS += -Wswitch-default
 EXTRA_WARNINGS += -Wswitch-enum
 EXTRA_WARNINGS += -Wno-system-headers

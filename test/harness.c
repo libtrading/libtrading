@@ -31,7 +31,7 @@ void do_assert_false(const char *filename, int line, bool value)
 void assert_int_equals(long long expected, long long actual)
 {
 	if (expected != actual) {
-		printf("Expected: %Ld, but was %Ld\n", expected, actual);
+		printf("Expected: %lld, but was %lld\n", expected, actual);
 		exit(EXIT_FAILURE);
 	}
 }
