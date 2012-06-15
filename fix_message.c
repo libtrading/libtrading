@@ -255,7 +255,7 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 		goto error_out;
 	}
 
-	self->body_buf = buffer_new(MAX_HEAD_LEN);
+	self->body_buf = buffer_new(MAX_BODY_LEN);
 	if (!self->body_buf) {
 		errno = ENOMEM;
 		ret = -1;
