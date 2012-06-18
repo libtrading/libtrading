@@ -215,13 +215,11 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 
 static void fix_message_unparse(struct fix_message *self)
 {
-	struct fix_field encrypt_method;
 	struct fix_field sender_comp_id;
 	struct fix_field target_comp_id;
 	struct fix_field begin_string;
 	struct fix_field sending_time;
 	struct fix_field body_length;
-	struct fix_field heartbt_int;
 	struct fix_field msg_seq_num;
 	struct fix_field check_sum;
 	struct fix_field msg_type;
@@ -229,6 +227,7 @@ static void fix_message_unparse(struct fix_message *self)
 	char fmt[64], buf[64];
 	struct timeval tv;
 	struct tm *tm;
+	int i;
 
 	gettimeofday(&tv, NULL);
 	tm = gmtime(&tv.tv_sec);
@@ -246,16 +245,14 @@ static void fix_message_unparse(struct fix_message *self)
 	sending_time	= FIX_STRING_FIELD(SendingTime, buf);
 
 	/* body */
-	encrypt_method	= FIX_INT_FIELD   (EncryptMethod, 0);
-	heartbt_int	= FIX_INT_FIELD   (HeartBtInt, 15);
-
 	fix_field_unparse(&msg_type, self->body_buf);
 	fix_field_unparse(&sender_comp_id, self->body_buf);
 	fix_field_unparse(&target_comp_id, self->body_buf);
 	fix_field_unparse(&msg_seq_num, self->body_buf);
 	fix_field_unparse(&sending_time, self->body_buf);
-	fix_field_unparse(&encrypt_method, self->body_buf);
-	fix_field_unparse(&heartbt_int, self->body_buf);
+
+	for (i = 0; i < self->nr_fields; i++)
+		fix_field_unparse(&self->fields[i], self->body_buf);
 
 	/* head */
 	begin_string	= FIX_STRING_FIELD(BeginString, self->begin_string);

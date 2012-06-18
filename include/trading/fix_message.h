@@ -85,12 +85,17 @@ struct fix_message {
 	 */
 	struct buffer			*head_buf;	/* first three fields */
 	struct buffer			*body_buf;	/* rest of the fields including checksum */
+
+	unsigned long			nr_fields;
+	struct fix_field		*fields;
 };
 
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer);
 
 struct fix_message *fix_message_new(void);
 void fix_message_free(struct fix_message *self);
+
+void fix_message_add_field(struct fix_message *msg, struct fix_field *field);
 
 struct fix_message *fix_message_parse(struct buffer *buffer);
 void fix_message_validate(struct fix_message *self);
