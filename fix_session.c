@@ -24,6 +24,7 @@ struct fix_session *fix_session_new(int sockfd, enum fix_version fix_version, co
 	self->begin_string	= begin_strings[fix_version];
 	self->sender_comp_id	= sender_comp_id;
 	self->target_comp_id	= target_comp_id;
+	self->out_msg_seq_num	= 1;
 
 	return self;
 }
@@ -38,6 +39,7 @@ int fix_session_send(struct fix_session *self, struct fix_message *msg, int flag
 	msg->begin_string	= self->begin_string;
 	msg->sender_comp_id	= self->sender_comp_id;
 	msg->target_comp_id	= self->target_comp_id;
+	msg->msg_seq_num	= self->out_msg_seq_num++;
 
 	return fix_message_send(msg, self->sockfd, flags);
 }

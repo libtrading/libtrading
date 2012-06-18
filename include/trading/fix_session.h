@@ -19,6 +19,8 @@ struct fix_session {
 	const char			*begin_string;
 	const char			*sender_comp_id;
 	const char			*target_comp_id;
+
+	unsigned long			out_msg_seq_num;
 };
 
 struct fix_session *fix_session_new(int sockfd, enum fix_version, const char *sender_comp_id, const char *target_comp_id);

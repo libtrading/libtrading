@@ -217,6 +217,7 @@ static void fix_message_unparse(struct fix_message *self)
 	struct fix_field target_comp_id;
 	struct fix_field begin_string;
 	struct fix_field body_length;
+	struct fix_field msg_seq_num;
 	struct fix_field check_sum;
 	struct fix_field msg_type;
 	unsigned long cksum;
@@ -225,10 +226,12 @@ static void fix_message_unparse(struct fix_message *self)
 	msg_type	= FIX_STRING_FIELD(MsgType, self->msg_type);
 	sender_comp_id	= FIX_STRING_FIELD(SenderCompID, self->sender_comp_id);
 	target_comp_id	= FIX_STRING_FIELD(TargetCompID, self->target_comp_id);
+	msg_seq_num	= FIX_INT_FIELD   (MsgSeqNum, self->msg_seq_num);
 
 	fix_field_unparse(&msg_type, self->body_buf);
 	fix_field_unparse(&sender_comp_id, self->body_buf);
 	fix_field_unparse(&target_comp_id, self->body_buf);
+	fix_field_unparse(&msg_seq_num, self->body_buf);
 
 	/* head */
 	begin_string	= FIX_STRING_FIELD(BeginString, self->begin_string);

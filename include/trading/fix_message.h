@@ -75,7 +75,7 @@ struct fix_message {
 	const char			*msg_type;
 	const char			*sender_comp_id;
 	const char			*target_comp_id;
-	/* XXX: MsgSeqNum */
+	unsigned long			msg_seq_num;
 	/* XXX: SendingTime */
 
 	/*
