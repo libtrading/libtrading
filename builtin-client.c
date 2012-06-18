@@ -21,15 +21,25 @@
 
 struct protocol_info {
 	const char		*name;
-	int			(*session_initiate)(int incoming_fd);
+	int			(*session_initiate)(const struct protocol_info *, int);
 };
 
-static int fix_session_initiate(int sockfd)
+static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 {
 	struct fix_session *session;
+	enum fix_version version;
 	int retval;
 
-	session	= fix_session_new(sockfd, FIX_4_4, "BUYSIDE", "SELLSIDE");
+	version = FIX_4_4;
+
+	if (!strcmp(proto->name, "fix42"))
+		version = FIX_4_2;
+	else if (!strcmp(proto->name, "fix43"))
+		version = FIX_4_3;
+	else if (!strcmp(proto->name, "fix44"))
+		version = FIX_4_4;
+
+	session	= fix_session_new(sockfd, version, "BUYSIDE", "SELLSIDE");
 	if (!session)
 		die("unable to allocate memory for session");
 
@@ -54,7 +64,7 @@ static int fix_session_initiate(int sockfd)
 	return retval;
 }
 
-static int soupbin3_itch4_session_initiate(int sockfd)
+static int soupbin3_itch4_session_initiate(const struct protocol_info *proto, int sockfd)
 {
 	struct soupbin3_session *session;
 
@@ -113,6 +123,9 @@ static int soupbin3_itch4_session_initiate(int sockfd)
 
 static const struct protocol_info protocols[] = {
 	{ "fix",		fix_session_initiate },
+	{ "fix42",		fix_session_initiate },
+	{ "fix43",		fix_session_initiate },
+	{ "fix43",		fix_session_initiate },
 	{ "soupbin3-itch4",	soupbin3_itch4_session_initiate },
 };
 
@@ -198,7 +211,7 @@ int cmd_client(int argc, char *argv[])
 	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	retval = proto_info->session_initiate(sockfd);
+	retval = proto_info->session_initiate(proto_info, sockfd);
 
 	shutdown(sockfd, SHUT_RDWR);
 
