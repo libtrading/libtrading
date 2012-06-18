@@ -23,6 +23,7 @@ enum fix_tag {
 	SenderCompID		= 49,
 	SendingTime		= 52,
 	TargetCompID		= 56,
+	EncryptMethod		= 98,
 };
 
 struct fix_field {

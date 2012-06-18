@@ -213,6 +213,7 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 
 static void fix_message_unparse(struct fix_message *self)
 {
+	struct fix_field encrypt_method;
 	struct fix_field sender_comp_id;
 	struct fix_field target_comp_id;
 	struct fix_field begin_string;
@@ -227,11 +228,13 @@ static void fix_message_unparse(struct fix_message *self)
 	sender_comp_id	= FIX_STRING_FIELD(SenderCompID, self->sender_comp_id);
 	target_comp_id	= FIX_STRING_FIELD(TargetCompID, self->target_comp_id);
 	msg_seq_num	= FIX_INT_FIELD   (MsgSeqNum, self->msg_seq_num);
+	encrypt_method	= FIX_INT_FIELD   (EncryptMethod, 0);
 
 	fix_field_unparse(&msg_type, self->body_buf);
 	fix_field_unparse(&sender_comp_id, self->body_buf);
 	fix_field_unparse(&target_comp_id, self->body_buf);
 	fix_field_unparse(&msg_seq_num, self->body_buf);
+	fix_field_unparse(&encrypt_method, self->body_buf);
 
 	/* head */
 	begin_string	= FIX_STRING_FIELD(BeginString, self->begin_string);
