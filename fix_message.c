@@ -218,6 +218,7 @@ static void fix_message_unparse(struct fix_message *self)
 	struct fix_field target_comp_id;
 	struct fix_field begin_string;
 	struct fix_field body_length;
+	struct fix_field heartbt_int;
 	struct fix_field msg_seq_num;
 	struct fix_field check_sum;
 	struct fix_field msg_type;
@@ -229,12 +230,14 @@ static void fix_message_unparse(struct fix_message *self)
 	target_comp_id	= FIX_STRING_FIELD(TargetCompID, self->target_comp_id);
 	msg_seq_num	= FIX_INT_FIELD   (MsgSeqNum, self->msg_seq_num);
 	encrypt_method	= FIX_INT_FIELD   (EncryptMethod, 0);
+	heartbt_int	= FIX_INT_FIELD   (HeartBtInt, 15);
 
 	fix_field_unparse(&msg_type, self->body_buf);
 	fix_field_unparse(&sender_comp_id, self->body_buf);
 	fix_field_unparse(&target_comp_id, self->body_buf);
 	fix_field_unparse(&msg_seq_num, self->body_buf);
 	fix_field_unparse(&encrypt_method, self->body_buf);
+	fix_field_unparse(&heartbt_int, self->body_buf);
 
 	/* head */
 	begin_string	= FIX_STRING_FIELD(BeginString, self->begin_string);
