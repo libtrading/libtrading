@@ -1,5 +1,5 @@
-#include "test/harness.h"
 #include "test-suite.h"
+#include "harness.h"
 
 #include "trading/boe_message.h"
 #include "trading/buffer.h"
