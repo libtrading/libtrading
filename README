@@ -23,6 +23,7 @@ Features
 
       - BOE (incomplete)
       - FIX 4.4 (incomplete)
+      - OUCH 4.2 (incomplete)
 
 
 License
@@ -53,6 +54,10 @@ References
   MBT Quote API
 
     http://www.mbtrading.com/developersMain.aspx?page=api
+
+  OUCH 4.2
+
+    http://www.nasdaqtrader.com/content/technicalsupport/specifications/TradingProducts/OUCH4.2.pdf
 
   SoupBinTCP
 
