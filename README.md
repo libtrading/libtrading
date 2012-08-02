@@ -4,11 +4,11 @@
 
 # About
 
-Libtrading is a small and fast library for electronic trading written in C. It attempts to implement all market data and order entry protocols used for electronic trading across the world.
+Libtrading is a small and fast C library for electronic trading. It attempts to support all the relevant market data and order entry protocols that are used around the world. Hopefully libtrading is useful for people who need to write code that talks to electronic market places.
 
 # Features
 
-Libtrading supports the following electronic trading protocols:
+The following protocols are supported:
 
 Market data:
 
@@ -21,7 +21,6 @@ Order entry:
  * BOE (incomplete)
  * FIX 4.4 (incomplete)
  * OUCH 4.2 (incomplete)
-
 
 # License
 
