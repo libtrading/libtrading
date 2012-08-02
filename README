@@ -1,25 +1,59 @@
-libtrading - an electronic trading library
+				LIBTRADING
 
 About
-=====
+-----
 
-Libtrading is a library that attempts to implement all protocols used for
-electronic trading across the world.
+  Libtrading is a small and fast library for electronic trading written
+  in C. It attempts to implement all market data and order entry
+  protocols used for electronic trading across the world.
 
 
 Features
-========
+--------
 
-The following protocols are supported:
+  Libtrading supports the following electronic trading protocols:
 
-- BOE (incomplete)
-- FIX 4.4 (incomplete)
-- SoupBinTCP/ITCH 4.1 (incomplete)
+    Market Data:
+
+      - ITCH 4.1 (incomplete)
+      - MBT Quote API (incomplete)
+      - SoupBinTCP (incomplete)
+
+    Order Entry:
+
+      - BOE (incomplete)
+      - FIX 4.4 (incomplete)
+
+
+License
+-------
+
+  Copyright (C) 2011-2012 Pekka Enberg
+
+  Libtrading is available for use under the following license, commonly
+  known as the 3-clause (or "modified") BSD license. See the file
+  LICENSE for details.
 
 
 References
-==========
+----------
 
- [BOE]  http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf
+  BOE
 
- [ITCH] http://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTV-ITCH-V4_1.pdf
+    http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf
+
+  FIX
+
+    http://fixprotocol.org/specifications/
+
+  ITCH 4.1
+
+    http://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTV-ITCH-V4_1.pdf
+
+  MBT Quote API
+
+    http://www.mbtrading.com/developersMain.aspx?page=api
+
+  SoupBinTCP
+
+    http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/soupbintcp.pdf
