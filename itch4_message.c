@@ -49,9 +49,8 @@ static unsigned long itch4_message_size(u8 type)
 	return 0;
 }
 
-struct itch4_message *itch4_message_decode(struct buffer *buf)
+int itch4_message_decode(struct buffer *buf, struct itch4_message *msg)
 {
-	struct itch4_message *msg;
 	void *start;
 	size_t size;
 	u8 type;
@@ -62,15 +61,11 @@ struct itch4_message *itch4_message_decode(struct buffer *buf)
 
 	size = itch4_message_size(type);
 	if (!size)
-		return NULL;
-
-	msg = malloc(size);
-	if (!msg)
-		return NULL;
+		return -1;
 
 	memcpy(msg, start, size);
 
 	buffer_advance(buf, size);
 
-	return msg;
+	return 0;
 }
