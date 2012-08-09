@@ -73,13 +73,12 @@ static int soupbin3_itch4_session_initiate(const struct protocol_info *proto, in
 		die("unable to allocate memory for session");
 
 	for (;;) {
-		struct soupbin3_packet *packet;
+		struct soupbin3_packet packet;
 
-		packet = soupbin3_session_recv(session);
-		if (!packet)
+		if (soupbin3_session_recv(session, &packet) < 0)
 			break;
 
-		switch (packet->PacketType) {
+		switch (packet.PacketType) {
 		case SOUPBIN3_PACKET_DEBUG:
 			puts("Debug Packet");
 			break;
@@ -111,7 +110,7 @@ static int soupbin3_itch4_session_initiate(const struct protocol_info *proto, in
 			puts("Logout Request Packet");
 			break;
 		default:
-			printf("Unknown Packet: %c\n", packet->PacketType);
+			printf("Unknown Packet: %c\n", packet.PacketType);
 			break;
 		}
 	}
