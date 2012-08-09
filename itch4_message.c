@@ -55,12 +55,18 @@ int itch4_message_decode(struct buffer *buf, struct itch4_message *msg)
 	size_t size;
 	u8 type;
 
+	if (buffer_size(buf) < sizeof(u8))
+		return -1;
+
 	start = buffer_start(buf);
 
 	type = buffer_peek_8(buf);
 
 	size = itch4_message_size(type);
 	if (!size)
+		return -1;
+
+	if (buffer_remaining(buf) < size)
 		return -1;
 
 	memcpy(msg, start, size);
