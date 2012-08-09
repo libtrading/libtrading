@@ -66,7 +66,7 @@ int itch4_message_decode(struct buffer *buf, struct itch4_message *msg)
 	if (!size)
 		return -1;
 
-	if (buffer_remaining(buf) < size)
+	if (buffer_size(buf) < size)
 		return -1;
 
 	memcpy(msg, start, size);

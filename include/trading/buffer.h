@@ -9,7 +9,8 @@
 #include <unistd.h>	/* for ssize_t */
 
 struct buffer {
-	unsigned long		offset;
+	unsigned long		start;
+	unsigned long		end;
 	unsigned long		capacity;
 	char			data[];
 };
@@ -25,12 +26,12 @@ ssize_t buffer_write(struct buffer *self, int fd);
 
 static inline uint8_t buffer_peek_8(struct buffer *self)
 {
-	return self->data[self->offset];
+	return self->data[self->start];
 }
 
 static inline uint8_t buffer_get_8(struct buffer *self)
 {
-	return self->data[self->offset++];
+	return self->data[self->start++];
 }
 
 static inline char buffer_get_char(struct buffer *self)
@@ -77,7 +78,12 @@ static inline void buffer_get_n(struct buffer *self, int n, char *dst)
 
 static inline char *buffer_start(struct buffer *self)
 {
-	return &self->data[self->offset];
+	return &self->data[self->start];
+}
+
+static inline char *buffer_end(struct buffer *self)
+{
+	return &self->data[self->end];
 }
 
 static inline char buffer_first_char(struct buffer *self)
@@ -90,32 +96,34 @@ static inline char buffer_first_char(struct buffer *self)
 static inline void buffer_advance(struct buffer *self, unsigned long n)
 {
 	/* FIXME: overflow */
-	assert(self->offset < self->capacity);
+	assert(self->start < self->end);
 
-	self->offset += n;
+	self->start += n;
 }
 
 static inline unsigned long buffer_size(struct buffer *self)
 {
-	return self->offset;
+	return self->end - self->start;
 }
 
 static inline unsigned long buffer_remaining(struct buffer *self)
 {
-	assert(self->offset <= self->capacity);
+	assert(self->end <= self->capacity);
 
-	return self->capacity - self->offset;
+	return self->capacity - self->end;
 }
 
 static inline void buffer_to_iovec(struct buffer *b, struct iovec *iov)
 {
 	iov->iov_base	= b->data;
-	iov->iov_len	= b->offset;
+	iov->iov_len	= b->end;
 }
 
 static inline void buffer_reset(struct buffer *buf)
 {
-	buf->offset = 0;
+	buf->start = buf->end = 0;
 }
+
+void buffer_compact(struct buffer *buf);
 
 #endif /* LIBTRADING_BUFFER_H */

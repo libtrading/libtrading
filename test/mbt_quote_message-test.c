@@ -31,8 +31,6 @@ void test_mbt_quote_decode_logging_on(void)
 
 	buffer_printf(buf, "L|100=USERNAME;101=PASSWORD\n");
 
-	buffer_reset(buf);
-
 	mbt_msg = mbt_quote_message_decode(buf);
 
 	assert_int_equals(MBT_QUOTE_LOGGING_ON, mbt_msg->Type);

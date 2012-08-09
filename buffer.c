@@ -15,7 +15,8 @@ struct buffer *buffer_new(unsigned long capacity)
 		return NULL;
 
 	self->capacity	= capacity;
-	self->offset	= 0;
+	self->start	= 0;
+	self->end	= 0;
 
 	return self;
 }
@@ -30,7 +31,7 @@ uint8_t buffer_sum(struct buffer *self)
 	unsigned long sum = 0;
 	int i;
 
-	for (i = 0; i < self->offset; i++)
+	for (i = self->start; i < self->end; i++)
 		sum += self->data[i];
 
 	return sum;
@@ -48,7 +49,7 @@ bool buffer_printf(struct buffer *self, const char *format, ...)
 	char *buf;
 	int len;
 
-	buf	= buffer_start(self);
+	buf	= buffer_end(self);
 	size	= buffer_remaining(self);
 
 	va_start(ap, format);
@@ -58,7 +59,7 @@ bool buffer_printf(struct buffer *self, const char *format, ...)
 	if (len < 0 || len >= size)
 		return false;
 
-	self->offset += len;
+	self->end += len;
 
 	return true;
 }
@@ -78,15 +79,36 @@ char *buffer_find(struct buffer *self, char delim)
 ssize_t buffer_read(struct buffer *self, int fd)
 {
 	size_t count;
+	ssize_t len;
 	void *buf;
 
-	buf		= buffer_start(self);
+	buf		= buffer_end(self);
 	count		= buffer_remaining(self);
 
-	return read(fd, buf, count);
+	len = read(fd, buf, count);
+	if (len < 0)
+		return len;
+
+	self->end	+= len;
+
+	return len;
 }
 
 ssize_t buffer_write(struct buffer *self, int fd)
 {
-	return write(fd, self->data, self->offset);
+	return write(fd, buffer_start(self), buffer_size(self));
+}
+
+void buffer_compact(struct buffer *buf)
+{
+	size_t count;
+	void *start;
+
+	start		= buffer_start(buf);
+	count		= buffer_size(buf);
+
+	memcpy(buf->data, start, count);
+
+	buf->start	= 0;
+	buf->end	= count;
 }
