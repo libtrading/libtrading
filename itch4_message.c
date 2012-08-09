@@ -57,7 +57,7 @@ int itch4_message_decode(struct buffer *buf, struct itch4_message *msg)
 
 	start = buffer_start(buf);
 
-	type = buffer_get_8(buf);
+	type = buffer_peek_8(buf);
 
 	size = itch4_message_size(type);
 	if (!size)

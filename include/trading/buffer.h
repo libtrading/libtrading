@@ -23,6 +23,11 @@ uint8_t buffer_sum(struct buffer *self);
 ssize_t buffer_read(struct buffer *self, int fd);
 ssize_t buffer_write(struct buffer *self, int fd);
 
+static inline uint8_t buffer_peek_8(struct buffer *self)
+{
+	return self->data[self->offset];
+}
+
 static inline uint8_t buffer_get_8(struct buffer *self)
 {
 	return self->data[self->offset++];
