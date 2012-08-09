@@ -49,7 +49,7 @@ endif
 export E Q
 
 # Project files
-PROGRAMS := trade 
+PROGRAMS := trade test-itch4
 
 DEFINES =
 INCLUDES =
