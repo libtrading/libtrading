@@ -14,6 +14,7 @@ Market data:
 
  * ITCH 4.1
  * MBT Quote API (incomplete)
+ * PITCH
  * SoupBinTCP (incomplete)
 
 Order entry:
@@ -35,4 +36,5 @@ Libtrading is available for use under the following license, commonly known as t
  * [ITCH 4.1](http://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTV-ITCH-V4_1.pdf)
  * [MBT Quote API](http://www.mbtrading.com/developersMain.aspx?page=api)
  * [OUCH 4.2](http://www.nasdaqtrader.com/content/technicalsupport/specifications/TradingProducts/OUCH4.2.pdf)
+ * [PITCH](http://www.batstrading.com/resources/membership/BATS_PITCH_Specification.pdf)
  * [SoupBinTCP](http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/soupbintcp.pdf)
