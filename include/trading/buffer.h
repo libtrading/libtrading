@@ -3,7 +3,6 @@
 
 #include <sys/uio.h>	/* for struct iovec */
 #include <stdbool.h>
-#include <assert.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <unistd.h>	/* for ssize_t */
@@ -95,9 +94,6 @@ static inline char buffer_first_char(struct buffer *self)
 
 static inline void buffer_advance(struct buffer *self, unsigned long n)
 {
-	/* FIXME: overflow */
-	assert(self->start < self->end);
-
 	self->start += n;
 }
 
@@ -108,8 +104,6 @@ static inline unsigned long buffer_size(struct buffer *self)
 
 static inline unsigned long buffer_remaining(struct buffer *self)
 {
-	assert(self->end <= self->capacity);
-
 	return self->capacity - self->end;
 }
 

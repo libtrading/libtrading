@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include <sys/time.h>
 #include <sys/uio.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
