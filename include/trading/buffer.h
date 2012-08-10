@@ -11,7 +11,7 @@ struct buffer {
 	unsigned long		start;
 	unsigned long		end;
 	unsigned long		capacity;
-	char			data[];
+	char			*data;
 };
 
 struct buffer *buffer_new(unsigned long capacity);
@@ -119,5 +119,8 @@ static inline void buffer_reset(struct buffer *buf)
 }
 
 void buffer_compact(struct buffer *buf);
+
+struct buffer *buffer_mmap(int fd, size_t len);
+void buffer_munmap(struct buffer *buf);
 
 #endif /* LIBTRADING_BUFFER_H */
