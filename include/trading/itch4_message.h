@@ -178,9 +178,7 @@ struct itch4_msg_trade {
 struct itch4_msg_cross_trade {
 	u8			MessageType;	/* ITCH4_MSG_CROSS_TRADE */
 	be32			TimestampNanoseconds;
-	be64			OrderReferenceNumber;
-	char			BuySellIndicator;
-	be32			Shares;
+	be64			Shares;
 	char			Stock[8];
 	be32			CrossPrice;
 	be64			MatchNumber;
