@@ -12,7 +12,7 @@ The following protocols are supported:
 
 Market data:
 
- * ITCH 4.1 (incomplete)
+ * ITCH 4.1
  * MBT Quote API (incomplete)
  * SoupBinTCP (incomplete)
 
