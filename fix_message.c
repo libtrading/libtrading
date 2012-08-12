@@ -236,7 +236,7 @@ static void fix_message_unparse(struct fix_message *self)
 
 	/* YYYYMMDD-HH:MM:SS.sss */
 	strftime(fmt, sizeof fmt, "%Y%m%d-%H:%M:%S", tm);
-	snprintf(buf, sizeof buf, "%s.%03lu", fmt, tv.tv_usec / 1000); 
+	snprintf(buf, sizeof buf, "%s.%03ld", fmt, (long)tv.tv_usec / 1000);
 
 	/* standard header */
 	msg_type	= FIX_STRING_FIELD(MsgType, self->msg_type);
