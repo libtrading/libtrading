@@ -40,7 +40,7 @@ static void print_progress(int fd, struct stat *st)
 
 	offset = lseek(fd, 0, SEEK_CUR);
 
-	fprintf(stderr, "Decoding messages: %3lu%%\r", offset * 100 / st->st_size);
+	fprintf(stderr, "Decoding messages: %3u%%\r", (unsigned int)(offset * 100 / st->st_size));
 	fflush(stderr);
 }
 
