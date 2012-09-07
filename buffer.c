@@ -1,5 +1,7 @@
 #include "trading/buffer.h"
 
+#include "trading/read-write.h"
+
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -86,7 +88,7 @@ ssize_t buffer_read(struct buffer *self, int fd)
 	buf		= buffer_end(self);
 	count		= buffer_remaining(self);
 
-	len = read(fd, buf, count);
+	len = xread(fd, buf, count);
 	if (len < 0)
 		return len;
 
@@ -97,7 +99,7 @@ ssize_t buffer_read(struct buffer *self, int fd)
 
 ssize_t buffer_write(struct buffer *self, int fd)
 {
-	return write(fd, buffer_start(self), buffer_size(self));
+	return xwrite(fd, buffer_start(self), buffer_size(self));
 }
 
 void buffer_compact(struct buffer *buf)
