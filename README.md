@@ -8,19 +8,19 @@ world.
 
 ## Supported Protocols
 
- * [BOE](http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf)
+ * [BOE](http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/boe_message.h))
 
- * [FIX](http://fixprotocol.org/specifications/)
+ * [FIX](http://fixprotocol.org/specifications/) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/fix_message.h))
 
- * [ITCH 4.1](http://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTV-ITCH-V4_1.pdf)
+ * [ITCH 4.1](http://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTV-ITCH-V4_1.pdf) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/itch41_message.h))
 
- * [MBT Quote API](http://www.mbtrading.com/developersMain.aspx?page=api)
+ * [MBT Quote API](http://www.mbtrading.com/developersMain.aspx?page=api) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/mbt_quote_message.h))
 
- * [OUCH 4.2](http://www.nasdaqtrader.com/content/technicalsupport/specifications/TradingProducts/OUCH4.2.pdf)
+ * [OUCH 4.2](http://www.nasdaqtrader.com/content/technicalsupport/specifications/TradingProducts/OUCH4.2.pdf) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/ouch42_message.h))
 
- * [PITCH](http://www.batstrading.com/resources/membership/BATS_PITCH_Specification.pdf)
+ * [PITCH](http://www.batstrading.com/resources/membership/BATS_PITCH_Specification.pdf) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/pitch_message.h))
 
- * [SoupBinTCP](http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/soupbintcp.pdf)
+ * [SoupBinTCP](http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/soupbintcp.pdf) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/soupbin3_session.h))
 
 ## Build Instructions
 
