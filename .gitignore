@@ -4,7 +4,7 @@ tags
 latency-test
 libtrading.a
 /trade
-/test-itch4
+/test-itch41
 /test-trade
 test/test-runner.c
 test/test-suite.h

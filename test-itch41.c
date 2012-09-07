@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-#include "trading/itch4_message.h"
+#include "trading/itch41_message.h"
 #include "trading/buffer.h"
 
 static char *program;
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 		die("%s: %s\n", program, strerror(errno));
 
 	for (;;) {
-		struct itch4_message *msg;
+		struct itch41_message *msg;
 		char tmp[128];
 
 		msg = (void *) tmp;
@@ -112,7 +112,7 @@ retry_size:
 		buffer_advance(buffer, sizeof(uint16_t));
 
 retry_message:
-		if (itch4_message_decode(buffer, msg) < 0) {
+		if (itch41_message_decode(buffer, msg) < 0) {
 			ssize_t nr;
 
 			buffer_compact(buffer);

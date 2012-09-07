@@ -1,7 +1,7 @@
 #include "builtins.h"
 
 #include "trading/soupbin3_session.h"
-#include "trading/itch4_message.h"
+#include "trading/itch41_message.h"
 #include "trading/fix_message.h"
 #include "trading/fix_session.h"
 #include "trading/array.h"
@@ -64,7 +64,7 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 	return retval;
 }
 
-static int soupbin3_itch4_session_initiate(const struct protocol_info *proto, int sockfd)
+static int soupbin3_itch41_session_initiate(const struct protocol_info *proto, int sockfd)
 {
 	struct soupbin3_session *session;
 
@@ -125,7 +125,7 @@ static const struct protocol_info protocols[] = {
 	{ "fix42",		fix_session_initiate },
 	{ "fix43",		fix_session_initiate },
 	{ "fix43",		fix_session_initiate },
-	{ "soupbin3-itch4",	soupbin3_itch4_session_initiate },
+	{ "soupbin3-itch4",	soupbin3_itch41_session_initiate },
 };
 
 static const struct protocol_info *lookup_protocol_info(const char *name)
