@@ -102,10 +102,10 @@ void buffer_compact(struct buffer *buf)
 	size_t count;
 	void *start;
 
-	start		= buffer_start(buf);
-	count		= buffer_size(buf);
+	start	= buffer_start(buf);
+	count	= buffer_size(buf);
 
-	memcpy(buf->data, start, count);
+	memmove(buf->data, start, count);
 
 	buf->start	= 0;
 	buf->end	= count;
