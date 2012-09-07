@@ -46,4 +46,4 @@ static inline void *mbt_quote_message_payload(struct mbt_quote_message *msg)
 	return (void *) msg + sizeof(struct mbt_quote_message);
 }
 
-#endif /* LIBTRADING_MBT_QUOTE_MESSAGE_H */
+#endif

@@ -6,4 +6,4 @@
 
 ssize_t xwritev(int fd, const struct iovec *iov, int iovcnt);
 
-#endif /* LIBTRADING_READ_WRITE_H */
+#endif

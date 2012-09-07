@@ -109,4 +109,4 @@ struct soupbin3_session *soupbin3_session_new(int sockfd);
 void soupbin3_session_delete(struct soupbin3_session *session);
 int soupbin3_session_recv(struct soupbin3_session *session, struct soupbin3_packet *packet);
 
-#endif /* LIBTRADING_SOUPBIN3_SESSION_H */
+#endif

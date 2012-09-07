@@ -3,4 +3,4 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-#endif /* LIBTRADING_CORE_H */
+#endif

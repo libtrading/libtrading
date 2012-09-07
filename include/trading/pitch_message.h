@@ -129,4 +129,4 @@ struct pitch_msg_auction_summary {
 
 int pitch_message_decode(struct buffer *buf, struct pitch_message *msg);
 
-#endif /* LIBTRADING_PITCH_MESSAGE_H */
+#endif

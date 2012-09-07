@@ -123,4 +123,4 @@ void buffer_compact(struct buffer *buf);
 struct buffer *buffer_mmap(int fd, size_t len);
 void buffer_munmap(struct buffer *buf);
 
-#endif /* LIBTRADING_BUFFER_H */
+#endif

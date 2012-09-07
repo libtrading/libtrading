@@ -207,4 +207,4 @@ struct itch4_msg_noii {
 
 int itch4_message_decode(struct buffer *buf, struct itch4_message *msg);
 
-#endif /* LIBTRADING_ITCH4_MESSAGE_H */
+#endif

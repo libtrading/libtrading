@@ -104,4 +104,4 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags);
 
 bool fix_message_type_is(struct fix_message *self, const char *type);
 
-#endif /* LIBTRADING_FIX_MESSAGE_H */
+#endif

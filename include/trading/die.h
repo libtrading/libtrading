@@ -9,4 +9,4 @@ void do_die(const char *format, ...) __attribute__ ((noreturn))
 void error(const char *format, ...) __attribute__ ((noreturn))
     __attribute__ ((format (printf, 1, 2)));
 
-#endif /* LIBTRADING_DIE_H */
+#endif

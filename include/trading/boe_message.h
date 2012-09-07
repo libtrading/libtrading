@@ -180,4 +180,4 @@ static inline void *boe_message_payload(struct boe_message *msg)
 	return (void *) msg + sizeof(struct boe_header);
 }
 
-#endif /* LIBTRADING_BOE_MESSAGE_H */
+#endif
