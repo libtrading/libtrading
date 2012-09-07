@@ -44,14 +44,14 @@ bool buffer_printf(struct buffer *buf, const char *format, ...)
 {
 	size_t size;
 	va_list ap;
-	char *p;
+	char *end;
 	int len;
 
-	p	= buffer_end(buf);
+	end	= buffer_end(buf);
 	size	= buffer_remaining(buf);
 
 	va_start(ap, format);
-	len = vsnprintf(p, size, format, ap);
+	len = vsnprintf(end, size, format, ap);
 	va_end(ap);
 
 	if (len < 0 || len >= size)
@@ -62,9 +62,9 @@ bool buffer_printf(struct buffer *buf, const char *format, ...)
 	return true;
 }
 
-char *buffer_find(struct buffer *buf, char delim)
+char *buffer_find(struct buffer *buf, char c)
 {
-	while (buffer_first_char(buf) != delim) {
+	while (buffer_first_char(buf) != c) {
 		if (!buffer_remaining(buf))
 			return NULL;
 
@@ -78,23 +78,29 @@ ssize_t buffer_read(struct buffer *buf, int fd)
 {
 	size_t count;
 	ssize_t len;
-	void *p;
+	void *end;
 
-	p	= buffer_end(buf);
+	end	= buffer_end(buf);
 	count	= buffer_remaining(buf);
 
-	len = xread(fd, p, count);
+	len = xread(fd, end, count);
 	if (len < 0)
 		return len;
 
-	buf->end	+= len;
+	buf->end += len;
 
 	return len;
 }
 
 ssize_t buffer_write(struct buffer *buf, int fd)
 {
-	return xwrite(fd, buffer_start(buf), buffer_size(buf));
+	size_t count;
+	void *start;
+
+	start	= buffer_start(buf);
+	count	= buffer_size(buf);
+
+	return xwrite(fd, start, count);
 }
 
 void buffer_compact(struct buffer *buf)
