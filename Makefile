@@ -76,6 +76,7 @@ LIB_OBJS	+= boe_message.o
 LIB_OBJS	+= buffer.o
 LIB_OBJS	+= fix_message.o
 LIB_OBJS	+= fix_session.o
+LIB_OBJS	+= itch40_message.o
 LIB_OBJS	+= itch41_message.o
 LIB_OBJS	+= mbt_quote_message.o
 LIB_OBJS	+= mmap-buffer.o

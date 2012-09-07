@@ -12,6 +12,8 @@ world.
 
  * [FIX](http://fixprotocol.org/specifications/) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/fix_message.h))
 
+ * [ITCH 4.0](http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/tvitch-v4.pdf) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/itch40_message.h))
+
  * [ITCH 4.1](http://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTV-ITCH-V4_1.pdf) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/itch41_message.h))
 
  * [MBT Quote API](http://www.mbtrading.com/developersMain.aspx?page=api) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/mbt_quote_message.h))
