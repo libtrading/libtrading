@@ -1,6 +1,6 @@
 #include "builtins.h"
 
-#include "trading/core.h"
+#include "trading/array.h"
 #include "trading/die.h"
 
 #include "trading/fix_message.h"

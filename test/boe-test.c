@@ -3,7 +3,7 @@
 
 #include "trading/boe_message.h"
 #include "trading/buffer.h"
-#include "trading/core.h"
+#include "trading/array.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

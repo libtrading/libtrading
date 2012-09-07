@@ -2,7 +2,7 @@
 
 #include "trading/read-write.h"
 #include "trading/buffer.h"
-#include "trading/core.h"
+#include "trading/array.h"
 
 #include <inttypes.h>
 #include <sys/time.h>
