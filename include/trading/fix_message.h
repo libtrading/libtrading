@@ -6,6 +6,17 @@
 
 struct buffer;
 
+/*
+ * Message types:
+ */
+#define	FIX_MSG_HEARTBEAT	"0"
+#define FIX_MSG_TEST_REQUEST	"1"
+#define FIX_MSG_RESEND_REQUEST	"2"
+#define FIX_MSG_REJECT		"3"
+#define FIX_MSG_SEQUENCE_REST	"4"
+#define FIX_MSG_LOGOUT		"5"
+#define FIX_MSG_LOGON		"A"
+
 enum fix_type {
 	FIX_TYPE_INT,
 	FIX_TYPE_FLOAT,
@@ -59,14 +70,6 @@ struct fix_field {
 		.type		= FIX_TYPE_CHECKSUM,	\
 		{ .int_value	= v },			\
 	}
-
-#define	Heartbeat		"0"
-#define TestRequest		"1"
-#define ResendRequest		"2"
-#define Reject			"3"
-#define SequenceReset		"4"
-#define Logout			"5"
-#define Logon			"A"
 
 struct fix_message {
 	/*

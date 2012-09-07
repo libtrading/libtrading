@@ -56,7 +56,7 @@ bool fix_session_logon(struct fix_session *session)
 	bool ret;
 
 	logon_msg	= (struct fix_message) {
-		.msg_type	= Logon,
+		.msg_type	= FIX_MSG_LOGON,
 		.nr_fields	= ARRAY_SIZE(fields),
 		.fields		= fields,
 	};
@@ -67,7 +67,7 @@ bool fix_session_logon(struct fix_session *session)
 	if (!response)
 		return false;
 
-	ret = fix_message_type_is(response, Logon);
+	ret = fix_message_type_is(response, FIX_MSG_LOGON);
 
 	fix_message_free(response);
 
@@ -81,7 +81,7 @@ bool fix_session_logout(struct fix_session *session)
 	bool ret;
 
 	logout_msg	= (struct fix_message) {
-		.msg_type	= Logout,
+		.msg_type	= FIX_MSG_LOGOUT,
 	};
 	fix_session_send(session, &logout_msg, 0);
 
@@ -89,7 +89,7 @@ bool fix_session_logout(struct fix_session *session)
 	if (!response)
 		return false;
 
-	ret = fix_message_type_is(response, Logout);
+	ret = fix_message_type_is(response, FIX_MSG_LOGOUT);
 
 	fix_message_free(response);
 
