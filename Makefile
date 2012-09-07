@@ -163,11 +163,11 @@ BOE_TEST_DATA:
 
 $(TEST_RUNNER_C): $(FORCE)
 	$(E) "  GEN     " $@
-	$(Q) $(shell scripts/gen-test-runner "$(TEST_SRC)" > $@)
+	$(Q) $(shell tools/gen-test-runner "$(TEST_SRC)" > $@)
 
 $(TEST_SUITE_H): $(FORCE)
 	$(E) "  GEN     " $@
-	$(Q) $(shell scripts/gen-test-proto "$(TEST_SRC)" > $@)
+	$(Q) $(shell tools/gen-test-proto "$(TEST_SRC)" > $@)
 
 $(TEST_RUNNER_OBJ): $(TEST_RUNNER_C)
 
