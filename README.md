@@ -33,4 +33,5 @@ To build via Makefile simply execute:
 Copyright (C) 2011-2012 Pekka Enberg
 
 libtrading is available for use under the 3-clause (or "modified") BSD license.
-See the file LICENSE for details.
+See the file [LICENSE](https://github.com/penberg/libtrading/blob/master/LICENSE)
+for details.
