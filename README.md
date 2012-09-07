@@ -4,6 +4,8 @@ libtrading is a library for electronic trading. Its purpose is to support
 market data and order entry network protocols used by trading venues across the
 world.
 
+![alt text](https://github.com/penberg/libtrading/raw/master/htdocs/ticker-tape.jpg "Ticker Tape")
+
 ## Supported protocols
 
  * [BOE](http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf)
