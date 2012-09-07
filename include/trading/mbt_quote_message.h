@@ -4,9 +4,8 @@
 struct buffer;
 
 /*
- * MB Trading Quote API
+ * Message types:
  */
-
 enum {
 	MBT_QUOTE_LOGGING_ON			= 'L',
 	MBT_QUOTE_SUBSCRIPTION			= 'S',

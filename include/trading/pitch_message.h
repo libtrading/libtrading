@@ -1,7 +1,3 @@
-/*
- * PITCH in-wire protocol definitions.
- */
-
 #ifndef LIBTRADING_PITCH_MESSAGE_H
 #define LIBTRADING_PITCH_MESSAGE_H
 
@@ -10,7 +6,7 @@
 struct buffer;
 
 /*
- * Message Types:
+ * Message types:
  */
 enum pitch_msg_type {
 	PITCH_MSG_ADD_ORDER_SHORT		= 'A',

@@ -3,16 +3,10 @@
 
 struct buffer;
 
-/** @file */
-
-/*
- *	ITCH 4.1 protocol implementation
- */
-
 #include "trading/types.h"
 
 /*
- *	ITCH 4.1 Message Types
+ * Message types:
  */
 enum itch4_msg_type {
 	ITCH4_MSG_TIMESTAMP_SECONDS		= 'T',	/* Section 4.1 */
@@ -35,40 +29,43 @@ enum itch4_msg_type {
 };
 
 /*
- * 	ITCH 4.1 System Event Codes
+ * System event codes:
  */
 enum itch4_event_code {
-	/* Daily */
 	ITCH4_EVENT_START_OF_MESSAGES		= 'O',
 	ITCH4_EVENT_START_OF_SYSTEM_HOURS	= 'S',
 	ITCH4_EVENT_START_OF_MARKET_HOURS	= 'Q',
 	ITCH4_EVENT_END_OF_MARKET_HOURS		= 'M',
 	ITCH4_EVENT_END_OF_SYSTEM_HOURS		= 'E',
 	ITCH4_EVENT_END_OF_MESSAGES		= 'C',
-
-	/* As needed */
 	ITCH4_EVENT_EMERGENCY_HALT		= 'A',
 	ITCH4_EVENT_EMERGENCY_QUOTE_ONLY	= 'R',
 	ITCH4_EVENT_EMERGENCY_RESUMPTION	= 'B',
 };
 
+/*
+ * A data structure for ITCH messages.
+ */
 struct itch4_message {
 	u8			MessageType;
 };
 
+/* ITCH4_MSG_TIMESTAMP_SECONDS */
 struct itch4_msg_timestamp_seconds {
-	u8			MessageType;	/* ITCH4_MSG_TIMESTAMP_SECONDS */
+	u8			MessageType;
 	be32			Second;	
 } packed;
 
+/* ITCH4_MSG_SYSTEM_EVENT */
 struct itch4_msg_system_event {
-	u8			MessageType;	/* ITCH4_MSG_SYSTEM_EVENT */
+	u8			MessageType;
 	be32			Timestamp;
-	char			EventCode;	/* enum itch4_system_event_code */
+	char			EventCode;	/* ITCH4_EVENT_<code> */
 } packed;
 
+/* ITCH4_MSG_STOCK_DIRECTORY */
 struct itch4_msg_stock_directory {
-	u8			MessageType;	/* ITCH4_MSG_STOCK_DIRECTORY */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	char			Stock[8];
 	char			MarketCategory;
@@ -77,8 +74,9 @@ struct itch4_msg_stock_directory {
 	char			RoundLotsOnly;
 } packed;
 
+/* ITCH4_MSG_STOCK_TRADING_ACTION */
 struct itch4_msg_stock_trading_action {
-	u8			MessageType;	/* ITCH4_MSG_STOCK_TRADING_ACTION */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	char			Stock[8];
 	char			TradingState;
@@ -86,15 +84,17 @@ struct itch4_msg_stock_trading_action {
 	char			Reason[4];
 } packed;
 
+/* ITCH4_MSG_REG_SHO_RESTRICTION */
 struct itch4_msg_reg_sho_restriction {
-	u8			MessageType;	/* ITCH4_MSG_REG_SHO_RESTRICTION */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	char			Stock[8];
 	char			RegSHOAction;
 } packed;
 
+/* ITCH4_MSG_MARKET_PARTICIPANT_POS */
 struct itch4_msg_market_participant_pos {
-	u8			MessageType;	/* ITCH4_MSG_MARKET_PARTICIPANT_POS */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	char			MPID[4];
 	char			Stock[8];
@@ -103,8 +103,9 @@ struct itch4_msg_market_participant_pos {
 	char			MarketParticipantState;	
 } packed;
 
+/* ITCH4_MSG_ADD_ORDER */
 struct itch4_msg_add_order {
-	u8			MessageType;	/* ITCH4_MSG_ADD_ORDER */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	char			BuySellIndicator;
@@ -113,8 +114,9 @@ struct itch4_msg_add_order {
 	be32			Price;
 } packed;
 
+/* ITCH4_MSG_ADD_ORDER_MPID */
 struct itch4_msg_add_order_mpid {
-	u8			MessageType;	/* ITCH4_MSG_ADD_ORDER_MPID */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	char			BuySellIndicator;
@@ -124,16 +126,18 @@ struct itch4_msg_add_order_mpid {
 	char			Attribution[4];
 } packed;
 
+/* ITCH4_MSG_ORDER_EXECUTED */
 struct itch4_msg_order_executed {
-	u8			MessageType;	/* ITCH4_MSG_ORDER_EXECUTED */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	be32			ExecutedShares;
 	be64			MatchNumber;
 } packed;
 
+/* ITCH4_MSG_ORDER_EXECUTED_WITH_PRICE */
 struct itch4_msg_order_executed_with_price {
-	u8			MessageType;	/* ITCH4_MSG_ORDER_EXECUTED_WITH_PRICE */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	be32			ExecutedShares;
@@ -142,21 +146,24 @@ struct itch4_msg_order_executed_with_price {
 	be32			ExecutionPrice;
 } packed;
 
+/* ITCH4_MSG_ORDER_CANCEL */
 struct itch4_msg_order_cancel {
-	u8			MessageType;	/* ITCH4_MSG_ORDER_CANCEL */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	be32			CanceledShares;
 } packed;
 
+/* ITCH4_MSG_ORDER_DELETE */
 struct itch4_msg_order_delete {
-	u8			MessageType;	/* ITCH4_MSG_ORDER_DELETE */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 } packed;
 
+/* ITCH4_MSG_ORDER_REPLACE */
 struct itch4_msg_order_replace {
-	u8			MessageType;	/* ITCH4_MSG_ORDER_REPLACE */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			OriginalOrderReferenceNumber;
 	be64			NewOrderReferenceNumber;
@@ -164,8 +171,9 @@ struct itch4_msg_order_replace {
 	be32			Price;
 } packed;
 
+/* ITCH4_MSG_TRADE */
 struct itch4_msg_trade {
-	u8			MessageType;	/* ITCH4_MSG_TRADE */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	char			BuySellIndicator;
@@ -175,8 +183,9 @@ struct itch4_msg_trade {
 	be64			MatchNumber;
 } packed;
 
+/* ITCH4_MSG_CROSS_TRADE */
 struct itch4_msg_cross_trade {
-	u8			MessageType;	/* ITCH4_MSG_CROSS_TRADE */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			Shares;
 	char			Stock[8];
@@ -185,14 +194,16 @@ struct itch4_msg_cross_trade {
 	char			CrossType;
 } packed;
 
+/* ITCH4_MSG_BROKEN_TRADE */
 struct itch4_msg_broken_trade {
-	u8			MessageType;	/* ITCH4_MSG_BROKEN_TRADE */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			MatchNumber;
 } packed;
 
+/* ITCH4_MSG_NOII */
 struct itch4_msg_noii {
-	u8			MessageType;	/* ITCH4_MSG_NOII */
+	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			PairedShares;
 	be64			ImbalanceShares;

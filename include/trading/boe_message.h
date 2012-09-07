@@ -7,14 +7,15 @@
 
 struct buffer;
 
-#define BOE_MAGIC 0xBABA
+#define BOE_MAGIC		0xBABA
 
 /*
- *	List of Message Types
+ * Message types:
  */
-
 enum {
-	/* Participant to BATS.  */
+	/*
+	 * Participant to BATS:
+	 */
 	LoginRequest			= 0x01,
 	LogoutRequest			= 0x02,
 	ClientHeartbeat			= 0x03,
@@ -22,7 +23,9 @@ enum {
 	CancelOrder			= 0x05,
 	ModifyOrder			= 0x06,
 
-	/* BATS to Participant.  */
+	/*
+	 * BATS to Participant:
+	 */
 	LoginResponse			= 0x07,
 	Logout				= 0x08,
 	ServerHeartbeat			= 0x09,
@@ -51,7 +54,7 @@ struct boe_message {
 };
 
 /*
- *	List of Return Bitfields
+ * Return bitfields:
  */
 
 #define ReturnBitfield1 		0
@@ -109,7 +112,7 @@ struct boe_message {
 #define BOE_PASSWORD_LEN		10
 
 /*
- *	Participant to BATS
+ * Participant to BATS messages:
  */
 
 struct boe_unit {
@@ -138,7 +141,7 @@ struct boe_login_request {
 } packed;
 
 /*
- *	BATS to Participant
+ * BATS to participant messages:
  */
 
 #define BOE_LOGIN_RESPONSE_TEXT_LEN	60

@@ -1,13 +1,9 @@
-/*
- * OUCH 4.2 in-wire protocol definitions.
- */
-
 #ifndef LIBTRADING_OUCH4_MESSAGE_H
 #define LIBTRADING_OUCH4_MESSAGE_H
 
-struct buffer;
-
 #include "trading/types.h"
+
+struct buffer;
 
 /*
  * Message types:

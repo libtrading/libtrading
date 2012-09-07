@@ -1,18 +1,12 @@
 #ifndef LIBTRADING_SOUPBIN3_SESSION_H
 #define LIBTRADING_SOUPBIN3_SESSION_H
 
-struct buffer;
-
-/** @file */
-
-/*
- *	SoupBinTCP protocol implementation
- */
-
 #include "trading/types.h"
 
+struct buffer;
+
 /*
- * 	Packet Types
+ * Packet types:
  */
 enum soupbin3_packet_type {
 	SOUPBIN3_PACKET_DEBUG			= '+', /* Section 2.1 */
@@ -33,72 +27,78 @@ enum soupbin3_packet_type {
 
 struct soupbin3_packet {
 	be16			PacketLength;
-	char			PacketType;	/* enum soupbin_packet_type */
+	char			PacketType;	/* SOUPBIN3_PACKET_<type> */
 };
 
+/* SOUPBIN_PACKET_DEBUG */
 struct soupbin3_packet_debug {
 	be16			PacketLength;
-	char			PacketType;	/* SOUPBIN_PACKET_DEBUG */
+	char			PacketType;
 	char			Text[];
 } packed;
 
+/* SOUPBIN_PACKET_LOGIN_ACCEPTED */
 struct soupbin3_packet_login_accepted {
 	be16			PacketLength;
-	char			PacketType;	/* SOUPBIN_PACKET_LOGIN_ACCEPTED */
+	char			PacketType;
 	char			Session[10];
 	char			SequenceNumber[20];
 } packed;
 
+/* SOUPBIN_PACKET_LOGIN_REJECTED */
 struct soupbin3_packet_login_rejected {
 	be16			PacketLength;
-	char			PacketType;	/* SOUPBIN_PACKET_LOGIN_REJECTED */
+	char			PacketType;
 	char			RejectReasonCode;
 } packed;
 
+/* SOUPBIN_PACKET_SEQ_DATA */
 struct soupbin3_packet_seq_data {
 	be16			PacketLength;
-	char			PacketType;	/* SOUPBIN_PACKET_SEQ_DATA */
+	char			PacketType;
 	char			Message[];
 } packed;
 
+/* SOUPBIN_PACKET_SERVER_HEARTBEAT */
 struct soupbin3_packet_server_heartbeat {
 	be16			PacketLength;
-	char			PacketType;	/* SOUPBIN_PACKET_SERVER_HEARTBEAT */
+	char			PacketType;
 } packed;
 
+/* SOUPBIN_PACKET_END_OF_SESSION */
 struct soupbin3_packet_end_of_session {
 	be16			PacketLength;
-	char			PacketType;	/* SOUPBIN_PACKET_END_OF_SESSION */
+	char			PacketType;
 } packed;
 
+/* SOUPBIN_PACKET_LOGIN_REQUEST */
 struct soupbin3_packet_login_request {
 	be16			PacketLength;
-	char			PacketType;	/* SOUPBIN_PACKET_LOGIN_REQUEST */
+	char			PacketType;
 	char			Username[6];
 	char			Password[10];
 	char			RequestedSession[10];
 	char			RequestedSequenceNumber[20];
 } packed;
 
+/* SOUPBIN_PACKET_UNSEQ_DATA */
 struct soupbin3_packet_unseq_data {
 	be16			PacketLength;
-	char			PacketType;	/* SOUPBIN_PACKET_UNSEQ_DATA */
+	char			PacketType;
 	char			Message[];
 } packed;
 
+/* SOUPBIN_PACKET_CLIENT_HEARTBEAT */
 struct soupbin3_packet_client_heartbeat {
 	be16			PacketLength;
-	char			PacketType;	/* SOUPBIN_PACKET_CLIENT_HEARTBEAT */
+	char			PacketType;
 } packed;
 
+/* SOUPBIN_PACKET_LOGOUT_REQUEST */
 struct soupbin3_packet_logout_request {
 	be16			PacketLength;
-	char			PacketType;	/* SOUPBIN_PACKET_LOGOUT_REQUEST */
+	char			PacketType;
 } packed;
-
-/*
- * 	Session Management
- */
 
 struct soupbin3_session {
 	int				sockfd;
