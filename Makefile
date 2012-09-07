@@ -49,7 +49,7 @@ endif
 export E Q
 
 # Project files
-PROGRAMS := trade test-itch41
+PROGRAMS := test-fix-client test-fix-server test-itch41
 
 DEFINES =
 INCLUDES =
@@ -59,12 +59,9 @@ ifeq ($(uname_S),Linux)
 	DEFINES += -D_GNU_SOURCE
 endif
 
-trade_EXTRA_DEPS += builtin-client.o
-trade_EXTRA_DEPS += builtin-server.o
-trade_EXTRA_DEPS += die.o
-trade_EXTRA_DEPS += trade.o
+test-fix-server_EXTRA_DEPS += die.o
 
-trade_EXTRA_DEPS += $(COMPAT_DEPS)
+test-fix-client_EXTRA_DEPS += die.o
 
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)

@@ -3,7 +3,8 @@
 tags
 latency-test
 libtrading.a
-/trade
+/test-fix-client
+/test-fix-server
 /test-itch41
 /test-trade
 test/test-runner.c

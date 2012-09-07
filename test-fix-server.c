@@ -1,5 +1,3 @@
-#include "builtins.h"
-
 #include "trading/array.h"
 #include "trading/die.h"
 
@@ -85,7 +83,7 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
-int cmd_server(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	const struct protocol_info *proto_info;
 	const char *proto = NULL;
