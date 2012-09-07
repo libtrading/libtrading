@@ -26,12 +26,15 @@ enum {
 	MBT_QUOTE_PASSWORD			= 101,
 };
 
+/*
+ * A data structure for MBT Quote API messages.
+ */
 struct mbt_quote_message {
 	char			Type;
 };
 
 struct mbt_quote_logging_on {
-	struct mbt_quote_message	msg;
+	char			Type;
 	char			*UserName;
 	char			*Password;
 };
