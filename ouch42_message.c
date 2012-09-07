@@ -2,7 +2,6 @@
 
 #include "trading/buffer.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 static unsigned long ouch42_in_message_size(u8 type)
@@ -57,9 +56,8 @@ static unsigned long ouch42_out_message_size(u8 type)
 	return 0;
 }
 
-struct ouch42_message *ouch42_in_message_decode(struct buffer *buf)
+int ouch42_in_message_decode(struct buffer *buf, struct ouch42_message *msg)
 {
-	struct ouch42_message *msg;
 	void *start;
 	size_t size;
 	u8 type;
@@ -70,22 +68,17 @@ struct ouch42_message *ouch42_in_message_decode(struct buffer *buf)
 
 	size = ouch42_in_message_size(type);
 	if (!size)
-		return NULL;
-
-	msg = malloc(size);
-	if (!msg)
-		return NULL;
+		return -1;
 
 	memcpy(msg, start, size);
 
 	buffer_advance(buf, size);
 
-	return msg;
+	return 0;
 }
 
-struct ouch42_message *ouch42_out_message_decode(struct buffer *buf)
+int ouch42_out_message_decode(struct buffer *buf, struct ouch42_message *msg)
 {
-	struct ouch42_message *msg;
 	void *start;
 	size_t size;
 	u8 type;
@@ -96,15 +89,11 @@ struct ouch42_message *ouch42_out_message_decode(struct buffer *buf)
 
 	size = ouch42_out_message_size(type);
 	if (!size)
-		return NULL;
-
-	msg = malloc(size);
-	if (!msg)
-		return NULL;
+		return -1;
 
 	memcpy(msg, start, size);
 
 	buffer_advance(buf, size);
 
-	return msg;
+	return 0;
 }

@@ -192,7 +192,7 @@ struct ouch42_msg_order_modified {
 	u32			Shares;
 } packed;
 
-struct ouch42_message *ouch42_in_message_decode(struct buffer *buf);
-struct ouch42_message *ouch42_out_message_decode(struct buffer *buf);
+int ouch42_in_message_decode(struct buffer *buf, struct ouch42_message *msg);
+int ouch42_out_message_decode(struct buffer *buf, struct ouch42_message *msg);
 
 #endif

@@ -2,36 +2,33 @@
 
 #include "trading/buffer.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 #define BOE_MAGIC_LEN		sizeof(uint16_t)
 #define BOE_MSG_LENGTH_LEN	sizeof(uint16_t)
 
-struct boe_message *boe_message_decode(struct buffer *buf)
+int boe_message_decode(struct buffer *buf, struct boe_message *msg, size_t size)
 {
-	struct boe_message *msg;
 	uint16_t magic, len;
 	void *start;
-	size_t size;
+	size_t count;
 
 	start = buffer_start(buf);
 
 	magic = buffer_get_le16(buf);
 	if (magic != BOE_MAGIC)
-		return NULL;
+		return -1;
 
 	len = buffer_get_le16(buf);
 
-	size = BOE_MAGIC_LEN + len;
+	count = BOE_MAGIC_LEN + len;
 
-	msg = malloc(size);
-	if (!msg)
-		return NULL;
+	if (count > size)
+		count = size;
 
-	memcpy(msg, start, size);
+	memcpy(msg, start, count);
 
 	buffer_advance(buf, len - BOE_MSG_LENGTH_LEN);
 
-	return msg;
+	return 0;
 }

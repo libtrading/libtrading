@@ -3,10 +3,19 @@
 
 #include "trading/types.h"
 
-#include <stdint.h>
+#include <stddef.h>
 
 struct buffer;
 
+/*
+ * Maximum number of bytes for a 'struct boe_message' - i.e. number of bytes
+ * that is big enough to accommodate largest possible BOE message.
+ */
+#define BOE_MAX_MESSAGE_LEN	183
+
+/*
+ * Start of message bytes:
+ */
 #define BOE_MAGIC		0xBABA
 
 /*
@@ -168,7 +177,7 @@ struct boe_logout {
 	struct boe_unit			Units[];
 } packed;
 
-struct boe_message *boe_message_decode(struct buffer *buf);
+int boe_message_decode(struct buffer *buf, struct boe_message *msg, size_t size);
 
 static inline void *boe_message_payload(struct boe_message *msg)
 {

@@ -1,4 +1,2 @@
-- Don't do direct malloc() - we need to able to use mlock()'d memory pool
-- TLSF - 'realtime' malloc()
 - Fix overflows in message parsing
 - Latency test

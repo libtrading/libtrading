@@ -13,10 +13,12 @@
 #include <stdio.h>
 #include <fcntl.h>
 
+static char recv_buffer[BOE_MAX_MESSAGE_LEN];
+
 void test_boe_login_request(void)
 {
 	struct boe_login_request *login;
-	struct boe_message *msg;
+	struct boe_message *msg = (void *) recv_buffer;
 	struct buffer *buf;
 	int fd;
 
@@ -27,8 +29,7 @@ void test_boe_login_request(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_message_decode(buf);
-	fail_if(msg == NULL);
+	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
 	login = boe_message_payload(msg);
 
@@ -67,14 +68,12 @@ void test_boe_login_request(void)
 	buffer_delete(buf);
 
 	fail_if(close(fd) < 0);
-
-	free(msg);
 }
 
 void test_boe_login_response(void)
 {
 	struct boe_login_response *login;
-	struct boe_message *msg;
+	struct boe_message *msg = (void *) recv_buffer;
 	struct buffer *buf;
 	int fd;
 
@@ -85,8 +84,7 @@ void test_boe_login_response(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_message_decode(buf);
-	fail_if(msg == NULL);
+	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
 	login = boe_message_payload(msg);
 
@@ -127,13 +125,11 @@ void test_boe_login_response(void)
 	buffer_delete(buf);
 
 	fail_if(close(fd) < 0);
-
-	free(msg);
 }
 
 void test_boe_logout_request(void)
 {
-	struct boe_message *msg;
+	struct boe_message *msg = (void *) recv_buffer;
 	struct buffer *buf;
 	int fd;
 
@@ -144,16 +140,13 @@ void test_boe_logout_request(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_message_decode(buf);
-	fail_if(msg == NULL);
+	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
 	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
 	assert_int_equals(8, msg->header.MessageLength);
 	assert_int_equals(LogoutRequest, msg->header.MessageType);
 	assert_int_equals(0, msg->header.MatchingUnit);
 	assert_int_equals(0, msg->header.SequenceNumber);
-
-	free(msg);
 
 	buffer_delete(buf);
 
@@ -162,7 +155,7 @@ void test_boe_logout_request(void)
 
 void test_boe_client_heartbeat(void)
 {
-	struct boe_message *msg;
+	struct boe_message *msg = (void *) recv_buffer;
 	struct buffer *buf;
 	int fd;
 
@@ -173,16 +166,13 @@ void test_boe_client_heartbeat(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_message_decode(buf);
-	fail_if(msg == NULL);
+	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
 	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
 	assert_int_equals(8, msg->header.MessageLength);
 	assert_int_equals(ClientHeartbeat, msg->header.MessageType);
 	assert_int_equals(0, msg->header.MatchingUnit);
 	assert_int_equals(0, msg->header.SequenceNumber);
-
-	free(msg);
 
 	buffer_delete(buf);
 
@@ -192,7 +182,7 @@ void test_boe_client_heartbeat(void)
 void test_boe_logout(void)
 {
 	struct boe_logout *logout;
-	struct boe_message *msg;
+	struct boe_message *msg = (void *) recv_buffer;
 	struct buffer *buf;
 	int fd;
 
@@ -203,8 +193,7 @@ void test_boe_logout(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_message_decode(buf);
-	fail_if(msg == NULL);
+	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
 	logout = boe_message_payload(msg);
 
@@ -229,8 +218,6 @@ void test_boe_logout(void)
 	assert_int_equals(4, logout->Units[2].UnitNumber);
 	assert_int_equals(41337, logout->Units[2].UnitSequence);
 
-	free(msg);
-
 	buffer_delete(buf);
 
 	fail_if(close(fd) < 0);
@@ -238,7 +225,7 @@ void test_boe_logout(void)
 
 void test_boe_server_heartbeat(void)
 {
-	struct boe_message *msg;
+	struct boe_message *msg = (void *) recv_buffer;
 	struct buffer *buf;
 	int fd;
 
@@ -249,16 +236,13 @@ void test_boe_server_heartbeat(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_message_decode(buf);
-	fail_if(msg == NULL);
+	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
 	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
 	assert_int_equals(8, msg->header.MessageLength);
 	assert_int_equals(ServerHeartbeat, msg->header.MessageType);
 	assert_int_equals(0, msg->header.MatchingUnit);
 	assert_int_equals(0, msg->header.SequenceNumber);
-
-	free(msg);
 
 	buffer_delete(buf);
 
@@ -267,7 +251,7 @@ void test_boe_server_heartbeat(void)
 
 void test_boe_replay_complete(void)
 {
-	struct boe_message *msg;
+	struct boe_message *msg = (void *) recv_buffer;
 	struct buffer *buf;
 	int fd;
 
@@ -278,16 +262,13 @@ void test_boe_replay_complete(void)
 
 	fail_if(buffer_read(buf, fd) < 0);
 
-	msg = boe_message_decode(buf);
-	fail_if(msg == NULL);
+	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
 	assert_int_equals(BOE_MAGIC, msg->header.StartOfMessage);
 	assert_int_equals(8, msg->header.MessageLength);
 	assert_int_equals(ReplayComplete, msg->header.MessageType);
 	assert_int_equals(0, msg->header.MatchingUnit);
 	assert_int_equals(0, msg->header.SequenceNumber);
-
-	free(msg);
 
 	buffer_delete(buf);
 
