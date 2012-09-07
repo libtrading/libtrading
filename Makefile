@@ -83,6 +83,7 @@ LIB_OBJS	+= ouch42_message.o
 LIB_OBJS	+= pitch_message.o
 LIB_OBJS	+= read-write.o
 LIB_OBJS	+= soupbin3_session.o
+LIB_OBJS	+= xdp_message.o
 
 LIB_DEPS	:= $(patsubst %.o,%.d,$(LIB_OBJS))
 

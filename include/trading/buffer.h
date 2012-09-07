@@ -28,6 +28,11 @@ static inline uint8_t buffer_peek_8(struct buffer *self)
 	return self->data[self->start];
 }
 
+static inline uint8_t buffer_peek_le16(struct buffer *self)
+{
+	return (self->data[self->start + 1] << 8) | (self->data[self->start]);
+}
+
 static inline uint8_t buffer_get_8(struct buffer *self)
 {
 	return self->data[self->start++];

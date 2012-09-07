@@ -22,6 +22,8 @@ world.
 
  * [SoupBinTCP](http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/soupbintcp.pdf) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/soupbin3_session.h))
 
+ * [NYSE XDP](http://www.nyxdata.com/nysedata/Default.aspx?tabid=1084) ([header](https://github.com/penberg/libtrading/blob/master/include/trading/xdp_message.h))
+
 ## Build Instructions
 
 To build via Makefile simply execute:
