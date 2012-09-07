@@ -1,4 +1,5 @@
 language: c
-
-script:
-  - "make check"
+compiler:
+  - gcc
+  - clang
+script: make check
