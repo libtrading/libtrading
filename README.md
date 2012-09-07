@@ -20,6 +20,12 @@ world.
 
  * [SoupBinTCP](http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/soupbintcp.pdf)
 
+## Build Instructions
+
+To build via Makefile simply execute:
+
+    make
+
 ## License
 
 Copyright (C) 2011-2012 Pekka Enberg
