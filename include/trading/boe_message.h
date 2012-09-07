@@ -107,10 +107,6 @@ struct boe_message {
 
 /* ReturnBitField8 - Reserved For Future Use */
 
-#define BOE_SESSION_SUB_ID_LEN		4
-#define BOE_USERNAME_LEN		4
-#define BOE_PASSWORD_LEN		10
-
 /*
  * Participant to BATS messages:
  */
@@ -121,9 +117,9 @@ struct boe_unit {
 } packed;
 
 struct boe_login_request {
-	char				SessionSubID[BOE_SESSION_SUB_ID_LEN];
-	char				Username[BOE_USERNAME_LEN];
-	char				Password[BOE_PASSWORD_LEN];
+	char				SessionSubID[4];
+	char				Username[4];
+	char				Password[10];
 	u8				NoUnspecifiedUnitReplay;
 	le64				OrderAcknowledgementBitfields;
 	le64				OrderRejectedBitfields;
@@ -144,11 +140,9 @@ struct boe_login_request {
  * BATS to participant messages:
  */
 
-#define BOE_LOGIN_RESPONSE_TEXT_LEN	60
-
 struct boe_login_response {
 	u8				LoginResponseStatus;
-	char				LoginResponseText[BOE_LOGIN_RESPONSE_TEXT_LEN];
+	char				LoginResponseText[60];
 	u8				NoUnspecifiedUnitReplay;
 	le64				OrderAcknowledgementBitfields;
 	le64				OrderRejectedBitfields;
@@ -166,11 +160,9 @@ struct boe_login_response {
 	struct boe_unit			Units[];
 } packed;
 
-#define BOE_LOGOUT_REASON_TEXT_LEN	60
-
 struct boe_logout {
 	u8				LogoutReason;
-	char				LogoutReasonText[BOE_LOGOUT_REASON_TEXT_LEN];
+	char				LogoutReasonText[60];
 	le32				LastReceivedSequenceNumber;
 	u8				NumberOfUnits;
 	struct boe_unit			Units[];

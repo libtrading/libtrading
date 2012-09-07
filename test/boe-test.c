@@ -3,6 +3,7 @@
 
 #include "trading/boe_message.h"
 #include "trading/buffer.h"
+#include "trading/core.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -37,9 +38,9 @@ void test_boe_login_request(void)
 	assert_int_equals(0, msg->header.MatchingUnit);
 	assert_int_equals(0, msg->header.SequenceNumber);
 
-	assert_mem_equals("0001", login->SessionSubID, BOE_SESSION_SUB_ID_LEN);
-	assert_mem_equals("TEST", login->Username, BOE_USERNAME_LEN);
-	assert_mem_equals("TESTING\0\0\0", login->Password, BOE_PASSWORD_LEN);
+	assert_mem_equals("0001", login->SessionSubID, ARRAY_SIZE(login->SessionSubID));
+	assert_mem_equals("TEST", login->Username, ARRAY_SIZE(login->Username));
+	assert_mem_equals("TESTING\0\0\0", login->Password, ARRAY_SIZE(login->Password));
 	assert_int_equals(0, login->NoUnspecifiedUnitReplay);
 	assert_int_equals(Symbol|ClearingFirm|ClearingAccount, login->OrderAcknowledgementBitfields);
 	assert_int_equals(Symbol|ClearingFirm|ClearingAccount, login->OrderRejectedBitfields);
