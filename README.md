@@ -6,7 +6,7 @@ world.
 
 ![alt text](https://github.com/penberg/libtrading/raw/master/htdocs/ticker-tape.jpg "Ticker Tape")
 
-## Supported protocols
+## Supported Protocols
 
  * [BOE](http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf)
 
@@ -32,5 +32,5 @@ To build via Makefile simply execute:
 
 Copyright (C) 2011-2012 Pekka Enberg
 
-libtrading is available for use under the following license, commonly known as
-the 3-clause (or "modified") BSD license. See the file LICENSE for details.
+libtrading is available for use under the 3-clause (or "modified") BSD license.
+See the file LICENSE for details.
