@@ -32,6 +32,10 @@ To build via Makefile simply execute:
 
     make
 
+To run the test harness:
+
+    make check
+
 ## License
 
 Copyright (C) 2011-2012 Pekka Enberg
