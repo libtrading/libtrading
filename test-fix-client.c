@@ -66,7 +66,7 @@ static const struct protocol_info protocols[] = {
 	{ "fix",		fix_session_initiate },
 	{ "fix42",		fix_session_initiate },
 	{ "fix43",		fix_session_initiate },
-	{ "fix43",		fix_session_initiate },
+	{ "fix44",		fix_session_initiate },
 };
 
 static const struct protocol_info *lookup_protocol_info(const char *name)
