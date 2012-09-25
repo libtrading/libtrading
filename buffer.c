@@ -65,7 +65,7 @@ bool buffer_printf(struct buffer *buf, const char *format, ...)
 char *buffer_find(struct buffer *buf, char c)
 {
 	while (buffer_first_char(buf) != c) {
-		if (!buffer_remaining(buf))
+		if (!buffer_size(buf))
 			return NULL;
 
 		buffer_advance(buf, 1);
