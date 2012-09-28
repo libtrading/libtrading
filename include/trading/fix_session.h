@@ -28,5 +28,6 @@ void fix_session_free(struct fix_session *self);
 int fix_session_send(struct fix_session *self, struct fix_message *msg, int flags);
 bool fix_session_logon(struct fix_session *session);
 bool fix_session_logout(struct fix_session *session);
+bool fix_session_heartbeat(struct fix_session *session, bool request_response);
 
 #endif

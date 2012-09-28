@@ -85,13 +85,47 @@ bool fix_session_logout(struct fix_session *session)
 	};
 	fix_session_send(session, &logout_msg, 0);
 
+retry:
+	/* TODO: Logout should be forced after grace period elapsed */
+
 	response = fix_message_recv(session->sockfd, 0);
 	if (!response)
 		return false;
+
+	if (fix_message_type_is(response, FIX_MSG_TEST_REQUEST)) {
+		fix_session_heartbeat(session, true);
+		fix_message_free(response);
+		goto retry;
+	}
 
 	ret = fix_message_type_is(response, FIX_MSG_LOGOUT);
 
 	fix_message_free(response);
 
 	return ret;
+}
+
+bool fix_session_heartbeat(struct fix_session *session, bool request_response)
+{
+	struct fix_message heartbeat_msg;
+	/* Any string can be used as the TestReqID */
+	struct fix_field fields[] = {
+		FIX_STRING_FIELD(TestReqID, "TestReqID"),
+	};
+	long nr_fields = ARRAY_SIZE(fields);
+
+	/* Hearbeat is not the result of Test Request */
+	/* Do not include TestReqID tag in heartbeat */
+	if (!request_response)
+		nr_fields--;
+
+	heartbeat_msg	= (struct fix_message) {
+		.msg_type	= FIX_MSG_HEARTBEAT,
+		.nr_fields	= nr_fields,
+		.fields		= fields,
+	};
+
+	fix_session_send(session, &heartbeat_msg, 0);
+
+	return true;
 }

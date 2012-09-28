@@ -36,6 +36,7 @@ enum fix_tag {
 	TargetCompID		= 56,
 	EncryptMethod		= 98,
 	HeartBtInt		= 108,
+	TestReqID		= 112,
 };
 
 struct fix_field {
