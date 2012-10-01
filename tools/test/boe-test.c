@@ -1,9 +1,9 @@
 #include "test-suite.h"
 #include "harness.h"
 
-#include "trading/boe_message.h"
-#include "trading/buffer.h"
-#include "trading/array.h"
+#include "libtrading/proto/boe_message.h"
+#include "libtrading/buffer.h"
+#include "libtrading/array.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
+
+#define DATA_PATH "tools/test/protocol/boe/"
 
 static char recv_buffer[BOE_MAX_MESSAGE_LEN];
 
@@ -24,7 +26,7 @@ void test_boe_login_request(void)
 
 	buf = buffer_new(1024);
 
-	fd = open("test/protocol/boe/login-request-message.bin", O_RDONLY);
+	fd = open(DATA_PATH "login-request-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
 	fail_if(buffer_read(buf, fd) < 0);
@@ -79,7 +81,7 @@ void test_boe_login_response(void)
 
 	buf = buffer_new(1024);
 
-	fd = open("test/protocol/boe/login-response-message.bin", O_RDONLY);
+	fd = open(DATA_PATH "login-response-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
 	fail_if(buffer_read(buf, fd) < 0);
@@ -135,7 +137,7 @@ void test_boe_logout_request(void)
 
 	buf = buffer_new(1024);
 
-	fd = open("test/protocol/boe/logout-request-message.bin", O_RDONLY);
+	fd = open(DATA_PATH "logout-request-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
 	fail_if(buffer_read(buf, fd) < 0);
@@ -161,7 +163,7 @@ void test_boe_client_heartbeat(void)
 
 	buf = buffer_new(1024);
 
-	fd = open("test/protocol/boe/client-heartbeat-message.bin", O_RDONLY);
+	fd = open(DATA_PATH "client-heartbeat-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
 	fail_if(buffer_read(buf, fd) < 0);
@@ -188,7 +190,7 @@ void test_boe_logout(void)
 
 	buf = buffer_new(1024);
 
-	fd = open("test/protocol/boe/logout-message.bin", O_RDONLY);
+	fd = open(DATA_PATH "logout-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
 	fail_if(buffer_read(buf, fd) < 0);
@@ -231,7 +233,7 @@ void test_boe_server_heartbeat(void)
 
 	buf = buffer_new(1024);
 
-	fd = open("test/protocol/boe/server-heartbeat-message.bin", O_RDONLY);
+	fd = open(DATA_PATH "server-heartbeat-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
 	fail_if(buffer_read(buf, fd) < 0);
@@ -257,7 +259,7 @@ void test_boe_replay_complete(void)
 
 	buf = buffer_new(1024);
 
-	fd = open("test/protocol/boe/replay-complete-message.bin", O_RDONLY);
+	fd = open(DATA_PATH "replay-complete-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
 	fail_if(buffer_read(buf, fd) < 0);

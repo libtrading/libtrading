@@ -1,8 +1,8 @@
 #include "test-suite.h"
 #include "harness.h"
 
-#include "trading/fix_message.h"
-#include "trading/buffer.h"
+#include "libtrading/proto/fix_message.h"
+#include "libtrading/buffer.h"
 
 #include <string.h>
 

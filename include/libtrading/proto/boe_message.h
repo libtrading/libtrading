@@ -1,7 +1,7 @@
 #ifndef LIBTRADING_BOE_MESSAGE_H
 #define LIBTRADING_BOE_MESSAGE_H
 
-#include "trading/types.h"
+#include "libtrading/types.h"
 
 #include <stddef.h>
 

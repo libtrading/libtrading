@@ -8,7 +8,11 @@ AR	:= ar
 XXD	?= xxd
 
 # Set up source directory for GNU Make
+libdir		:= lib
+prtdir		:= lib/proto
+
 srcdir		:= $(CURDIR)
+
 VPATH		:= $(srcdir)
 
 EXTRA_WARNINGS := -Wcast-align
@@ -32,7 +36,7 @@ EXTRA_WARNINGS += -Wstrict-prototypes
 EXTRA_WARNINGS += -Wdeclaration-after-statement
 
 # Compile flags
-CFLAGS		:= -I$(srcdir)/include -Wall $(EXTRA_WARNINGS) -g -O3 -std=gnu99
+CFLAGS		:= -I$(CURDIR)/include -Wall $(EXTRA_WARNINGS) -g -O3 -std=gnu99
 
 # Output to current directory by default
 O =
@@ -49,7 +53,7 @@ endif
 export E Q
 
 # Project files
-PROGRAMS := test-fix-client test-fix-server test-itch41
+PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-itch41
 
 DEFINES =
 INCLUDES =
@@ -59,9 +63,9 @@ ifeq ($(uname_S),Linux)
 	DEFINES += -D_GNU_SOURCE
 endif
 
-test-fix-server_EXTRA_DEPS += die.o
+test-fix-server_EXTRA_DEPS += lib/die.o
 
-test-fix-client_EXTRA_DEPS += die.o
+test-fix-client_EXTRA_DEPS += lib/die.o
 
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
@@ -72,31 +76,31 @@ LIB_FILE := libtrading.a
 
 LIBS := $(LIB_FILE)
 
-LIB_OBJS	+= boe_message.o
-LIB_OBJS	+= buffer.o
-LIB_OBJS	+= fix_message.o
-LIB_OBJS	+= fix_session.o
-LIB_OBJS	+= itch40_message.o
-LIB_OBJS	+= itch41_message.o
-LIB_OBJS	+= mbt_quote_message.o
-LIB_OBJS	+= mmap-buffer.o
-LIB_OBJS	+= ouch42_message.o
-LIB_OBJS	+= pitch_message.o
-LIB_OBJS	+= read-write.o
-LIB_OBJS	+= soupbin3_session.o
-LIB_OBJS	+= xdp_message.o
+LIB_OBJS	+= lib/buffer.o
+LIB_OBJS	+= lib/mmap-buffer.o
+LIB_OBJS	+= lib/read-write.o
+LIB_OBJS	+= lib/proto/boe_message.o
+LIB_OBJS	+= lib/proto/fix_message.o
+LIB_OBJS	+= lib/proto/fix_session.o
+LIB_OBJS	+= lib/proto/itch40_message.o
+LIB_OBJS	+= lib/proto/itch41_message.o
+LIB_OBJS	+= lib/proto/mbt_quote_message.o
+LIB_OBJS	+= lib/proto/ouch42_message.o
+LIB_OBJS	+= lib/proto/pitch_message.o
+LIB_OBJS	+= lib/proto/soupbin3_session.o
+LIB_OBJS	+= lib/proto/xdp_message.o
 
 LIB_DEPS	:= $(patsubst %.o,%.d,$(LIB_OBJS))
 
 TEST_PROGRAM	:= test-trade
-TEST_SUITE_H	:= test/test-suite.h
-TEST_RUNNER_C	:= test/test-runner.c
-TEST_RUNNER_OBJ := test/test-runner.o
+TEST_SUITE_H	:= tools/test/test-suite.h
+TEST_RUNNER_C	:= tools/test/test-runner.c
+TEST_RUNNER_OBJ := tools/test/test-runner.o
 
-TEST_OBJS += test/boe-test.o
-TEST_OBJS += test/harness.o
-TEST_OBJS += test/mbt_quote_message-test.o
-TEST_OBJS += test/unparse-test.o
+TEST_OBJS += tools/test/boe-test.o
+TEST_OBJS += tools/test/harness.o
+TEST_OBJS += tools/test/mbt_quote_message-test.o
+TEST_OBJS += tools/test/unparse-test.o
 
 TEST_SRC	:= $(patsubst %.o,%.c,$(TEST_OBJS))
 TEST_DEPS	:= $(patsubst %.o,%.d,$(TEST_OBJS))
@@ -132,7 +136,7 @@ endif
 	$(Q) $(CC) -c $(CFLAGS) $< -o $@
 
 
-$(foreach p,$(PROGRAMS),$(eval $(p): $($(p)_EXTRA_DEPS) $(LIBS)))
+$(foreach p,$(PROGRAMS),$(eval $(p): $($(notdir $p)_EXTRA_DEPS) $(LIBS)))
 $(PROGRAMS): % : %.o
 	$(E) "  LINK    " $@
 	$(Q) $(LD) $(LDFLAGS) -o $@ $^ $($@_EXTRA_OBJS)
@@ -146,13 +150,13 @@ test: $(TEST_PROGRAM)
 	$(Q) ./$(TEST_PROGRAM)
 .PHONY: test
 
-BOE_TEST_DATA += test/protocol/boe/login-request-message.bin
-BOE_TEST_DATA += test/protocol/boe/logout-request-message.bin
-BOE_TEST_DATA += test/protocol/boe/client-heartbeat-message.bin
-BOE_TEST_DATA += test/protocol/boe/login-response-message.bin
-BOE_TEST_DATA += test/protocol/boe/logout-message.bin
-BOE_TEST_DATA += test/protocol/boe/server-heartbeat-message.bin
-BOE_TEST_DATA += test/protocol/boe/replay-complete-message.bin
+BOE_TEST_DATA += tools/test/protocol/boe/login-request-message.bin
+BOE_TEST_DATA += tools/test/protocol/boe/logout-request-message.bin
+BOE_TEST_DATA += tools/test/protocol/boe/client-heartbeat-message.bin
+BOE_TEST_DATA += tools/test/protocol/boe/login-response-message.bin
+BOE_TEST_DATA += tools/test/protocol/boe/logout-message.bin
+BOE_TEST_DATA += tools/test/protocol/boe/server-heartbeat-message.bin
+BOE_TEST_DATA += tools/test/protocol/boe/replay-complete-message.bin
 
 %.bin: %.hexdump
 	$(E) "  XXD     " $@
@@ -192,7 +196,7 @@ clean:
 tags: FORCE
 	$(E) "  TAGS"
 	$(Q) rm -f tags
-	$(Q) ctags-exuberant -a *.c
+	$(Q) ctags-exuberant -a $(join lib lib/proto, /*.c /*.c)
 	$(Q) ctags-exuberant -a -R include
 
 PHONY += FORCE

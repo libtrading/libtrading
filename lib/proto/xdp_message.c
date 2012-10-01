@@ -1,6 +1,6 @@
-#include "trading/xdp_message.h"
+#include "libtrading/proto/xdp_message.h"
 
-#include "trading/buffer.h"
+#include "libtrading/buffer.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -1,6 +1,6 @@
-#include "trading/soupbin3_session.h"
+#include "libtrading/proto/soupbin3_session.h"
 
-#include "trading/buffer.h"
+#include "libtrading/buffer.h"
 
 #include <assert.h>
 #include <stdlib.h>

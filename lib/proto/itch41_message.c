@@ -1,6 +1,6 @@
-#include "trading/itch41_message.h"
+#include "libtrading/proto/itch41_message.h"
 
-#include "trading/buffer.h"
+#include "libtrading/buffer.h"
 
 #include <stdlib.h>
 #include <string.h>

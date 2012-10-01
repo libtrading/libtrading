@@ -1,4 +1,4 @@
-#include "trading/die.h"
+#include "libtrading/die.h"
 
 #include <stdlib.h>
 #include <stdarg.h>

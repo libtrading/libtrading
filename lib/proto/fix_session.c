@@ -1,7 +1,7 @@
-#include "trading/fix_session.h"
+#include "libtrading/proto/fix_session.h"
+#include "libtrading/proto/fix_message.h"
 
-#include "trading/fix_message.h"
-#include "trading/array.h"
+#include "libtrading/array.h"
 
 #include <stdlib.h>
 

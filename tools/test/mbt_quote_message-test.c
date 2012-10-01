@@ -1,8 +1,8 @@
 #include "test-suite.h"
 #include "harness.h"
 
-#include "trading/mbt_quote_message.h"
-#include "trading/buffer.h"
+#include "libtrading/proto/mbt_quote_message.h"
+#include "libtrading/buffer.h"
 
 #include <stdlib.h>
 

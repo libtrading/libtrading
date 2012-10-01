@@ -1,7 +1,7 @@
 #ifndef LIBTRADING_OUCH42_MESSAGE_H
 #define LIBTRADING_OUCH42_MESSAGE_H
 
-#include "trading/types.h"
+#include "libtrading/types.h"
 
 struct buffer;
 

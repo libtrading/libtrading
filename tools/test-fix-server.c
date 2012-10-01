@@ -1,8 +1,8 @@
-#include "trading/array.h"
-#include "trading/die.h"
+#include "libtrading/proto/fix_message.h"
+#include "libtrading/proto/fix_session.h"
 
-#include "trading/fix_message.h"
-#include "trading/fix_session.h"
+#include "libtrading/array.h"
+#include "libtrading/die.h"
 
 #include <netinet/tcp.h>
 #include <netinet/in.h>

@@ -2,10 +2,10 @@
 *.o
 /libtrading.a
 /tags
-/test/protocol/boe/*.bin
-/test/test-runner.c
-/test/test-suite.h
-/test-fix-client
-/test-fix-server
-/test-itch41
-/test-trade
+/tools/test/protocol/boe/*.bin
+/tools/test-fix-client
+/tools/test-fix-server
+/tools/test-itch41
+/tools/test/test-runner.c
+/tools/test/test-suite.h
+/tools/test/test-trade

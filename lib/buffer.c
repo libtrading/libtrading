@@ -1,6 +1,6 @@
-#include "trading/buffer.h"
+#include "libtrading/buffer.h"
 
-#include "trading/read-write.h"
+#include "libtrading/read-write.h"
 
 #include <stdarg.h>
 #include <stdlib.h>

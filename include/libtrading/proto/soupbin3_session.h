@@ -1,7 +1,7 @@
 #ifndef LIBTRADING_SOUPBIN3_SESSION_H
 #define LIBTRADING_SOUPBIN3_SESSION_H
 
-#include "trading/types.h"
+#include "libtrading/types.h"
 
 struct buffer;
 

@@ -1,8 +1,8 @@
-#include "trading/fix_message.h"
+#include "libtrading/proto/fix_message.h"
 
-#include "trading/read-write.h"
-#include "trading/buffer.h"
-#include "trading/array.h"
+#include "libtrading/read-write.h"
+#include "libtrading/buffer.h"
+#include "libtrading/array.h"
 
 #include <inttypes.h>
 #include <sys/time.h>

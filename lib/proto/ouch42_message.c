@@ -1,6 +1,6 @@
-#include "trading/ouch42_message.h"
+#include "libtrading/proto/ouch42_message.h"
 
-#include "trading/buffer.h"
+#include "libtrading/buffer.h"
 
 #include <string.h>
 

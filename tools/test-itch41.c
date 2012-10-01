@@ -1,3 +1,7 @@
+#include "libtrading/proto/itch41_message.h"
+
+#include "libtrading/buffer.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <libgen.h>
@@ -8,9 +12,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
-
-#include "trading/itch41_message.h"
-#include "trading/buffer.h"
 
 static char *program;
 

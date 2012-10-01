@@ -1,7 +1,7 @@
 #ifndef LIBTRADING_PITCH_MESSAGE_H
 #define LIBTRADING_PITCH_MESSAGE_H
 
-#include "trading/types.h"
+#include "libtrading/types.h"
 
 struct buffer;
 
