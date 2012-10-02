@@ -52,6 +52,7 @@ bool fix_session_logon(struct fix_session *session)
 	struct fix_field fields[] = {
 		FIX_INT_FIELD(EncryptMethod, 0),
 		FIX_INT_FIELD(HeartBtInt, 15),
+		FIX_STRING_FIELD(ResetSeqNumFlag, "Y"),
 	};
 	bool ret;
 

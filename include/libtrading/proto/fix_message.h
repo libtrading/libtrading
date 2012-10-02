@@ -37,6 +37,7 @@ enum fix_tag {
 	EncryptMethod		= 98,
 	HeartBtInt		= 108,
 	TestReqID		= 112,
+	ResetSeqNumFlag		= 141,
 };
 
 struct fix_field {
