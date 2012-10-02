@@ -27,7 +27,7 @@ static void fix_session_accept(int incoming_fd)
 
 	session		= fix_session_new(incoming_fd, FIX_4_4, "BUYSIDE", "SELLSIDE");
 
-	msg = fix_message_recv(incoming_fd, 0);
+	msg = fix_session_recv(session, 0);
 
 	logon_msg	= (struct fix_message) {
 		.msg_type	= FIX_MSG_LOGON,
@@ -39,7 +39,7 @@ static void fix_session_accept(int incoming_fd)
 	for (;;) {
 		struct fix_message logout_msg;
 
-		msg = fix_message_recv(incoming_fd, 0);
+		msg = fix_session_recv(session, 0);
 		if (!msg || !fix_message_type_is(msg, FIX_MSG_LOGOUT)) {
 			fix_message_free(msg);
 			continue;

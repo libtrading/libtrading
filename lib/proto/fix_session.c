@@ -94,7 +94,7 @@ bool fix_session_logon(struct fix_session *session)
 
 	fix_session_send(session, &logon_msg, 0);
 
-	response = fix_message_recv(session->sockfd, 0);
+	response = fix_session_recv(session, 0);
 	if (!response)
 		return false;
 
@@ -119,7 +119,7 @@ bool fix_session_logout(struct fix_session *session)
 retry:
 	/* TODO: Logout should be forced after grace period elapsed */
 
-	response = fix_message_recv(session->sockfd, 0);
+	response = fix_session_recv(session, 0);
 	if (!response)
 		return false;
 
