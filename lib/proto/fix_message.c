@@ -68,10 +68,29 @@ static const char *parse_value(struct buffer *self)
 	return start;
 }
 
+static void next_tag(struct buffer *self)
+{
+	char *delim;
+
+	delim = buffer_find(self, 0x01);
+
+	if (!delim)
+		return;
+
+	if (*delim != 0x01)
+		return;
+
+	buffer_advance(self, 1);
+
+	return;
+}
+
 static const char *parse_field(struct buffer *self, int tag)
 {
-	if (parse_tag(self) != tag)
+	if (parse_tag(self) != tag) {
+		next_tag(self);
 		return NULL;
+	}
 
 	return parse_value(self);
 }
