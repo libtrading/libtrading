@@ -17,6 +17,13 @@ struct buffer;
 #define FIX_MSG_LOGOUT		"5"
 #define FIX_MSG_LOGON		"A"
 
+/*
+ * Maximum FIX message size
+ */
+#define MAX_HEAD_LEN		32UL
+#define MAX_BODY_LEN		128UL
+#define MAX_MESSAGE_SIZE	(MAX_HEAD_LEN + MAX_BODY_LEN)
+
 enum fix_type {
 	FIX_TYPE_INT,
 	FIX_TYPE_FLOAT,
@@ -78,7 +85,7 @@ struct fix_message {
 	 * These are required fields.
 	 */
 	const char			*begin_string;
-	/* XXX: BodyLength */
+	unsigned long			body_length;
 	const char			*msg_type;
 	const char			*sender_comp_id;
 	const char			*target_comp_id;

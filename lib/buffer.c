@@ -92,6 +92,27 @@ ssize_t buffer_read(struct buffer *buf, int fd)
 	return len;
 }
 
+ssize_t buffer_nread(struct buffer *buf, int fd, size_t size)
+{
+	size_t count;
+	ssize_t len;
+	void *end;
+
+	end	= buffer_end(buf);
+	count	= buffer_remaining(buf);
+
+	if (count > size)
+		count = size;
+
+	len = xread(fd, end, count);
+	if (len < 0)
+		return len;
+
+	buf->end += len;
+
+	return len;
+}
+
 ssize_t buffer_write(struct buffer *buf, int fd)
 {
 	size_t count;

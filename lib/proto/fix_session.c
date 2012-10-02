@@ -1,5 +1,4 @@
 #include "libtrading/proto/fix_session.h"
-#include "libtrading/proto/fix_message.h"
 
 #include "libtrading/array.h"
 
@@ -21,6 +20,12 @@ struct fix_session *fix_session_new(int sockfd, enum fix_version fix_version, co
 	if (!self)
 		return NULL;
 
+	self->rx_buffer		= buffer_new(RECV_BUFFER_SIZE);
+	if (!self->rx_buffer) {
+		fix_session_free(self);
+		return NULL;
+	}
+
 	self->sockfd		= sockfd;
 	self->begin_string	= begin_strings[fix_version];
 	self->sender_comp_id	= sender_comp_id;
@@ -32,6 +37,7 @@ struct fix_session *fix_session_new(int sockfd, enum fix_version fix_version, co
 
 void fix_session_free(struct fix_session *self)
 {
+	buffer_delete(self->rx_buffer);
 	free(self);
 }
 
@@ -43,6 +49,30 @@ int fix_session_send(struct fix_session *self, struct fix_message *msg, int flag
 	msg->msg_seq_num	= self->out_msg_seq_num++;
 
 	return fix_message_send(msg, self->sockfd, flags);
+}
+
+struct fix_message *fix_session_recv(struct fix_session *self, int flags)
+{
+	ssize_t nr;
+	size_t size;
+	struct buffer *buffer = self->rx_buffer;
+
+	if (fix_session_buffer_full(self))
+		buffer_compact(buffer);
+
+	size = buffer_remaining(buffer);
+	if (size > MAX_MESSAGE_SIZE) {
+		size -= MAX_MESSAGE_SIZE;
+
+		nr = buffer_nread(buffer, self->sockfd, size);
+		if (nr < 0)
+			return NULL;
+	}
+
+	if(!buffer_size(buffer))
+		return NULL;
+
+	return fix_message_parse(buffer);
 }
 
 bool fix_session_logon(struct fix_session *session)

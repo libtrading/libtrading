@@ -15,13 +15,6 @@
 #include <stdio.h>
 #include <time.h>
 
-/*
- * Maximum FIX message size
- */
-#define MAX_HEAD_LEN		32UL
-#define MAX_BODY_LEN		128UL
-#define MAX_MESSAGE_SIZE	(MAX_HEAD_LEN + MAX_BODY_LEN)
-
 static int parse_tag(struct buffer *self)
 {
 	const char *delim;
@@ -104,6 +97,17 @@ static bool checksum(struct fix_message *self, struct buffer *buffer)
 	// if BodyLength is invalid (e.g. does not point to CheckSum) -> garbled
 	// if CheckSum does not match or invalid or empty -> garbled
 
+	/* The number of bytes between tag MsgType and buffer's start */
+	int offset = buffer_start(buffer) - (self->msg_type - 3);
+	/*
+	 * Checksum tag and its trailing delimiter increase
+	 * the message's length by seven bytes - "10=***\x01"
+	 */
+	if (buffer_size(buffer) + offset < self->body_length + 7)
+		return false;
+
+	buffer_advance(buffer, self->body_length + 7 - offset);
+
 	return true;
 }
 
@@ -118,9 +122,17 @@ static bool parse_msg_type(struct fix_message *self)
 
 static bool parse_body_length(struct fix_message *self)
 {
-	parse_field(self->head_buf, BodyLength);
+	int len;
+	const char *ptr = parse_field(self->head_buf, BodyLength);
 
-	// if second field is not BodyLength -> garbled
+	if (!ptr)
+		return false;
+
+	len = strtol(ptr, NULL, 10);
+	self->body_length = len;
+
+	if (len <= 0 || len > MAX_MESSAGE_SIZE)
+		return false;
 
 	return true;
 }
@@ -158,20 +170,19 @@ struct fix_message *fix_message_parse(struct buffer *buffer)
 
 	self->head_buf = buffer;
 
-	if (!first_three_fields(self))
-		goto garbled;
+	while (buffer_size(buffer) > 0) {
+		if (!first_three_fields(self))
+			continue;
 
-	if (!checksum(self, buffer))
-		goto garbled;
+		if (!checksum(self, buffer))
+			continue;
 
-	rest_of_message(self, buffer);
+		rest_of_message(self, buffer);
 
-	return self;
+		return self;
+	}
 
-garbled:
-	/* TODO: Make sure buffer is either empty or start of it points to a new BeginString */
 	fix_message_free(self);
-
 	return NULL;
 }
 
@@ -194,12 +205,6 @@ void fix_message_free(struct fix_message *self)
 {
 	if (!self)
 		return;
-
-	if (self->head_buf)
-		buffer_delete(self->head_buf);
-
-	if (self->body_buf)
-		buffer_delete(self->body_buf);
 
 	free(self);
 }
