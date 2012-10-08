@@ -131,7 +131,7 @@ static bool parse_body_length(struct fix_message *self)
 	len = strtol(ptr, NULL, 10);
 	self->body_length = len;
 
-	if (len <= 0 || len > MAX_MESSAGE_SIZE)
+	if (len <= 0 || len > FIX_MAX_MESSAGE_SIZE)
 		return false;
 
 	return true;
@@ -297,14 +297,14 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 	struct iovec iov[2];
 	int ret = 0;
 
-	self->head_buf = buffer_new(MAX_HEAD_LEN);
+	self->head_buf = buffer_new(FIX_MAX_HEAD_LEN);
 	if (!self->head_buf) {
 		errno = ENOMEM;
 		ret = -1;
 		goto error_out;
 	}
 
-	self->body_buf = buffer_new(MAX_BODY_LEN);
+	self->body_buf = buffer_new(FIX_MAX_BODY_LEN);
 	if (!self->body_buf) {
 		errno = ENOMEM;
 		ret = -1;
@@ -327,25 +327,4 @@ error_out:
 	self->head_buf = self->body_buf = NULL;
 
 	return ret;
-}
-
-struct fix_message *fix_message_recv(int sockfd, int flags)
-{
-	struct buffer *buf;
-	ssize_t nr;
-
-	buf = buffer_new(MAX_MESSAGE_SIZE);
-	if (!buf)
-		return NULL;
-
-	nr = buffer_read(buf, sockfd);
-	if (nr <= 0)
-		goto out_error;
-
-	return fix_message_parse(buf);
-
-out_error:
-	buffer_delete(buf);
-
-	return NULL;
 }

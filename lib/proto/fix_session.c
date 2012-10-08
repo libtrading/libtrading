@@ -51,6 +51,11 @@ int fix_session_send(struct fix_session *self, struct fix_message *msg, int flag
 	return fix_message_send(msg, self->sockfd, flags);
 }
 
+static inline bool fix_session_buffer_full(struct fix_session *session)
+{
+	return buffer_remaining(session->rx_buffer) <= FIX_MAX_MESSAGE_SIZE;
+}
+
 struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 {
 	ssize_t nr;
@@ -61,8 +66,8 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 		buffer_compact(buffer);
 
 	size = buffer_remaining(buffer);
-	if (size > MAX_MESSAGE_SIZE) {
-		size -= MAX_MESSAGE_SIZE;
+	if (size > FIX_MAX_MESSAGE_SIZE) {
+		size -= FIX_MAX_MESSAGE_SIZE;
 
 		nr = buffer_nread(buffer, self->sockfd, size);
 		if (nr < 0)

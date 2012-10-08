@@ -39,9 +39,4 @@ bool fix_session_logon(struct fix_session *session);
 bool fix_session_logout(struct fix_session *session);
 bool fix_session_heartbeat(struct fix_session *session, bool request_response);
 
-static inline bool fix_session_buffer_full(struct fix_session *session)
-{
-	return (buffer_remaining(session->rx_buffer) <= MAX_MESSAGE_SIZE);
-}
-
 #endif
