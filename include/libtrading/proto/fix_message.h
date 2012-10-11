@@ -91,6 +91,7 @@ struct fix_message {
 	const char			*target_comp_id;
 	unsigned long			msg_seq_num;
 	/* XXX: SendingTime */
+	const char			*check_sum;
 
 	/*
 	 * These buffers are used for wire protocol parsing and unparsing.

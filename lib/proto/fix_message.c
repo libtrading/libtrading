@@ -54,8 +54,6 @@ static const char *parse_value(struct buffer *self)
 	if (*end != 0x01)
 		return NULL;
 
-	*end = '\0';
-
 	buffer_advance(self, 1);
 
 	return start;
@@ -92,13 +90,33 @@ static void rest_of_message(struct fix_message *self, struct buffer *buffer)
 {
 }
 
+static bool verify_checksum(struct fix_message *self, struct buffer *buffer)
+{
+	uint8_t cksum, actual;
+
+	cksum	= strtol(self->check_sum, NULL, 10);
+
+	actual	= buffer_sum_range(buffer, self->begin_string - 2, self->check_sum - 3);
+
+	return actual == cksum;
+}
+
+/*
+ * The function assumes that the following patterns have fixed sizes:
+ * - "BeginString=" ("8=") is 2 bytes long
+ * - "CheckSum=" ("10=") is 3 bytes long
+ * - "MsgType=" ("35=") is 3 bytes long
+ */
 static bool checksum(struct fix_message *self, struct buffer *buffer)
 {
-	// if BodyLength is invalid (e.g. does not point to CheckSum) -> garbled
-	// if CheckSum does not match or invalid or empty -> garbled
+	const char *start;
+	int offset;
+
+	start = buffer_start(buffer);
 
 	/* The number of bytes between tag MsgType and buffer's start */
-	int offset = buffer_start(buffer) - (self->msg_type - 3);
+	offset = start - (self->msg_type - 3);
+
 	/*
 	 * Checksum tag and its trailing delimiter increase
 	 * the message's length by seven bytes - "10=***\x01"
@@ -106,9 +124,14 @@ static bool checksum(struct fix_message *self, struct buffer *buffer)
 	if (buffer_size(buffer) + offset < self->body_length + 7)
 		return false;
 
-	buffer_advance(buffer, self->body_length + 7 - offset);
+	/* Buffer's start will point to the CheckSum tag */
+	buffer_advance(buffer, self->body_length - offset);
 
-	return true;
+	self->check_sum = parse_field(buffer, CheckSum);
+	if (!self->check_sum)
+		return false;
+
+	return verify_checksum(self, buffer);
 }
 
 static bool parse_msg_type(struct fix_message *self)

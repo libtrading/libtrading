@@ -29,6 +29,17 @@ void buffer_delete(struct buffer *buf)
 	free(buf);
 }
 
+uint8_t buffer_sum_range(struct buffer *buf, const char *start, const char *end)
+{
+	unsigned long sum = 0;
+	const char *ptr;
+
+	for (ptr = start; ptr < end; ptr++)
+		sum += *ptr;
+
+	return sum;
+}
+
 uint8_t buffer_sum(struct buffer *buf)
 {
 	unsigned long sum = 0;

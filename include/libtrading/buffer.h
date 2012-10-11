@@ -18,6 +18,7 @@ struct buffer *buffer_new(unsigned long capacity);
 void buffer_delete(struct buffer *self);
 bool buffer_printf(struct buffer *self, const char *format, ...);
 char *buffer_find(struct buffer *self, char delim);
+uint8_t buffer_sum_range(struct buffer *buf, const char *start, const char *end);
 uint8_t buffer_sum(struct buffer *self);
 
 ssize_t buffer_read(struct buffer *self, int fd);
@@ -98,7 +99,7 @@ static inline char buffer_first_char(struct buffer *self)
 	return *start;
 }
 
-static inline void buffer_advance(struct buffer *self, unsigned long n)
+static inline void buffer_advance(struct buffer *self, long n)
 {
 	self->start += n;
 }
