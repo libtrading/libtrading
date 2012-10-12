@@ -34,6 +34,7 @@ EXTRA_WARNINGS += -Wnested-externs
 EXTRA_WARNINGS += -Wold-style-definition
 EXTRA_WARNINGS += -Wstrict-prototypes
 EXTRA_WARNINGS += -Wdeclaration-after-statement
+EXTRA_WARNINGS += -Werror
 
 # Compile flags
 CFLAGS		:= -I$(CURDIR)/include -Wall $(EXTRA_WARNINGS) -g -O3 -std=gnu99
