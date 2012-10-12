@@ -26,6 +26,18 @@ struct fix_session *fix_session_new(int sockfd, enum fix_version fix_version, co
 		return NULL;
 	}
 
+	self->tx_head_buffer	= buffer_new(FIX_TX_HEAD_BUFFER_SIZE);
+	if (!self->tx_head_buffer) {
+		fix_session_free(self);
+		return NULL;
+	}
+
+	self->tx_body_buffer	= buffer_new(FIX_TX_BODY_BUFFER_SIZE);
+	if (!self->tx_body_buffer) {
+		fix_session_free(self);
+		return NULL;
+	}
+
 	self->sockfd		= sockfd;
 	self->begin_string	= begin_strings[fix_version];
 	self->sender_comp_id	= sender_comp_id;
@@ -38,6 +50,8 @@ struct fix_session *fix_session_new(int sockfd, enum fix_version fix_version, co
 void fix_session_free(struct fix_session *self)
 {
 	buffer_delete(self->rx_buffer);
+	buffer_delete(self->tx_head_buffer);
+	buffer_delete(self->tx_body_buffer);
 	free(self);
 }
 
@@ -47,6 +61,11 @@ int fix_session_send(struct fix_session *self, struct fix_message *msg, int flag
 	msg->sender_comp_id	= self->sender_comp_id;
 	msg->target_comp_id	= self->target_comp_id;
 	msg->msg_seq_num	= self->out_msg_seq_num++;
+
+	msg->head_buf = self->tx_head_buffer;
+	buffer_reset(msg->head_buf);
+	msg->body_buf = self->tx_body_buffer;
+	buffer_reset(msg->body_buf);
 
 	return fix_message_send(msg, self->sockfd, flags);
 }

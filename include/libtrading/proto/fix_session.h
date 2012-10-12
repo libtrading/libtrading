@@ -8,6 +8,8 @@
 #include <stdbool.h>
 
 #define RECV_BUFFER_SIZE	4096UL
+#define FIX_TX_HEAD_BUFFER_SIZE	FIX_MAX_HEAD_LEN
+#define FIX_TX_BODY_BUFFER_SIZE	FIX_MAX_BODY_LEN
 
 struct fix_message;
 
@@ -29,6 +31,8 @@ struct fix_session {
 	unsigned long			out_msg_seq_num;
 
 	struct buffer			*rx_buffer;
+	struct buffer			*tx_head_buffer;
+	struct buffer			*tx_body_buffer;
 };
 
 struct fix_session *fix_session_new(int sockfd, enum fix_version, const char *sender_comp_id, const char *target_comp_id);

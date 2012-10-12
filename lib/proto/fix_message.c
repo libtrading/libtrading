@@ -331,20 +331,6 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 	struct iovec iov[2];
 	int ret = 0;
 
-	self->head_buf = buffer_new(FIX_MAX_HEAD_LEN);
-	if (!self->head_buf) {
-		errno = ENOMEM;
-		ret = -1;
-		goto error_out;
-	}
-
-	self->body_buf = buffer_new(FIX_MAX_BODY_LEN);
-	if (!self->body_buf) {
-		errno = ENOMEM;
-		ret = -1;
-		goto error_out;
-	}
-
 	fix_message_unparse(self);
 
 	buffer_to_iovec(self->head_buf, &iov[0]);
@@ -356,8 +342,6 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 	}
 
 error_out:
-	buffer_delete(self->head_buf);
-	buffer_delete(self->body_buf);
 	self->head_buf = self->body_buf = NULL;
 
 	return ret;
