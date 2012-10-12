@@ -186,10 +186,8 @@ struct fix_message *fix_message_parse(struct buffer *buffer)
 	struct fix_message *self;
 
 	self		= fix_message_new();
-	if (!self) {
-		buffer_delete(buffer);
+	if (!self)
 		return NULL;
-	}
 
 	self->head_buf = buffer;
 
