@@ -58,12 +58,12 @@ static inline bool fix_session_buffer_full(struct fix_session *session)
 
 struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 {
-	long shift;
-	ssize_t nr;
-	size_t size;
-	const char *start_prev;
-	struct fix_message *msg;
 	struct buffer *buffer = self->rx_buffer;
+	struct fix_message *msg;
+	const char *start_prev;
+	size_t size;
+	ssize_t nr;
+	long shift;
 
 	start_prev = buffer_start(buffer);
 
@@ -72,6 +72,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 		return msg;
 
 	shift = start_prev - buffer_start(buffer);
+
 	buffer_advance(buffer, shift);
 
 	if (fix_session_buffer_full(self))
@@ -86,7 +87,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 			return NULL;
 	}
 
-	if(!buffer_size(buffer))
+	if (!buffer_size(buffer))
 		return NULL;
 
 	return fix_message_parse(buffer);
