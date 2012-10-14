@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -23,10 +24,19 @@ struct protocol_info {
 	int			(*session_initiate)(const struct protocol_info *, int);
 };
 
+static bool stop;
+
+static void signal_handler(int signum)
+{
+	if (signum == SIGINT)
+		stop = true;
+}
+
 static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 {
 	struct fix_session *session;
 	enum fix_version version;
+	struct fix_message *msg;
 	int retval;
 
 	version = FIX_4_4;
@@ -38,6 +48,9 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 	else if (!strcmp(proto->name, "fix44"))
 		version = FIX_4_4;
 
+	if (signal(SIGINT, signal_handler) == SIG_ERR)
+		die("unable to register signal handler");
+
 	session	= fix_session_new(sockfd, version, "BUYSIDE", "SELLSIDE");
 	if (!session)
 		die("unable to allocate memory for session");
@@ -48,6 +61,20 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 	} else {
 		printf("Logon FAILED\n");
 		retval = 1;
+	}
+
+	while (!stop) {
+		msg = fix_session_recv(session, 0);
+		if (msg) {
+			if (fix_message_type_is(msg, FIX_MSG_LOGOUT))
+				stop = true;
+			else if (fix_message_type_is(msg, FIX_MSG_TEST_REQUEST))
+				fix_session_heartbeat(session, true);
+			else if (fix_message_type_is(msg, FIX_MSG_HEARTBEAT))
+				fix_session_heartbeat(session, false);
+
+			fix_message_free(msg);
+		}
 	}
 
 	if (fix_session_logout(session)) {

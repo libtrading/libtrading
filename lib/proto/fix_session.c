@@ -178,3 +178,22 @@ bool fix_session_heartbeat(struct fix_session *session, bool request_response)
 
 	return true;
 }
+
+bool fix_session_test_request(struct fix_session *session)
+{
+	struct fix_message test_req_msg;
+	/* Any string can be used as the TestReqID */
+	struct fix_field fields[] = {
+		FIX_STRING_FIELD(TestReqID, "TestReqID"),
+	};
+
+	test_req_msg	= (struct fix_message) {
+		.msg_type	= FIX_MSG_TEST_REQUEST,
+		.nr_fields	= ARRAY_SIZE(fields),
+		.fields		= fields,
+	};
+
+	fix_session_send(session, &test_req_msg, 0);
+
+	return true;
+}

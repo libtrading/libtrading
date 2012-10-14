@@ -38,5 +38,6 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags);
 bool fix_session_logon(struct fix_session *session);
 bool fix_session_logout(struct fix_session *session);
 bool fix_session_heartbeat(struct fix_session *session, bool request_response);
+bool fix_session_test_request(struct fix_session *session);
 
 #endif

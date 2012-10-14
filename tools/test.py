@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import subprocess
+import signal
 import sys
 import time
 
@@ -9,6 +10,8 @@ time.sleep(1)
 result = 1
 try:
     client = subprocess.Popen(["./tools/test-fix-client", "localhost", "9000", "fix"])
+    time.sleep(1)
+    client.send_signal(signal.SIGINT)
     result = client.wait()
 finally:
     server.terminate()

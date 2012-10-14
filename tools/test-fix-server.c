@@ -39,6 +39,8 @@ static void fix_session_accept(int incoming_fd)
 	for (;;) {
 		struct fix_message logout_msg;
 
+		fix_session_test_request(session);
+
 		msg = fix_session_recv(session, 0);
 		if (!msg || !fix_message_type_is(msg, FIX_MSG_LOGOUT)) {
 			fix_message_free(msg);
