@@ -184,26 +184,39 @@ static bool first_three_fields(struct fix_message *self)
 struct fix_message *fix_message_parse(struct buffer *buffer)
 {
 	struct fix_message *self;
+	unsigned long size;
+	const char *start;
 
-	self		= fix_message_new();
+	self	= fix_message_new();
 	if (!self)
 		return NULL;
 
 	self->head_buf = buffer;
 
-	while (buffer_size(buffer) > 0) {
-		if (!first_three_fields(self))
-			continue;
+retry:
+	start	= buffer_start(buffer);
+	size	= buffer_size(buffer);
 
-		if (!checksum(self, buffer))
-			continue;
+	if (!size)
+		goto fail;
 
-		rest_of_message(self, buffer);
+	if (!first_three_fields(self))
+		goto fail;
 
-		return self;
-	}
+	if (!checksum(self, buffer))
+		goto fail;
 
+	rest_of_message(self, buffer);
+
+	return self;
+
+fail:
+	if (size > FIX_MAX_MESSAGE_SIZE)
+		goto retry;
+
+	buffer_advance(buffer, start - buffer_start(buffer));
 	fix_message_free(self);
+
 	return NULL;
 }
 
