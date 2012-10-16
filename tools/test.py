@@ -6,12 +6,9 @@ import sys
 import time
 
 server = subprocess.Popen(["./tools/test-fix-server", "-p", "9000", "-c", "fix"])
-time.sleep(1)
 result = 1
 try:
-    client = subprocess.Popen(["./tools/test-fix-client", "localhost", "9000", "fix"])
-    time.sleep(1)
-    client.send_signal(signal.SIGINT)
+    client = subprocess.Popen(["./tools/test-fix-client", "-i", "localhost", "9000", "fix"])
     result = client.wait()
 finally:
     server.terminate()

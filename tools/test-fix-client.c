@@ -133,13 +133,25 @@ int main(int argc, char *argv[])
 	int retval;
 	char **ap;
 	int port;
+	int opt;
 
-	if (argc != 4)
+	while ((opt = getopt(argc, argv, "i")) != -1) {
+		switch (opt) {
+		case 'i':
+			stop = true;
+			break;
+		default: /* '?' */
+			usage();
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	if (argc < 4)
 		usage();
 
-	host	= argv[1];
-	port	= atoi(argv[2]);
-	proto	= argv[3];
+	host	= argv[optind];
+	port	= atoi(argv[optind + 1]);
+	proto	= argv[optind + 2];
 
 	proto_info = lookup_protocol_info(proto);
 	if (!proto_info) {
