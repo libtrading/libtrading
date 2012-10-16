@@ -60,7 +60,9 @@ int fix_session_send(struct fix_session *self, struct fix_message *msg, int flag
 	msg->begin_string	= self->begin_string;
 	msg->sender_comp_id	= self->sender_comp_id;
 	msg->target_comp_id	= self->target_comp_id;
-	msg->msg_seq_num	= self->out_msg_seq_num++;
+
+	if (!(flags && FIX_FLAG_PRESERVE_MSG_NUM))
+		msg->msg_seq_num	= self->out_msg_seq_num++;
 
 	msg->head_buf = self->tx_head_buffer;
 	buffer_reset(msg->head_buf);
@@ -214,5 +216,29 @@ bool fix_session_test_request(struct fix_session *session)
 
 	fix_session_send(session, &test_req_msg, 0);
 
+	return true;
+}
+
+bool fix_session_sequence_reset(struct fix_session *session, unsigned long msg_seq_num,
+							unsigned long new_seq_num, bool gap_fill)
+{
+	struct fix_message sequence_reset_msg;
+	struct fix_field fields[] = {
+		FIX_INT_FIELD(NewSeqNo, new_seq_num),
+		FIX_STRING_FIELD(GapFillFlag, "Y"),
+	};
+	long nr_fields = ARRAY_SIZE(fields);
+
+	if (!gap_fill)
+		nr_fields--;
+
+	sequence_reset_msg	= (struct fix_message) {
+		.msg_type	= FIX_MSG_SEQUENCE_RESET,
+		.msg_seq_num	= msg_seq_num,
+		.nr_fields	= nr_fields,
+		.fields		= fields,
+	};
+
+	fix_session_send(session, &sequence_reset_msg, FIX_FLAG_PRESERVE_MSG_NUM);
 	return true;
 }

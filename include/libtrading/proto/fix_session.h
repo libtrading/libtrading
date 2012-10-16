@@ -43,5 +43,8 @@ bool fix_session_logon(struct fix_session *session);
 bool fix_session_logout(struct fix_session *session);
 bool fix_session_heartbeat(struct fix_session *session, bool request_response);
 bool fix_session_test_request(struct fix_session *session);
+bool fix_session_sequence_reset(struct fix_session *session, unsigned long msg_seq_num, unsigned long new_seq_num, bool gap_fill);
+
+#define	FIX_FLAG_PRESERVE_MSG_NUM	0x01
 
 #endif

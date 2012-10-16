@@ -32,6 +32,26 @@ static void signal_handler(int signum)
 		stop = true;
 }
 
+static void fix_resend_request_process(struct fix_session *session, struct fix_message *msg)
+{
+	unsigned long begin_seq_num;
+	unsigned long end_seq_num;
+
+	struct fix_field *field;
+
+	field = fix_message_has_tag(msg, BeginSeqNo);
+	if (!field)
+		return;
+	begin_seq_num = field->int_value;
+
+	field = fix_message_has_tag(msg, EndSeqNo);
+	if (!field)
+		return;
+	end_seq_num = field->int_value;
+
+	fix_session_sequence_reset(session, begin_seq_num, end_seq_num + 1, true);
+}
+
 static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 {
 	struct fix_session *session;
@@ -72,6 +92,8 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 				fix_session_heartbeat(session, true);
 			else if (fix_message_type_is(msg, FIX_MSG_HEARTBEAT))
 				fix_session_heartbeat(session, false);
+			else if (fix_message_type_is(msg, FIX_MSG_RESEND_REQUEST))
+				fix_resend_request_process(session, msg);
 
 			fix_message_free(msg);
 		}

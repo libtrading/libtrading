@@ -86,8 +86,43 @@ static const char *parse_field(struct buffer *self, int tag)
 	return parse_value(self);
 }
 
+static const char *parse_field_promisc(struct buffer *self, int *tag)
+{
+	*tag = parse_tag(self);
+
+	if (!(*tag)) {
+		next_tag(self);
+		return NULL;
+	}
+
+	return parse_value(self);
+}
+
 static void rest_of_message(struct fix_message *self, struct buffer *buffer)
 {
+	int tag = 0;
+	const char *tag_ptr = NULL;
+	unsigned long nr_fields = 0;
+
+	self->fields = calloc(2, sizeof(struct fix_field));
+	if (!self->fields)
+		return;
+
+retry:
+	if (!(tag_ptr = parse_field_promisc(buffer, &tag)))
+		return;
+
+	switch (tag) {
+	case CheckSum:
+		break;
+	case BeginSeqNo:
+	case EndSeqNo:
+		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
+	default:
+		goto retry;
+	};
+
+	self->nr_fields = nr_fields;
 }
 
 static bool verify_checksum(struct fix_message *self, struct buffer *buffer)
@@ -131,7 +166,13 @@ static bool checksum(struct fix_message *self, struct buffer *buffer)
 	if (!self->check_sum)
 		return false;
 
-	return verify_checksum(self, buffer);
+	if (!verify_checksum(self, buffer))
+		return false;
+
+	/* Go back to analyze other fields */
+	buffer_advance(buffer, start - buffer_start(buffer));
+
+	return true;
 }
 
 static bool parse_msg_type(struct fix_message *self)
@@ -220,6 +261,18 @@ fail:
 	return NULL;
 }
 
+struct fix_field *fix_message_has_tag(struct fix_message *self, int tag)
+{
+	unsigned long i;
+
+	for (i = 0; i < self->nr_fields; i++) {
+		if (self->fields[i].tag == tag)
+			return &self->fields[i];
+	}
+
+	return NULL;
+}
+
 void fix_message_validate(struct fix_message *self)
 {
 	// if MsgSeqNum is missing -> logout, terminate
@@ -240,6 +293,7 @@ void fix_message_free(struct fix_message *self)
 	if (!self)
 		return;
 
+	free(self->fields);
 	free(self);
 }
 

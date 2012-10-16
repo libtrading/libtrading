@@ -13,7 +13,7 @@ struct buffer;
 #define FIX_MSG_TEST_REQUEST	"1"
 #define FIX_MSG_RESEND_REQUEST	"2"
 #define FIX_MSG_REJECT		"3"
-#define FIX_MSG_SEQUENCE_REST	"4"
+#define FIX_MSG_SEQUENCE_RESET	"4"
 #define FIX_MSG_LOGOUT		"5"
 #define FIX_MSG_LOGON		"A"
 
@@ -33,17 +33,21 @@ enum fix_type {
 };
 
 enum fix_tag {
+	BeginSeqNo		= 7,
 	BeginString		= 8,
 	BodyLength		= 9,
 	CheckSum		= 10,
+	EndSeqNo		= 16,
 	MsgSeqNum		= 34,
 	MsgType			= 35,
+	NewSeqNo		= 36,
 	SenderCompID		= 49,
 	SendingTime		= 52,
 	TargetCompID		= 56,
 	EncryptMethod		= 98,
 	HeartBtInt		= 108,
 	TestReqID		= 112,
+	GapFillFlag		= 123,
 	ResetSeqNumFlag		= 141,
 };
 
@@ -111,6 +115,7 @@ void fix_message_free(struct fix_message *self);
 void fix_message_add_field(struct fix_message *msg, struct fix_field *field);
 
 struct fix_message *fix_message_parse(struct buffer *buffer);
+struct fix_field *fix_message_has_tag(struct fix_message *self, int tag);
 void fix_message_validate(struct fix_message *self);
 int fix_message_send(struct fix_message *self, int sockfd, int flags);
 
