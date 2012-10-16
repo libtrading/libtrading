@@ -107,8 +107,6 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 				fix_session_heartbeat(session, false);
 			else if (fix_message_type_is(msg, FIX_MSG_RESEND_REQUEST))
 				fix_resend_request_process(session, msg);
-
-			fix_message_free(msg);
 		}
 	}
 

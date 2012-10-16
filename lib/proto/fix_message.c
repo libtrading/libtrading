@@ -104,9 +104,7 @@ static void rest_of_message(struct fix_message *self, struct buffer *buffer)
 	const char *tag_ptr = NULL;
 	unsigned long nr_fields = 0;
 
-	self->fields = calloc(3, sizeof(struct fix_field));
-	if (!self->fields)
-		return;
+	self->nr_fields = 0;
 
 retry:
 	if (!(tag_ptr = parse_field_promisc(buffer, &tag)))
@@ -223,15 +221,10 @@ static bool first_three_fields(struct fix_message *self)
 	return parse_msg_type(self);
 }
 
-struct fix_message *fix_message_parse(struct buffer *buffer)
+int fix_message_parse(struct fix_message *self, struct buffer *buffer)
 {
-	struct fix_message *self;
 	unsigned long size;
 	const char *start;
-
-	self	= fix_message_new();
-	if (!self)
-		return NULL;
 
 	self->head_buf = buffer;
 
@@ -250,16 +243,15 @@ retry:
 
 	rest_of_message(self, buffer);
 
-	return self;
+	return 0;
 
 fail:
 	if (size > FIX_MAX_MESSAGE_SIZE)
 		goto retry;
 
 	buffer_advance(buffer, start - buffer_start(buffer));
-	fix_message_free(self);
 
-	return NULL;
+	return -1;
 }
 
 struct fix_field *fix_message_has_tag(struct fix_message *self, int tag)
@@ -285,6 +277,12 @@ struct fix_message *fix_message_new(void)
 
 	if (!self)
 		return NULL;
+
+	self->fields = calloc(FIX_MAX_FIELD_NUMBER, sizeof(struct fix_field));
+	if (!self->fields) {
+		fix_message_free(self);
+		return NULL;
+	}
 
 	return self;
 }

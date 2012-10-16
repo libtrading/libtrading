@@ -34,19 +34,14 @@ static void fix_session_accept(int incoming_fd)
 	};
 	fix_session_send(session, &logon_msg, 0);
 
-	fix_message_free(msg);
-
 	for (;;) {
 		struct fix_message logout_msg;
 
 		fix_session_test_request(session);
 
 		msg = fix_session_recv(session, 0);
-		if (!msg || !fix_message_type_is(msg, FIX_MSG_LOGOUT)) {
-			fix_message_free(msg);
+		if (!msg || !fix_message_type_is(msg, FIX_MSG_LOGOUT))
 			continue;
-		}
-		fix_message_free(msg);
 
 		logout_msg	= (struct fix_message) {
 			.msg_type	= FIX_MSG_LOGOUT,

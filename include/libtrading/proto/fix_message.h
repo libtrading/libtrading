@@ -24,6 +24,8 @@ struct buffer;
 #define FIX_MAX_BODY_LEN	128UL
 #define FIX_MAX_MESSAGE_SIZE	(FIX_MAX_HEAD_LEN + FIX_MAX_BODY_LEN)
 
+#define FIX_MAX_FIELD_NUMBER	3
+
 enum fix_type {
 	FIX_TYPE_INT,
 	FIX_TYPE_FLOAT,
@@ -114,7 +116,7 @@ void fix_message_free(struct fix_message *self);
 
 void fix_message_add_field(struct fix_message *msg, struct fix_field *field);
 
-struct fix_message *fix_message_parse(struct buffer *buffer);
+int fix_message_parse(struct fix_message *self, struct buffer *buffer);
 struct fix_field *fix_message_has_tag(struct fix_message *self, int tag);
 void fix_message_validate(struct fix_message *self);
 int fix_message_send(struct fix_message *self, int sockfd, int flags);

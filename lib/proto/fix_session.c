@@ -38,6 +38,12 @@ struct fix_session *fix_session_new(int sockfd, enum fix_version fix_version, co
 		return NULL;
 	}
 
+	self->rx_message	= fix_message_new();
+	if (!self->rx_message) {
+		fix_session_free(self);
+		return NULL;
+	}
+
 	self->sockfd		= sockfd;
 	self->begin_string	= begin_strings[fix_version];
 	self->sender_comp_id	= sender_comp_id;
@@ -53,6 +59,7 @@ void fix_session_free(struct fix_session *self)
 	buffer_delete(self->rx_buffer);
 	buffer_delete(self->tx_head_buffer);
 	buffer_delete(self->tx_body_buffer);
+	fix_message_free(self->rx_message);
 	free(self);
 }
 
@@ -80,8 +87,8 @@ static inline bool fix_session_buffer_full(struct fix_session *session)
 
 struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 {
+	struct fix_message *msg = self->rx_message;
 	struct buffer *buffer = self->rx_buffer;
-	struct fix_message *msg;
 	const char *start_prev;
 	size_t size;
 	ssize_t nr;
@@ -89,8 +96,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 
 	start_prev = buffer_start(buffer);
 
-	msg = fix_message_parse(buffer);
-	if (msg) {
+	if (!fix_message_parse(msg, buffer)) {
 		self->in_msg_seq_num++;
 		return msg;
 	}
@@ -114,11 +120,11 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 	if (!buffer_size(buffer))
 		return NULL;
 
-	msg = fix_message_parse(buffer);
-	if (msg)
+	if (!fix_message_parse(msg, buffer)) {
 		self->in_msg_seq_num++;
-
-	return msg;
+		return msg;
+	} else
+		return NULL;
 }
 
 bool fix_session_logon(struct fix_session *session)
@@ -146,8 +152,6 @@ bool fix_session_logon(struct fix_session *session)
 
 	ret = fix_message_type_is(response, FIX_MSG_LOGON);
 
-	fix_message_free(response);
-
 	return ret;
 }
 
@@ -171,13 +175,10 @@ retry:
 
 	if (fix_message_type_is(response, FIX_MSG_TEST_REQUEST)) {
 		fix_session_heartbeat(session, true);
-		fix_message_free(response);
 		goto retry;
 	}
 
 	ret = fix_message_type_is(response, FIX_MSG_LOGOUT);
-
-	fix_message_free(response);
 
 	return ret;
 }

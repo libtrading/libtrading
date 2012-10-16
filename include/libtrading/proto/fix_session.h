@@ -34,6 +34,8 @@ struct fix_session {
 	struct buffer			*rx_buffer;
 	struct buffer			*tx_head_buffer;
 	struct buffer			*tx_body_buffer;
+
+	struct fix_message		*rx_message;
 };
 
 struct fix_session *fix_session_new(int sockfd, enum fix_version, const char *sender_comp_id, const char *target_comp_id);
