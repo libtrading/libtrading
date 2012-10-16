@@ -104,7 +104,7 @@ static void rest_of_message(struct fix_message *self, struct buffer *buffer)
 	const char *tag_ptr = NULL;
 	unsigned long nr_fields = 0;
 
-	self->fields = calloc(2, sizeof(struct fix_field));
+	self->fields = calloc(3, sizeof(struct fix_field));
 	if (!self->fields)
 		return;
 
@@ -116,6 +116,7 @@ retry:
 	case CheckSum:
 		break;
 	case BeginSeqNo:
+	case MsgSeqNum:
 	case EndSeqNo:
 		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
 	default:

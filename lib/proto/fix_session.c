@@ -42,6 +42,7 @@ struct fix_session *fix_session_new(int sockfd, enum fix_version fix_version, co
 	self->begin_string	= begin_strings[fix_version];
 	self->sender_comp_id	= sender_comp_id;
 	self->target_comp_id	= target_comp_id;
+	self->in_msg_seq_num	= 0;
 	self->out_msg_seq_num	= 1;
 
 	return self;
@@ -89,8 +90,10 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 	start_prev = buffer_start(buffer);
 
 	msg = fix_message_parse(buffer);
-	if (msg)
+	if (msg) {
+		self->in_msg_seq_num++;
 		return msg;
+	}
 
 	shift = start_prev - buffer_start(buffer);
 
@@ -111,7 +114,11 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 	if (!buffer_size(buffer))
 		return NULL;
 
-	return fix_message_parse(buffer);
+	msg = fix_message_parse(buffer);
+	if (msg)
+		self->in_msg_seq_num++;
+
+	return msg;
 }
 
 bool fix_session_logon(struct fix_session *session)
@@ -215,6 +222,26 @@ bool fix_session_test_request(struct fix_session *session)
 	};
 
 	fix_session_send(session, &test_req_msg, 0);
+
+	return true;
+}
+
+bool fix_session_resend_request(struct fix_session *session,
+					unsigned long bgn, unsigned long end)
+{
+	struct fix_message resend_request_msg;
+	struct fix_field fields[] = {
+		FIX_INT_FIELD(BeginSeqNo, bgn),
+		FIX_INT_FIELD(EndSeqNo, end),
+	};
+
+	resend_request_msg	= (struct fix_message) {
+		.msg_type	= FIX_MSG_RESEND_REQUEST,
+		.nr_fields	= ARRAY_SIZE(fields),
+		.fields		= fields,
+	};
+
+	fix_session_send(session, &resend_request_msg, 0);
 
 	return true;
 }

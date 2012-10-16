@@ -28,6 +28,7 @@ struct fix_session {
 	const char			*sender_comp_id;
 	const char			*target_comp_id;
 
+	unsigned long			in_msg_seq_num;
 	unsigned long			out_msg_seq_num;
 
 	struct buffer			*rx_buffer;
@@ -43,6 +44,7 @@ bool fix_session_logon(struct fix_session *session);
 bool fix_session_logout(struct fix_session *session);
 bool fix_session_heartbeat(struct fix_session *session, bool request_response);
 bool fix_session_test_request(struct fix_session *session);
+bool fix_session_resend_request(struct fix_session *session, unsigned long bgn, unsigned long end);
 bool fix_session_sequence_reset(struct fix_session *session, unsigned long msg_seq_num, unsigned long new_seq_num, bool gap_fill);
 
 #define	FIX_FLAG_PRESERVE_MSG_NUM	0x01

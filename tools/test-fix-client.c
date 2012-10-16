@@ -52,6 +52,17 @@ static void fix_resend_request_process(struct fix_session *session, struct fix_m
 	fix_session_sequence_reset(session, begin_seq_num, end_seq_num + 1, true);
 }
 
+static bool fix_in_seq_num_process(struct fix_session *session, struct fix_message *msg)
+{
+	struct fix_field *field;
+
+	field = fix_message_has_tag(msg, MsgSeqNum);
+	if (!field || field->int_value != session->in_msg_seq_num)
+		return false;
+
+	return true;
+}
+
 static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 {
 	struct fix_session *session;
@@ -86,7 +97,9 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 	while (!stop) {
 		msg = fix_session_recv(session, 0);
 		if (msg) {
-			if (fix_message_type_is(msg, FIX_MSG_LOGOUT))
+			if (!fix_in_seq_num_process(session, msg))
+				stop = true;
+			else if (fix_message_type_is(msg, FIX_MSG_LOGOUT))
 				stop = true;
 			else if (fix_message_type_is(msg, FIX_MSG_TEST_REQUEST))
 				fix_session_heartbeat(session, true);
