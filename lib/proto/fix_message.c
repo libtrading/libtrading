@@ -114,9 +114,12 @@ retry:
 	case CheckSum:
 		break;
 	case BeginSeqNo:
-	case MsgSeqNum:
 	case EndSeqNo:
 		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
+		goto retry;
+	case MsgSeqNum:
+		self->msg_seq_num = strtol(tag_ptr, NULL, 10);
+		goto retry;
 	default:
 		goto retry;
 	};

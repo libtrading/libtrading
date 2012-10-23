@@ -56,6 +56,9 @@ struct fix_session *fix_session_new(int sockfd, enum fix_version fix_version, co
 
 void fix_session_free(struct fix_session *self)
 {
+	if (!self)
+		return;
+
 	buffer_delete(self->rx_buffer);
 	buffer_delete(self->tx_head_buffer);
 	buffer_delete(self->tx_body_buffer);
