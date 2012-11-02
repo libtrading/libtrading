@@ -8,23 +8,23 @@ world.
 
 ## Supported Protocols
 
- * [BATS BOE][] ([header](https://github.com/penberg/libtrading/blob/master/include/trading/boe_message.h))
+ * [BATS BOE][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/boe_message.h))
 
- * [BATS PITCH][] ([header](https://github.com/penberg/libtrading/blob/master/include/trading/pitch_message.h))
+ * [BATS PITCH][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/pitch_message.h))
 
- * [FIX][] ([header](https://github.com/penberg/libtrading/blob/master/include/trading/fix_message.h))
+ * [FIX][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/fix_message.h))
 
- * [MBT Quote API][] ([header](https://github.com/penberg/libtrading/blob/master/include/trading/mbt_quote_message.h))
+ * [MBT Quote API][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/mbt_quote_message.h))
 
- * [NASDAQ ITCH 4.0][] ([header](https://github.com/penberg/libtrading/blob/master/include/trading/itch40_message.h))
+ * [NASDAQ ITCH 4.0][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/itch40_message.h))
 
- * [NASDAQ ITCH 4.1][] ([header](https://github.com/penberg/libtrading/blob/master/include/trading/itch41_message.h))
+ * [NASDAQ ITCH 4.1][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/itch41_message.h))
 
- * [NASDAQ OUCH 4.2][] ([header](https://github.com/penberg/libtrading/blob/master/include/trading/ouch42_message.h))
+ * [NASDAQ OUCH 4.2][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/ouch42_message.h))
 
- * [NASDAQ SoupBinTCP][] ([header](https://github.com/penberg/libtrading/blob/master/include/trading/soupbin3_session.h))
+ * [NASDAQ SoupBinTCP][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/soupbin3_session.h))
 
- * [NYSE Arca XDP][] ([header](https://github.com/penberg/libtrading/blob/master/include/trading/xdp_message.h))
+ * [NYSE Arca XDP][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/xdp_message.h))
 
 [BATS BOE]:          http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf
 [BATS PITCH]:        http://www.batstrading.com/resources/membership/BATS_PITCH_Specification.pdf
