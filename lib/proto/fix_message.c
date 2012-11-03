@@ -120,6 +120,9 @@ retry:
 	case MsgSeqNum:
 		self->msg_seq_num = strtol(tag_ptr, NULL, 10);
 		goto retry;
+	case TestReqID:
+		self->fields[nr_fields++] = FIX_STRING_FIELD(tag, tag_ptr);
+		goto retry;
 	default:
 		goto retry;
 	};
@@ -272,6 +275,30 @@ struct fix_field *fix_message_has_tag(struct fix_message *self, int tag)
 void fix_message_validate(struct fix_message *self)
 {
 	// if MsgSeqNum is missing -> logout, terminate
+}
+
+const char *fix_get_string(struct fix_field *field, char *buffer, unsigned long len)
+{
+	unsigned long count;
+	const char *start, *end;
+
+	start	= field->string_value;
+
+	end	= memchr(start, 0x01, len);
+
+	if (!end)
+		return NULL;
+
+	count	= end - start;
+
+	if (len < count)
+		return NULL;
+
+	strncpy(buffer, start, count);
+
+	buffer[count] = '\0';
+
+	return buffer;
 }
 
 struct fix_message *fix_message_new(void)

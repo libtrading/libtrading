@@ -128,7 +128,7 @@ static int fix_session_accept(int incoming_fd, const char *script)
 			fprintf(stderr, "Server: premature Logout\n");
 			break;
 		} else if (fix_message_type_is(msg, FIX_MSG_TEST_REQUEST))
-			fix_session_heartbeat(session, true);
+			fix_session_process(session, msg);
 
 		expected_elem = next_elem(c_container);
 	}

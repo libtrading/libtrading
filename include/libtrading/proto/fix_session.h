@@ -42,9 +42,10 @@ struct fix_session *fix_session_new(int sockfd, enum fix_version, const char *se
 void fix_session_free(struct fix_session *self);
 int fix_session_send(struct fix_session *self, struct fix_message *msg, int flags);
 struct fix_message *fix_session_recv(struct fix_session *self, int flags);
+struct fix_message *fix_session_process(struct fix_session *session, struct fix_message *msg);
 bool fix_session_logon(struct fix_session *session);
 bool fix_session_logout(struct fix_session *session);
-bool fix_session_heartbeat(struct fix_session *session, bool request_response);
+bool fix_session_heartbeat(struct fix_session *session, const char *test_req_id);
 bool fix_session_test_request(struct fix_session *session);
 bool fix_session_resend_request(struct fix_session *session, unsigned long bgn, unsigned long end);
 bool fix_session_sequence_reset(struct fix_session *session, unsigned long msg_seq_num, unsigned long new_seq_num, bool gap_fill);

@@ -3,6 +3,8 @@
 #include "libtrading/array.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
 
 static const char *begin_strings[] = {
 	[FIXT_1_1]	= "FIXT.1.1",
@@ -130,6 +132,24 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 		return NULL;
 }
 
+struct fix_message *fix_session_process(struct fix_session *session, struct fix_message *msg)
+{
+	if (fix_message_type_is(msg, FIX_MSG_TEST_REQUEST)) {
+		struct fix_field *test_req_id;
+		char id[128];
+
+		test_req_id = fix_message_has_tag(msg, TestReqID);
+
+		fix_get_string(test_req_id, id, sizeof(id));
+
+		fix_session_heartbeat(session, id);
+
+		return NULL;
+	}
+
+	return msg;
+}
+
 bool fix_session_logon(struct fix_session *session)
 {
 	struct fix_message *response;
@@ -176,29 +196,22 @@ retry:
 	if (!response)
 		return false;
 
-	if (fix_message_type_is(response, FIX_MSG_TEST_REQUEST)) {
-		fix_session_heartbeat(session, true);
+	if (!fix_session_process(session, response))
 		goto retry;
-	}
 
 	ret = fix_message_type_is(response, FIX_MSG_LOGOUT);
 
 	return ret;
 }
 
-bool fix_session_heartbeat(struct fix_session *session, bool request_response)
+bool fix_session_heartbeat(struct fix_session *session, const char *test_req_id)
 {
 	struct fix_message heartbeat_msg;
-	/* Any string can be used as the TestReqID */
-	struct fix_field fields[] = {
-		FIX_STRING_FIELD(TestReqID, "TestReqID"),
-	};
-	long nr_fields = ARRAY_SIZE(fields);
+	struct fix_field fields[1];
+	int nr_fields = 0;
 
-	/* Hearbeat is not the result of Test Request */
-	/* Do not include TestReqID tag in heartbeat */
-	if (!request_response)
-		nr_fields--;
+	if (test_req_id)
+		fields[nr_fields++] = FIX_STRING_FIELD(TestReqID, test_req_id);
 
 	heartbeat_msg	= (struct fix_message) {
 		.msg_type	= FIX_MSG_HEARTBEAT,
