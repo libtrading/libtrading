@@ -134,15 +134,41 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 
 struct fix_message *fix_session_process(struct fix_session *session, struct fix_message *msg)
 {
-	if (fix_message_type_is(msg, FIX_MSG_TEST_REQUEST)) {
-		struct fix_field *test_req_id;
-		char id[128];
+	struct fix_field *field;
 
-		test_req_id = fix_message_has_tag(msg, TestReqID);
+	if (msg->msg_seq_num > session->in_msg_seq_num) {
+		fix_session_resend_request(session, session->in_msg_seq_num, msg->msg_seq_num);
+		fix_session_set_in_msg_seq_num(session, session->in_msg_seq_num - 1);
 
-		fix_get_string(test_req_id, id, sizeof(id));
+		return NULL;
+	} else if (fix_message_type_is(msg, FIX_MSG_TEST_REQUEST)) {
+		char id[128] = "TestReqID";
+
+		field = fix_message_has_tag(msg, TestReqID);
+
+		if (field)
+			fix_get_string(field, id, sizeof(id));
 
 		fix_session_heartbeat(session, id);
+
+		return NULL;
+	} else if (fix_message_type_is(msg, FIX_MSG_RESEND_REQUEST)) {
+		unsigned long begin_seq_num;
+		unsigned long end_seq_num;
+
+		field = fix_message_has_tag(msg, BeginSeqNo);
+		if (!field)
+			return NULL;
+
+		begin_seq_num = field->int_value;
+
+		field = fix_message_has_tag(msg, EndSeqNo);
+		if (!field)
+			return NULL;
+
+		end_seq_num = field->int_value;
+
+		fix_session_sequence_reset(session, begin_seq_num, end_seq_num + 1, true);
 
 		return NULL;
 	}

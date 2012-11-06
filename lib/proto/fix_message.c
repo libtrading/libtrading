@@ -115,11 +115,13 @@ retry:
 		break;
 	case BeginSeqNo:
 	case EndSeqNo:
+	case NewSeqNo:
 		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
 		goto retry;
 	case MsgSeqNum:
 		self->msg_seq_num = strtol(tag_ptr, NULL, 10);
 		goto retry;
+	case GapFillFlag:
 	case TestReqID:
 		self->fields[nr_fields++] = FIX_STRING_FIELD(tag, tag_ptr);
 		goto retry;

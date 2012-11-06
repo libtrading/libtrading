@@ -13,6 +13,7 @@ tests = [
   # FIX session level test cases. See Volume 2 of the FIX 4.4 specification for
   # details.
   #
+  "2b_MsgSeqNumHigherThanExpected",
   "4b_TestRequestMessageIsReceived"
 ]
 

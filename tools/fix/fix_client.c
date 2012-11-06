@@ -85,7 +85,13 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd, c
 	tosend_elem = cur_elem(c_container);
 
 	while (tosend_elem) {
-		fix_session_send(session, &tosend_elem->msg, 0);
+		if (tosend_elem->msg.msg_seq_num)
+			fix_session_send(session, &tosend_elem->msg, FIX_FLAG_PRESERVE_MSG_NUM);
+		else
+			fix_session_send(session, &tosend_elem->msg, 0);
+
+		if (!expected_elem)
+			goto next;
 
 		msg = fix_session_recv(session, 0);
 
@@ -102,6 +108,7 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd, c
 			break;
 		}
 
+next:
 		expected_elem = next_elem(s_container);
 		tosend_elem = next_elem(c_container);
 	}

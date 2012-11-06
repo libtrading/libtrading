@@ -38,6 +38,11 @@ struct fix_session {
 	struct fix_message		*rx_message;
 };
 
+static inline void fix_session_set_in_msg_seq_num(struct fix_session *session, unsigned long new_msg_seq_num)
+{
+	session->in_msg_seq_num = new_msg_seq_num;
+}
+
 struct fix_session *fix_session_new(int sockfd, enum fix_version, const char *sender_comp_id, const char *target_comp_id);
 void fix_session_free(struct fix_session *self);
 int fix_session_send(struct fix_session *self, struct fix_message *msg, int flags);

@@ -121,15 +121,21 @@ static int fix_session_accept(int incoming_fd, const char *script)
 			fprintmsg(stderr, &expected_elem->msg);
 			fprintmsg(stderr, msg);
 			break;
-		} else if (fix_message_type_is(msg, FIX_MSG_LOGON)) {
+		}
+
+		msg = fix_session_process(session, msg);
+		if (!msg)
+			goto next;
+
+		if (fix_message_type_is(msg, FIX_MSG_LOGON)) {
 			fprintf(stderr, "Server: repeated Logon\n");
 			break;
 		} else if (fix_message_type_is(msg, FIX_MSG_LOGOUT)) {
 			fprintf(stderr, "Server: premature Logout\n");
 			break;
-		} else if (fix_message_type_is(msg, FIX_MSG_TEST_REQUEST))
-			fix_session_process(session, msg);
+		}
 
+next:
 		expected_elem = next_elem(c_container);
 	}
 
