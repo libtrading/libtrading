@@ -79,6 +79,11 @@ for test in tests:
             print status
 
             numfail = numfail + 1
+
+            while server.poll() is None:
+                server.terminate()
+            while client.poll() is None:
+                client.terminate()
         else:
             if verbose == 2:
                 status = "\n%s\n" % green("PASS")
