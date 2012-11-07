@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <libgen.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +20,9 @@
 #include <netdb.h>
 #include <stdio.h>
 
-static bool stop;
+static const char	*program;
+
+static bool		stop;
 
 static void signal_handler(int signum)
 {
@@ -120,7 +123,8 @@ static int fix_session_initiate(int sockfd, const char *fix_version)
 
 static void usage(void)
 {
-	printf("\n  usage: trade client [hostname] [port] [protocol]\n\n");
+	printf("\n  usage: %s [hostname] [port] [protocol]\n\n", program);
+
 	exit(EXIT_FAILURE);
 }
 
@@ -141,6 +145,8 @@ int main(int argc, char *argv[])
 	char **ap;
 	int port;
 	int opt;
+
+	program	= basename(argv[0]);
 
 	while ((opt = getopt(argc, argv, "i")) != -1) {
 		switch (opt) {
