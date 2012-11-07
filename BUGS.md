@@ -2,14 +2,10 @@
 
 ## FIX
 
-  * Formatted messages don't have all mandatory fields present
-
-  * Heartbeat messages are not sent
-
-  * Messages are not verified for correctness (e.g. CheckSum)
-
   * Messages are not processed in-order
 
-  * Messages are not resent upon request nor are gaps filled
+  * Session sequence numbers are not persistent
+
+  * Venue specific FIX dialects are not supported
 
   * Encryption is not handled at all. See session level test Ref ID 17.
