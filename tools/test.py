@@ -75,7 +75,7 @@ for test in tests:
             if verbose == 2:
                 status = "\n%s\n" % red("FAIL")
             else:
-                status = "%-40s [%s]\n" % (test, red("FAIL"))
+                status = "%-40s [%s]" % (test, red("FAIL"))
 
             print status
 
@@ -89,15 +89,15 @@ for test in tests:
             if verbose == 2:
                 status = "\n%s\n" % green("PASS")
             elif verbose == 1:
-                status = "%-40s [%s]\n" % (test, green("PASS"))
+                status = "%-40s [%s]" % (test, green("PASS"))
 
             if verbose != 0:
                 print status
 
 if numfail > 0:
-    print red("Tests run: %d, Failures: %d" % (len(tests), numfail))
+    print "\n" + red("Tests run: %d, Failures: %d" % (len(tests), numfail))
 else:
-    print "OK (%d tests)" % (len(tests))
+    print "\nOK (%d tests)" % (len(tests))
 
 if numfail != 0:
     result = 1
