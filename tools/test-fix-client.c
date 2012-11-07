@@ -61,7 +61,8 @@ static bool fix_in_seq_num_process(struct fix_session *session, struct fix_messa
 	return true;
 }
 
-static int fix_session_initiate(int sockfd, const char *fix_version)
+static int fix_session_initiate(int sockfd, const char *fix_version,
+				const char *sender_comp_id, const char *target_comp_id)
 {
 	struct fix_session *session;
 	enum fix_version version;
@@ -80,7 +81,7 @@ static int fix_session_initiate(int sockfd, const char *fix_version)
 	if (signal(SIGINT, signal_handler) == SIG_ERR)
 		die("unable to register signal handler");
 
-	session	= fix_session_new(sockfd, version, "BUYSIDE", "SELLSIDE");
+	session	= fix_session_new(sockfd, version, sender_comp_id, target_comp_id);
 	if (!session)
 		die("unable to allocate memory for session");
 
@@ -123,7 +124,7 @@ static int fix_session_initiate(int sockfd, const char *fix_version)
 
 static void usage(void)
 {
-	printf("\n  usage: %s [hostname] [port] [protocol]\n\n", program);
+	printf("\n  usage: %s [hostname] [port] [version] [sender-comp-id] [target-comp-id]\n\n", program);
 
 	exit(EXIT_FAILURE);
 }
@@ -135,6 +136,8 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 
 int main(int argc, char *argv[])
 {
+	const char *sender_comp_id;
+	const char *target_comp_id;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
 	const char *version;
@@ -159,12 +162,14 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (argc < 4)
+	if (argc < 6)
 		usage();
 
-	host	= argv[optind];
-	port	= atoi(argv[optind + 1]);
-	version	= argv[optind + 2];
+	host		= argv[optind];
+	port		= atoi(argv[optind + 1]);
+	version		= argv[optind + 2];
+	sender_comp_id	= argv[optind + 3];
+	target_comp_id	= argv[optind + 4];
 
 	he = gethostbyname(host);
 	if (!he)
@@ -198,7 +203,7 @@ int main(int argc, char *argv[])
 	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	retval = fix_session_initiate(sockfd, version);
+	retval = fix_session_initiate(sockfd, version, sender_comp_id, target_comp_id);
 
 	shutdown(sockfd, SHUT_RDWR);
 
