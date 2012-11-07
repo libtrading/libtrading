@@ -19,11 +19,6 @@
 #include <netdb.h>
 #include <stdio.h>
 
-struct protocol_info {
-	const char		*name;
-	int			(*session_initiate)(const struct protocol_info *, int);
-};
-
 static bool stop;
 
 static void signal_handler(int signum)
@@ -63,7 +58,7 @@ static bool fix_in_seq_num_process(struct fix_session *session, struct fix_messa
 	return true;
 }
 
-static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
+static int fix_session_initiate(int sockfd, const char *fix_version)
 {
 	struct fix_session *session;
 	enum fix_version version;
@@ -72,11 +67,11 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 
 	version = FIX_4_4;
 
-	if (!strcmp(proto->name, "fix42"))
+	if (!strcmp(fix_version, "fix42"))
 		version = FIX_4_2;
-	else if (!strcmp(proto->name, "fix43"))
+	else if (!strcmp(fix_version, "fix43"))
 		version = FIX_4_3;
-	else if (!strcmp(proto->name, "fix44"))
+	else if (!strcmp(fix_version, "fix44"))
 		version = FIX_4_4;
 
 	if (signal(SIGINT, signal_handler) == SIG_ERR)
@@ -123,26 +118,6 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd)
 	return retval;
 }
 
-static const struct protocol_info protocols[] = {
-	{ "fix",		fix_session_initiate },
-	{ "fix42",		fix_session_initiate },
-	{ "fix43",		fix_session_initiate },
-	{ "fix44",		fix_session_initiate },
-};
-
-static const struct protocol_info *lookup_protocol_info(const char *name)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(protocols); i++) {
-		const struct protocol_info *proto_info = &protocols[i];
-
-		if (!strcmp(proto_info->name, name))
-			return proto_info;
-	}
-	return NULL;
-}
-
 static void usage(void)
 {
 	printf("\n  usage: trade client [hostname] [port] [protocol]\n\n");
@@ -156,11 +131,10 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 
 int main(int argc, char *argv[])
 {
-	const struct protocol_info *proto_info;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
+	const char *version;
 	struct hostent *he;
-	const char *proto;
 	const char *host;
 	int sockfd = -1;
 	int retval;
@@ -184,13 +158,7 @@ int main(int argc, char *argv[])
 
 	host	= argv[optind];
 	port	= atoi(argv[optind + 1]);
-	proto	= argv[optind + 2];
-
-	proto_info = lookup_protocol_info(proto);
-	if (!proto_info) {
-		printf("Unsupported protocol '%s'\n", proto);
-		exit(EXIT_FAILURE);
-	}
+	version	= argv[optind + 2];
 
 	he = gethostbyname(host);
 	if (!he)
@@ -224,7 +192,7 @@ int main(int argc, char *argv[])
 	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	retval = proto_info->session_initiate(proto_info, sockfd);
+	retval = fix_session_initiate(sockfd, version);
 
 	shutdown(sockfd, SHUT_RDWR);
 
