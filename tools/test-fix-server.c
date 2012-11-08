@@ -9,21 +9,51 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <time.h>
 
 struct protocol_info {
 	const char		*name;
 	void			(*session_accept)(int incoming_fd);
 };
 
+static unsigned long fix_execution_report_fields(struct fix_field *fields)
+{
+	char fmt[64], buf[64];
+	unsigned long nr = 0;
+	struct timeval tv;
+	struct tm *tm;
+
+	gettimeofday(&tv, NULL);
+	tm = gmtime(&tv.tv_sec);
+	strftime(fmt, sizeof fmt, "%Y%m%d-%H:%M:%S", tm);
+	snprintf(buf, sizeof buf, "%s.%03ld", fmt, (long)tv.tv_usec / 1000);
+
+	fields[nr++] = FIX_STRING_FIELD(OrderID, "OrderID");
+	fields[nr++] = FIX_STRING_FIELD(Symbol, "Symbol");
+	fields[nr++] = FIX_STRING_FIELD(ExecID, "ExecID");
+	fields[nr++] = FIX_STRING_FIELD(OrdStatus, "2");
+	fields[nr++] = FIX_STRING_FIELD(ExecType, "0");
+	fields[nr++] = FIX_FLOAT_FIELD(LeavesQty, 0);
+	fields[nr++] = FIX_FLOAT_FIELD(CumQty, 100);
+	fields[nr++] = FIX_FLOAT_FIELD(AvgPx, 100);
+	fields[nr++] = FIX_STRING_FIELD(Side, "1");
+
+	return nr;
+
+}
+
 static void fix_session_accept(int incoming_fd)
 {
 	struct fix_message logon_msg;
 	struct fix_session *session;
+	struct fix_field *fields;
 	struct fix_message *msg;
+	unsigned long nr;
 
 	session		= fix_session_new(incoming_fd, FIX_4_4, "BUYSIDE", "SELLSIDE");
 
@@ -34,13 +64,25 @@ static void fix_session_accept(int incoming_fd)
 	};
 	fix_session_send(session, &logon_msg, 0);
 
+	fields = calloc(FIX_MAX_FIELD_NUMBER, sizeof(struct fix_field));
+	if (!fields)
+		return;
+
+	nr = fix_execution_report_fields(fields);
+
 	for (;;) {
 		struct fix_message logout_msg;
 
 		fix_session_test_request(session);
 
 		msg = fix_session_recv(session, 0);
-		if (!msg || !fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT))
+		if (!msg)
+			continue;
+		else if (fix_message_type_is(msg, FIX_MSG_TYPE_NEW_ORDER_SINGLE)) {
+			fix_session_execution_report(session, fields, nr);
+			continue;
+		}
+		else if (!fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT))
 			continue;
 
 		logout_msg	= (struct fix_message) {
@@ -50,6 +92,7 @@ static void fix_session_accept(int incoming_fd)
 		break;
 	}
 
+	free(fields);
 	fix_session_free(session);
 }
 

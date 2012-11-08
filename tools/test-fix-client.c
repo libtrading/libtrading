@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <libgen.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -19,10 +20,12 @@
 #include <errno.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <time.h>
 
 static const char	*program;
 
 static bool		stop;
+static int		test;
 
 static void signal_handler(int signum)
 {
@@ -38,12 +41,100 @@ static bool fix_in_seq_num_process(struct fix_session *session, struct fix_messa
 	return true;
 }
 
+static unsigned long fix_new_order_single_fields(struct fix_field *fields)
+{
+	char fmt[64], buf[64];
+	unsigned long nr = 0;
+	struct timeval tv;
+	struct tm *tm;
+
+	gettimeofday(&tv, NULL);
+	tm = gmtime(&tv.tv_sec);
+	strftime(fmt, sizeof fmt, "%Y%m%d-%H:%M:%S", tm);
+	snprintf(buf, sizeof buf, "%s.%03ld", fmt, (long)tv.tv_usec / 1000);
+
+	fields[nr++] = FIX_STRING_FIELD(ClOrdID, "ClOrdID");
+	fields[nr++] = FIX_STRING_FIELD(TransactTime, buf);
+	fields[nr++] = FIX_STRING_FIELD(Symbol, "Symbol");
+	fields[nr++] = FIX_FLOAT_FIELD(OrderQty, 100);
+	fields[nr++] = FIX_STRING_FIELD(OrdType, "2");
+	fields[nr++] = FIX_STRING_FIELD(Side, "1");
+	fields[nr++] = FIX_FLOAT_FIELD(Price, 100);
+
+	return nr;
+}
+
+static void fix_session_test(struct fix_session *session)
+{
+	struct fix_field *fields;
+	struct fix_message *msg;
+	struct timeval before;
+	struct timeval after;
+	double average_time;
+	unsigned long nr;
+	int i;
+
+	fields = calloc(FIX_MAX_FIELD_NUMBER, sizeof(struct fix_field));
+	if (!fields)
+		return;
+
+	nr =fix_new_order_single_fields(fields);
+
+	average_time = 0.0;
+
+	for (i = 0; i < test; i++) {
+		gettimeofday(&before, NULL);
+		fix_session_new_order_single(session, fields, nr);
+
+retry:
+		msg = fix_session_recv(session, 0);
+		if (!msg)
+			goto retry;
+
+		if (!fix_message_type_is(msg, FIX_MSG_TYPE_EXECUTION_REPORT))
+			goto retry;
+
+		gettimeofday(&after, NULL);
+
+		average_time += 1000000 * (after.tv_sec - before.tv_sec) +
+						(after.tv_usec - before.tv_usec);
+	}
+
+	printf("Messages sent: %d, average latency: %.1lf\n", test, average_time / test);
+
+	free(fields);
+
+	return;
+}
+
+static void fix_session_normal(struct fix_session *session)
+{
+	struct fix_message *msg;
+
+	while (!stop) {
+		msg = fix_session_recv(session, 0);
+		if (msg) {
+			msg = fix_session_process(session, msg);
+			if (!msg)
+				continue;
+
+			if (!fix_in_seq_num_process(session, msg))
+				stop = true;
+			else if (fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT))
+				stop = true;
+			else if (fix_message_type_is(msg, FIX_MSG_TYPE_HEARTBEAT))
+				fix_session_heartbeat(session, NULL);
+		}
+	}
+
+	return;
+}
+
 static int fix_session_initiate(int sockfd, const char *fix_version,
 				const char *sender_comp_id, const char *target_comp_id)
 {
 	struct fix_session *session;
 	enum fix_version version;
-	struct fix_message *msg;
 	int retval;
 
 	version = FIX_4_4;
@@ -70,21 +161,10 @@ static int fix_session_initiate(int sockfd, const char *fix_version,
 		retval = 1;
 	}
 
-	while (!stop) {
-		msg = fix_session_recv(session, 0);
-		if (msg) {
-			msg = fix_session_process(session, msg);
-			if (!msg)
-				continue;
-
-			if (!fix_in_seq_num_process(session, msg))
-				stop = true;
-			else if (fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT))
-				stop = true;
-			else if (fix_message_type_is(msg, FIX_MSG_TYPE_HEARTBEAT))
-				fix_session_heartbeat(session, NULL);
-		}
-	}
+	if (!test)
+		fix_session_normal(session);
+	else
+		fix_session_test(session);
 
 	if (fix_session_logout(session)) {
 		printf("Logout OK\n");
@@ -128,10 +208,13 @@ int main(int argc, char *argv[])
 
 	program	= basename(argv[0]);
 
-	while ((opt = getopt(argc, argv, "i")) != -1) {
+	while ((opt = getopt(argc, argv, "i:t:")) != -1) {
 		switch (opt) {
 		case 'i':
 			stop = true;
+			break;
+		case 't':
+			test = atoi(optarg);
 			break;
 		default: /* '?' */
 			usage();
