@@ -144,7 +144,7 @@ struct fix_message *fix_session_process(struct fix_session *session, struct fix_
 	} else if (fix_message_type_is(msg, FIX_MSG_TEST_REQUEST)) {
 		char id[128] = "TestReqID";
 
-		field = fix_message_has_tag(msg, TestReqID);
+		field = fix_get_field(msg, TestReqID);
 
 		if (field)
 			fix_get_string(field, id, sizeof(id));
@@ -156,13 +156,13 @@ struct fix_message *fix_session_process(struct fix_session *session, struct fix_
 		unsigned long begin_seq_num;
 		unsigned long end_seq_num;
 
-		field = fix_message_has_tag(msg, BeginSeqNo);
+		field = fix_get_field(msg, BeginSeqNo);
 		if (!field)
 			return NULL;
 
 		begin_seq_num = field->int_value;
 
-		field = fix_message_has_tag(msg, EndSeqNo);
+		field = fix_get_field(msg, EndSeqNo);
 		if (!field)
 			return NULL;
 

@@ -223,7 +223,7 @@ int fmsgcmp(struct fix_message *expected, struct fix_message *actual)
 
 	for (i = 0; i < expected->nr_fields; i++) {
 		expected_field = &expected->fields[i];
-		actual_field = fix_message_has_tag(actual, expected_field->tag);
+		actual_field = fix_get_field(actual, expected_field->tag);
 
 		if (!actual_field)
 			goto exit;

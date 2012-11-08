@@ -37,12 +37,12 @@ static void fix_resend_request_process(struct fix_session *session, struct fix_m
 
 	struct fix_field *field;
 
-	field = fix_message_has_tag(msg, BeginSeqNo);
+	field = fix_get_field(msg, BeginSeqNo);
 	if (!field)
 		return;
 	begin_seq_num = field->int_value;
 
-	field = fix_message_has_tag(msg, EndSeqNo);
+	field = fix_get_field(msg, EndSeqNo);
 	if (!field)
 		return;
 	end_seq_num = field->int_value;
@@ -54,7 +54,7 @@ static bool fix_in_seq_num_process(struct fix_session *session, struct fix_messa
 {
 	struct fix_field *field;
 
-	field = fix_message_has_tag(msg, MsgSeqNum);
+	field = fix_get_field(msg, MsgSeqNum);
 	if (!field || field->int_value != session->in_msg_seq_num)
 		return false;
 

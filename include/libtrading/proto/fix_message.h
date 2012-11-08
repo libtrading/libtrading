@@ -142,7 +142,7 @@ void fix_message_free(struct fix_message *self);
 void fix_message_add_field(struct fix_message *msg, struct fix_field *field);
 
 int fix_message_parse(struct fix_message *self, struct buffer *buffer);
-struct fix_field *fix_message_has_tag(struct fix_message *self, int tag);
+struct fix_field *fix_get_field(struct fix_message *self, int tag);
 const char *fix_get_string(struct fix_field *field, char *buffer, unsigned long len);
 void fix_message_validate(struct fix_message *self);
 int fix_message_send(struct fix_message *self, int sockfd, int flags);

@@ -342,7 +342,7 @@ fail:
 	return -1;
 }
 
-struct fix_field *fix_message_has_tag(struct fix_message *self, int tag)
+struct fix_field *fix_get_field(struct fix_message *self, int tag)
 {
 	unsigned long i;
 
