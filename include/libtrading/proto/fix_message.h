@@ -33,7 +33,7 @@ enum fix_msg_type {
 #define FIX_MAX_MESSAGE_SIZE	(FIX_MAX_HEAD_LEN + FIX_MAX_BODY_LEN)
 
 /* Total number of elements of fix_tag type*/
-#define FIX_MAX_FIELD_NUMBER	31
+#define FIX_MAX_FIELD_NUMBER	32
 
 enum fix_type {
 	FIX_TYPE_INT,
@@ -61,6 +61,7 @@ enum fix_tag {
 	OrderQty		= 38,
 	OrdStatus		= 39,
 	OrdType			= 40,
+	PossDupFlag		= 43,
 	Price			= 44,
 	SenderCompID		= 49,
 	SendingTime		= 52,

@@ -174,6 +174,7 @@ retry:
 		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
 		goto retry;
 	case GapFillFlag:
+	case PossDupFlag:
 	case TestReqID:
 		self->fields[nr_fields++] = FIX_STRING_FIELD(tag, tag_ptr);
 		goto retry;
@@ -216,6 +217,7 @@ retry:
 		goto retry;
 	case TransactTime:
 	case GapFillFlag:
+	case PossDupFlag:
 	case OrdStatus:
 	case TestReqID:
 	case ExecType:

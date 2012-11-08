@@ -30,32 +30,9 @@ static void signal_handler(int signum)
 		stop = true;
 }
 
-static void fix_resend_request_process(struct fix_session *session, struct fix_message *msg)
-{
-	unsigned long begin_seq_num;
-	unsigned long end_seq_num;
-
-	struct fix_field *field;
-
-	field = fix_get_field(msg, BeginSeqNo);
-	if (!field)
-		return;
-	begin_seq_num = field->int_value;
-
-	field = fix_get_field(msg, EndSeqNo);
-	if (!field)
-		return;
-	end_seq_num = field->int_value;
-
-	fix_session_sequence_reset(session, begin_seq_num, end_seq_num + 1, true);
-}
-
 static bool fix_in_seq_num_process(struct fix_session *session, struct fix_message *msg)
 {
-	struct fix_field *field;
-
-	field = fix_get_field(msg, MsgSeqNum);
-	if (!field || field->int_value != session->in_msg_seq_num)
+	if (msg->msg_seq_num < session->in_msg_seq_num && !fix_get_field(msg, PossDupFlag))
 		return false;
 
 	return true;
@@ -96,16 +73,16 @@ static int fix_session_initiate(int sockfd, const char *fix_version,
 	while (!stop) {
 		msg = fix_session_recv(session, 0);
 		if (msg) {
+			msg = fix_session_process(session, msg);
+			if (!msg)
+				continue;
+
 			if (!fix_in_seq_num_process(session, msg))
 				stop = true;
 			else if (fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT))
 				stop = true;
-			else if (fix_message_type_is(msg, FIX_MSG_TYPE_TEST_REQUEST))
-				fix_session_heartbeat(session, "TestReqID");
 			else if (fix_message_type_is(msg, FIX_MSG_TYPE_HEARTBEAT))
 				fix_session_heartbeat(session, NULL);
-			else if (fix_message_type_is(msg, FIX_MSG_TYPE_RESEND_REQUEST))
-				fix_resend_request_process(session, msg);
 		}
 	}
 
