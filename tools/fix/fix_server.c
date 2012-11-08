@@ -28,11 +28,11 @@ static bool fix_server_logon(struct fix_session *session)
 	struct fix_message *msg;
 
 	msg = fix_session_recv(session, 0);
-	if (!fix_message_type_is(msg, FIX_MSG_LOGON))
+	if (!fix_message_type_is(msg, FIX_MSG_TYPE_LOGON))
 		return false;
 
 	logon_msg	= (struct fix_message) {
-		.type		= FIX_MSG_LOGON,
+		.type		= FIX_MSG_TYPE_LOGON,
 	};
 
 	fix_session_send(session, &logon_msg, 0);
@@ -47,11 +47,11 @@ static bool fix_server_logout(struct fix_session *session)
 	bool ret = true;
 
 	msg = fix_session_recv(session, 0);
-	if (!fix_message_type_is(msg, FIX_MSG_LOGOUT))
+	if (!fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT))
 		ret = false;
 
 	logout_msg	= (struct fix_message) {
-		.type		= FIX_MSG_LOGOUT,
+		.type		= FIX_MSG_TYPE_LOGOUT,
 	};
 
 	fix_session_send(session, &logout_msg, 0);
@@ -127,10 +127,10 @@ static int fix_session_accept(int incoming_fd, const char *script)
 		if (!msg)
 			goto next;
 
-		if (fix_message_type_is(msg, FIX_MSG_LOGON)) {
+		if (fix_message_type_is(msg, FIX_MSG_TYPE_LOGON)) {
 			fprintf(stderr, "Server: repeated Logon\n");
 			break;
-		} else if (fix_message_type_is(msg, FIX_MSG_LOGOUT)) {
+		} else if (fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT)) {
 			fprintf(stderr, "Server: premature Logout\n");
 			break;
 		}

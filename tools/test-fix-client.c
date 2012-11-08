@@ -98,13 +98,13 @@ static int fix_session_initiate(int sockfd, const char *fix_version,
 		if (msg) {
 			if (!fix_in_seq_num_process(session, msg))
 				stop = true;
-			else if (fix_message_type_is(msg, FIX_MSG_LOGOUT))
+			else if (fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT))
 				stop = true;
-			else if (fix_message_type_is(msg, FIX_MSG_TEST_REQUEST))
+			else if (fix_message_type_is(msg, FIX_MSG_TYPE_TEST_REQUEST))
 				fix_session_heartbeat(session, "TestReqID");
-			else if (fix_message_type_is(msg, FIX_MSG_HEARTBEAT))
+			else if (fix_message_type_is(msg, FIX_MSG_TYPE_HEARTBEAT))
 				fix_session_heartbeat(session, NULL);
-			else if (fix_message_type_is(msg, FIX_MSG_RESEND_REQUEST))
+			else if (fix_message_type_is(msg, FIX_MSG_TYPE_RESEND_REQUEST))
 				fix_resend_request_process(session, msg);
 		}
 	}

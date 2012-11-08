@@ -16,15 +16,15 @@
 #include <time.h>
 
 static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
-	[FIX_MSG_HEARTBEAT]		= "0",
-	[FIX_MSG_TEST_REQUEST]		= "1",
-	[FIX_MSG_RESEND_REQUEST]	= "2",
-	[FIX_MSG_REJECT]		= "3",
-	[FIX_MSG_SEQUENCE_RESET]	= "4",
-	[FIX_MSG_LOGOUT]		= "5",
-	[FIX_MSG_EXECUTION_REPORT]	= "8",
-	[FIX_MSG_LOGON]			= "A",
-	[FIX_MSG_NEW_ORDER_SINGLE]	= "D",
+	[FIX_MSG_TYPE_HEARTBEAT]		= "0",
+	[FIX_MSG_TYPE_TEST_REQUEST]		= "1",
+	[FIX_MSG_TYPE_RESEND_REQUEST]	= "2",
+	[FIX_MSG_TYPE_REJECT]		= "3",
+	[FIX_MSG_TYPE_SEQUENCE_RESET]	= "4",
+	[FIX_MSG_TYPE_LOGOUT]		= "5",
+	[FIX_MSG_TYPE_EXECUTION_REPORT]	= "8",
+	[FIX_MSG_TYPE_LOGON]			= "A",
+	[FIX_MSG_TYPE_NEW_ORDER_SINGLE]	= "D",
 };
 
 enum fix_msg_type fix_msg_type_parse(const char *s)
@@ -35,20 +35,20 @@ enum fix_msg_type fix_msg_type_parse(const char *s)
 		 * Single-character message type:
 		 */
 		switch (s[0]) {
-		case '0': return FIX_MSG_HEARTBEAT;
-		case '1': return FIX_MSG_TEST_REQUEST;
-		case '2': return FIX_MSG_RESEND_REQUEST;
-		case '3': return FIX_MSG_REJECT;
-		case '4': return FIX_MSG_SEQUENCE_RESET;
-		case '5': return FIX_MSG_LOGOUT;
-		case '8': return FIX_MSG_EXECUTION_REPORT;
-		case 'A': return FIX_MSG_LOGON;
-		case 'D': return FIX_MSG_NEW_ORDER_SINGLE;
-		default : return FIX_MSG_UNKNOWN;
+		case '0': return FIX_MSG_TYPE_HEARTBEAT;
+		case '1': return FIX_MSG_TYPE_TEST_REQUEST;
+		case '2': return FIX_MSG_TYPE_RESEND_REQUEST;
+		case '3': return FIX_MSG_TYPE_REJECT;
+		case '4': return FIX_MSG_TYPE_SEQUENCE_RESET;
+		case '5': return FIX_MSG_TYPE_LOGOUT;
+		case '8': return FIX_MSG_TYPE_EXECUTION_REPORT;
+		case 'A': return FIX_MSG_TYPE_LOGON;
+		case 'D': return FIX_MSG_TYPE_NEW_ORDER_SINGLE;
+		default : return FIX_MSG_TYPE_UNKNOWN;
 		}
 	}
 	default:
-		return FIX_MSG_UNKNOWN;
+		return FIX_MSG_TYPE_UNKNOWN;
 	}
 }
 
@@ -145,9 +145,9 @@ static inline bool fix_message_is_session(struct fix_message *self)
 	 * everywhere outside where msg_type is exploited.
 	 */
 
-	if (fix_message_type_is(self, FIX_MSG_EXECUTION_REPORT))
+	if (fix_message_type_is(self, FIX_MSG_TYPE_EXECUTION_REPORT))
 		return false;
-	else if (fix_message_type_is(self, FIX_MSG_NEW_ORDER_SINGLE))
+	else if (fix_message_type_is(self, FIX_MSG_TYPE_NEW_ORDER_SINGLE))
 		return false;
 	else
 		return true;
@@ -310,7 +310,7 @@ static bool parse_msg_type(struct fix_message *self)
 
 	// if third field is not MsgType -> garbled
 
-	return self->type != FIX_MSG_UNKNOWN;
+	return self->type != FIX_MSG_TYPE_UNKNOWN;
 }
 
 static bool parse_body_length(struct fix_message *self)
