@@ -18,13 +18,13 @@
 static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
 	[FIX_MSG_TYPE_HEARTBEAT]		= "0",
 	[FIX_MSG_TYPE_TEST_REQUEST]		= "1",
-	[FIX_MSG_TYPE_RESEND_REQUEST]	= "2",
-	[FIX_MSG_TYPE_REJECT]		= "3",
-	[FIX_MSG_TYPE_SEQUENCE_RESET]	= "4",
-	[FIX_MSG_TYPE_LOGOUT]		= "5",
-	[FIX_MSG_TYPE_EXECUTION_REPORT]	= "8",
+	[FIX_MSG_TYPE_RESEND_REQUEST]		= "2",
+	[FIX_MSG_TYPE_REJECT]			= "3",
+	[FIX_MSG_TYPE_SEQUENCE_RESET]		= "4",
+	[FIX_MSG_TYPE_LOGOUT]			= "5",
+	[FIX_MSG_TYPE_EXECUTION_REPORT]		= "8",
 	[FIX_MSG_TYPE_LOGON]			= "A",
-	[FIX_MSG_TYPE_NEW_ORDER_SINGLE]	= "D",
+	[FIX_MSG_TYPE_NEW_ORDER_SINGLE]		= "D",
 };
 
 enum fix_msg_type fix_msg_type_parse(const char *s)
