@@ -9,22 +9,25 @@ struct buffer;
 /*
  * Message types:
  */
-#define	FIX_MSG_HEARTBEAT	"0"
-#define FIX_MSG_TEST_REQUEST	"1"
-#define FIX_MSG_RESEND_REQUEST	"2"
-#define FIX_MSG_REJECT		"3"
-#define FIX_MSG_SEQUENCE_RESET	"4"
-#define FIX_MSG_LOGOUT		"5"
-#define FIX_MSG_LOGON		"A"
+#define	FIX_MSG_HEARTBEAT		"0"
+#define	FIX_MSG_TEST_REQUEST		"1"
+#define	FIX_MSG_RESEND_REQUEST		"2"
+#define	FIX_MSG_REJECT			"3"
+#define	FIX_MSG_SEQUENCE_RESET		"4"
+#define	FIX_MSG_LOGOUT			"5"
+#define	FIX_MSG_EXECUTION_REPORT	"8"
+#define	FIX_MSG_LOGON			"A"
+#define	FIX_MSG_NEW_ORDER_SINGLE	"D"
 
 /*
  * Maximum FIX message size
  */
-#define FIX_MAX_HEAD_LEN	32UL
-#define FIX_MAX_BODY_LEN	128UL
+#define FIX_MAX_HEAD_LEN	64UL
+#define FIX_MAX_BODY_LEN	256UL
 #define FIX_MAX_MESSAGE_SIZE	(FIX_MAX_HEAD_LEN + FIX_MAX_BODY_LEN)
 
-#define FIX_MAX_FIELD_NUMBER	3
+/* Total number of elements of fix_tag type*/
+#define FIX_MAX_FIELD_NUMBER	31
 
 enum fix_type {
 	FIX_TYPE_INT,
@@ -35,22 +38,37 @@ enum fix_type {
 };
 
 enum fix_tag {
+	Account			= 1,
+	AvgPx			= 6,
 	BeginSeqNo		= 7,
 	BeginString		= 8,
 	BodyLength		= 9,
 	CheckSum		= 10,
+	ClOrdID			= 11,
+	CumQty			= 14,
 	EndSeqNo		= 16,
+	ExecID			= 17,
 	MsgSeqNum		= 34,
 	MsgType			= 35,
 	NewSeqNo		= 36,
+	OrderID			= 37,
+	OrderQty		= 38,
+	OrdStatus		= 39,
+	OrdType			= 40,
+	Price			= 44,
 	SenderCompID		= 49,
 	SendingTime		= 52,
+	Side			= 54,
+	Symbol			= 55,
 	TargetCompID		= 56,
+	TransactTime		= 60,
 	EncryptMethod		= 98,
 	HeartBtInt		= 108,
 	TestReqID		= 112,
 	GapFillFlag		= 123,
 	ResetSeqNumFlag		= 141,
+	ExecType		= 150,
+	LeavesQty		= 151,
 };
 
 struct fix_field {
@@ -77,6 +95,13 @@ struct fix_field {
 		.tag		= t,			\
 		.type		= FIX_TYPE_STRING,	\
 		{ .string_value	= s },			\
+	}
+
+#define FIX_FLOAT_FIELD(t, v)				\
+	(struct fix_field) {				\
+		.tag		= t,			\
+		.type		= FIX_TYPE_FLOAT,	\
+		{ .float_value  = v },			\
 	}
 
 #define FIX_CHECKSUM_FIELD(t, v)			\

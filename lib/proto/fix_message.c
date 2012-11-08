@@ -98,7 +98,25 @@ static const char *parse_field_promisc(struct buffer *self, int *tag)
 	return parse_value(self);
 }
 
-static void rest_of_message(struct fix_message *self, struct buffer *buffer)
+static inline bool fix_message_is_session(struct fix_message *self)
+{
+	/*
+	 * TODO: For the sake of performance we should avoid
+	 * using tons of strncmp calls here. The possible solution
+	 * is to map FIX messages' types into integers (enum possibly)
+	 * and to use switch-case construction in this function and
+	 * everywhere outside where msg_type is exploited.
+	 */
+
+	if (fix_message_type_is(self, FIX_MSG_EXECUTION_REPORT))
+		return false;
+	else if (fix_message_type_is(self, FIX_MSG_NEW_ORDER_SINGLE))
+		return false;
+	else
+		return true;
+}
+
+static void rest_of_message_session(struct fix_message *self, struct buffer *buffer)
 {
 	int tag = 0;
 	const char *tag_ptr = NULL;
@@ -118,18 +136,80 @@ retry:
 	case NewSeqNo:
 		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
 		goto retry;
-	case MsgSeqNum:
-		self->msg_seq_num = strtol(tag_ptr, NULL, 10);
-		goto retry;
 	case GapFillFlag:
 	case TestReqID:
 		self->fields[nr_fields++] = FIX_STRING_FIELD(tag, tag_ptr);
+		goto retry;
+	case MsgSeqNum:
+		self->msg_seq_num = strtol(tag_ptr, NULL, 10);
 		goto retry;
 	default:
 		goto retry;
 	};
 
 	self->nr_fields = nr_fields;
+}
+
+static void rest_of_message_application(struct fix_message *self, struct buffer *buffer)
+{
+	int tag = 0;
+	const char *tag_ptr = NULL;
+	unsigned long nr_fields = 0;
+
+	self->nr_fields = 0;
+
+retry:
+	if (!(tag_ptr = parse_field_promisc(buffer, &tag)))
+		return;
+
+	switch (tag) {
+	case CheckSum:
+		break;
+	case BeginSeqNo:
+	case EndSeqNo:
+	case NewSeqNo:
+		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
+		goto retry;
+	case LeavesQty:
+	case OrderQty:
+	case CumQty:
+	case AvgPx:
+	case Price:
+		self->fields[nr_fields++] = FIX_FLOAT_FIELD(tag, strtod(tag_ptr, NULL));
+		goto retry;
+	case TransactTime:
+	case GapFillFlag:
+	case OrdStatus:
+	case TestReqID:
+	case ExecType:
+	case Account:
+	case ClOrdID:
+	case OrderID:
+	case OrdType:
+	case ExecID:
+	case Symbol:
+	case Side:
+		self->fields[nr_fields++] = FIX_STRING_FIELD(tag, tag_ptr);
+		goto retry;
+	case MsgSeqNum:
+		self->msg_seq_num = strtol(tag_ptr, NULL, 10);
+		goto retry;
+	default:
+		goto retry;
+	};
+
+	self->nr_fields = nr_fields;
+}
+
+static void rest_of_message(struct fix_message *self, struct buffer *buffer)
+{
+	if (fix_message_is_session(self)) {
+		rest_of_message_session(self, buffer);
+	} else {
+		rest_of_message_application(self, buffer);
+	}
+
+	return;
 }
 
 static bool verify_checksum(struct fix_message *self, struct buffer *buffer)

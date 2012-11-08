@@ -312,3 +312,35 @@ bool fix_session_sequence_reset(struct fix_session *session, unsigned long msg_s
 	fix_session_send(session, &sequence_reset_msg, FIX_FLAG_PRESERVE_MSG_NUM);
 	return true;
 }
+
+bool fix_session_new_order_single(struct fix_session *session,
+					struct fix_field *fields, long nr_fields)
+{
+	struct fix_message new_order_single_msg;
+
+	new_order_single_msg	= (struct fix_message) {
+		.msg_type	= FIX_MSG_NEW_ORDER_SINGLE,
+		.nr_fields	= nr_fields,
+		.fields		= fields,
+	};
+
+	fix_session_send(session, &new_order_single_msg, 0);
+
+	return true;
+}
+
+bool fix_session_execution_report(struct fix_session *session,
+					struct fix_field *fields, long nr_fields)
+{
+	struct fix_message new_order_single_msg;
+
+	new_order_single_msg	= (struct fix_message) {
+		.msg_type	= FIX_MSG_EXECUTION_REPORT,
+		.nr_fields	= nr_fields,
+		.fields		= fields,
+	};
+
+	fix_session_send(session, &new_order_single_msg, 0);
+
+	return true;
+}

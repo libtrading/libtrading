@@ -54,6 +54,8 @@ bool fix_session_heartbeat(struct fix_session *session, const char *test_req_id)
 bool fix_session_test_request(struct fix_session *session);
 bool fix_session_resend_request(struct fix_session *session, unsigned long bgn, unsigned long end);
 bool fix_session_sequence_reset(struct fix_session *session, unsigned long msg_seq_num, unsigned long new_seq_num, bool gap_fill);
+bool fix_session_new_order_single(struct fix_session *session, struct fix_field* fields, long nr_fields);
+bool fix_session_execution_report(struct fix_session *session, struct fix_field *fields, long nr_fields);
 
 #define	FIX_FLAG_PRESERVE_MSG_NUM	0x01
 
