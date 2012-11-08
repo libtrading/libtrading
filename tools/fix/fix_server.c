@@ -32,7 +32,7 @@ static bool fix_server_logon(struct fix_session *session)
 		return false;
 
 	logon_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_LOGON,
+		.type		= FIX_MSG_LOGON,
 	};
 
 	fix_session_send(session, &logon_msg, 0);
@@ -51,7 +51,7 @@ static bool fix_server_logout(struct fix_session *session)
 		ret = false;
 
 	logout_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_LOGOUT,
+		.type		= FIX_MSG_LOGOUT,
 	};
 
 	fix_session_send(session, &logout_msg, 0);

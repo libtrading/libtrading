@@ -9,15 +9,21 @@ struct buffer;
 /*
  * Message types:
  */
-#define	FIX_MSG_HEARTBEAT		"0"
-#define	FIX_MSG_TEST_REQUEST		"1"
-#define	FIX_MSG_RESEND_REQUEST		"2"
-#define	FIX_MSG_REJECT			"3"
-#define	FIX_MSG_SEQUENCE_RESET		"4"
-#define	FIX_MSG_LOGOUT			"5"
-#define	FIX_MSG_EXECUTION_REPORT	"8"
-#define	FIX_MSG_LOGON			"A"
-#define	FIX_MSG_NEW_ORDER_SINGLE	"D"
+enum fix_msg_type {
+	FIX_MSG_HEARTBEAT		= 0,
+	FIX_MSG_TEST_REQUEST		= 1,
+	FIX_MSG_RESEND_REQUEST		= 2,
+	FIX_MSG_REJECT			= 3,
+	FIX_MSG_SEQUENCE_RESET		= 4,
+	FIX_MSG_LOGOUT			= 5,
+	FIX_MSG_EXECUTION_REPORT	= 6,
+	FIX_MSG_LOGON			= 7,
+	FIX_MSG_NEW_ORDER_SINGLE	= 8,
+
+	FIX_MSG_TYPE_MAX,		/* non-API */
+
+	FIX_MSG_UNKNOWN			= ~0UL,
+};
 
 /*
  * Maximum FIX message size
@@ -112,6 +118,8 @@ struct fix_field {
 	}
 
 struct fix_message {
+	enum fix_msg_type		type;
+
 	/*
 	 * These are required fields.
 	 */
@@ -147,6 +155,7 @@ const char *fix_get_string(struct fix_field *field, char *buffer, unsigned long 
 void fix_message_validate(struct fix_message *self);
 int fix_message_send(struct fix_message *self, int sockfd, int flags);
 
-bool fix_message_type_is(struct fix_message *self, const char *type);
+enum fix_msg_type fix_msg_type_parse(const char *s);
+bool fix_message_type_is(struct fix_message *self, enum fix_msg_type type);
 
 #endif

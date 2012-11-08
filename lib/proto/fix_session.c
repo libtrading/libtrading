@@ -188,7 +188,7 @@ bool fix_session_logon(struct fix_session *session)
 	bool ret;
 
 	logon_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_LOGON,
+		.type		= FIX_MSG_LOGON,
 		.nr_fields	= ARRAY_SIZE(fields),
 		.fields		= fields,
 	};
@@ -211,7 +211,7 @@ bool fix_session_logout(struct fix_session *session)
 	bool ret;
 
 	logout_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_LOGOUT,
+		.type		= FIX_MSG_LOGOUT,
 	};
 	fix_session_send(session, &logout_msg, 0);
 
@@ -240,7 +240,7 @@ bool fix_session_heartbeat(struct fix_session *session, const char *test_req_id)
 		fields[nr_fields++] = FIX_STRING_FIELD(TestReqID, test_req_id);
 
 	heartbeat_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_HEARTBEAT,
+		.type		= FIX_MSG_HEARTBEAT,
 		.nr_fields	= nr_fields,
 		.fields		= fields,
 	};
@@ -259,7 +259,7 @@ bool fix_session_test_request(struct fix_session *session)
 	};
 
 	test_req_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_TEST_REQUEST,
+		.type		= FIX_MSG_TEST_REQUEST,
 		.nr_fields	= ARRAY_SIZE(fields),
 		.fields		= fields,
 	};
@@ -279,7 +279,7 @@ bool fix_session_resend_request(struct fix_session *session,
 	};
 
 	resend_request_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_RESEND_REQUEST,
+		.type		= FIX_MSG_RESEND_REQUEST,
 		.nr_fields	= ARRAY_SIZE(fields),
 		.fields		= fields,
 	};
@@ -303,7 +303,7 @@ bool fix_session_sequence_reset(struct fix_session *session, unsigned long msg_s
 		nr_fields--;
 
 	sequence_reset_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_SEQUENCE_RESET,
+		.type		= FIX_MSG_SEQUENCE_RESET,
 		.msg_seq_num	= msg_seq_num,
 		.nr_fields	= nr_fields,
 		.fields		= fields,
@@ -319,7 +319,7 @@ bool fix_session_new_order_single(struct fix_session *session,
 	struct fix_message new_order_single_msg;
 
 	new_order_single_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_NEW_ORDER_SINGLE,
+		.type		= FIX_MSG_NEW_ORDER_SINGLE,
 		.nr_fields	= nr_fields,
 		.fields		= fields,
 	};
@@ -335,7 +335,7 @@ bool fix_session_execution_report(struct fix_session *session,
 	struct fix_message new_order_single_msg;
 
 	new_order_single_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_EXECUTION_REPORT,
+		.type		= FIX_MSG_EXECUTION_REPORT,
 		.nr_fields	= nr_fields,
 		.fields		= fields,
 	};

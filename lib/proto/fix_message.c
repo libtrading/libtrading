@@ -15,6 +15,43 @@
 #include <stdio.h>
 #include <time.h>
 
+static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
+	[FIX_MSG_HEARTBEAT]		= "0",
+	[FIX_MSG_TEST_REQUEST]		= "1",
+	[FIX_MSG_RESEND_REQUEST]	= "2",
+	[FIX_MSG_REJECT]		= "3",
+	[FIX_MSG_SEQUENCE_RESET]	= "4",
+	[FIX_MSG_LOGOUT]		= "5",
+	[FIX_MSG_EXECUTION_REPORT]	= "8",
+	[FIX_MSG_LOGON]			= "A",
+	[FIX_MSG_NEW_ORDER_SINGLE]	= "D",
+};
+
+enum fix_msg_type fix_msg_type_parse(const char *s)
+{
+	switch (s[1]) {
+	case 0x01: {
+		/*
+		 * Single-character message type:
+		 */
+		switch (s[0]) {
+		case '0': return FIX_MSG_HEARTBEAT;
+		case '1': return FIX_MSG_TEST_REQUEST;
+		case '2': return FIX_MSG_RESEND_REQUEST;
+		case '3': return FIX_MSG_REJECT;
+		case '4': return FIX_MSG_SEQUENCE_RESET;
+		case '5': return FIX_MSG_LOGOUT;
+		case '8': return FIX_MSG_EXECUTION_REPORT;
+		case 'A': return FIX_MSG_LOGON;
+		case 'D': return FIX_MSG_NEW_ORDER_SINGLE;
+		default : return FIX_MSG_UNKNOWN;
+		}
+	}
+	default:
+		return FIX_MSG_UNKNOWN;
+	}
+}
+
 static int parse_tag(struct buffer *self)
 {
 	const char *delim;
@@ -266,9 +303,14 @@ static bool parse_msg_type(struct fix_message *self)
 {
 	self->msg_type = parse_field(self->head_buf, MsgType);
 
+	if (!self->msg_type)
+		return false;
+
+	self->type = fix_msg_type_parse(self->msg_type);
+
 	// if third field is not MsgType -> garbled
 
-	return self->msg_type != NULL;
+	return self->type != FIX_MSG_UNKNOWN;
 }
 
 static bool parse_body_length(struct fix_message *self)
@@ -408,12 +450,9 @@ void fix_message_free(struct fix_message *self)
 	free(self);
 }
 
-bool fix_message_type_is(struct fix_message *self, const char *expected_type)
+bool fix_message_type_is(struct fix_message *self, enum fix_msg_type type)
 {
-	if (!self->msg_type)
-		return false;
-
-	return strncmp(self->msg_type, expected_type, strlen(expected_type)) == 0;
+	return self->type == type;
 }
 
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
@@ -462,7 +501,7 @@ static void fix_message_unparse(struct fix_message *self)
 	snprintf(buf, sizeof buf, "%s.%03ld", fmt, (long)tv.tv_usec / 1000);
 
 	/* standard header */
-	msg_type	= FIX_STRING_FIELD(MsgType, self->msg_type);
+	msg_type	= FIX_STRING_FIELD(MsgType, fix_msg_types[self->type]);
 	sender_comp_id	= FIX_STRING_FIELD(SenderCompID, self->sender_comp_id);
 	target_comp_id	= FIX_STRING_FIELD(TargetCompID, self->target_comp_id);
 	msg_seq_num	= FIX_INT_FIELD   (MsgSeqNum, self->msg_seq_num);

@@ -115,6 +115,7 @@ int init_elem(struct felem *elem, char *line)
 				elem->msg.check_sum = end;
 				break;
 			case MsgType:
+				elem->msg.type = fix_msg_type_parse(end);
 				elem->msg.msg_type = end;
 				break;
 			default: /* Unsupported Tag */

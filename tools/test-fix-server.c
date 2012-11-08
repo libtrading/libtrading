@@ -30,7 +30,7 @@ static void fix_session_accept(int incoming_fd)
 	msg = fix_session_recv(session, 0);
 
 	logon_msg	= (struct fix_message) {
-		.msg_type	= FIX_MSG_LOGON,
+		.type		= FIX_MSG_LOGON,
 	};
 	fix_session_send(session, &logon_msg, 0);
 
@@ -44,7 +44,7 @@ static void fix_session_accept(int incoming_fd)
 			continue;
 
 		logout_msg	= (struct fix_message) {
-			.msg_type	= FIX_MSG_LOGOUT,
+			.type		= FIX_MSG_LOGOUT,
 		};
 		fix_session_send(session, &logout_msg, 0);
 		break;
