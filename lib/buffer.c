@@ -75,9 +75,12 @@ bool buffer_printf(struct buffer *buf, const char *format, ...)
 
 char *buffer_find(struct buffer *buf, char c)
 {
-	while (buffer_first_char(buf) != c) {
+	while (true) {
 		if (!buffer_size(buf))
 			return NULL;
+
+		if (buffer_first_char(buf) == c)
+			break;
 
 		buffer_advance(buf, 1);
 	}
