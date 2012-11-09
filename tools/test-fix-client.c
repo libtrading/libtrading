@@ -68,8 +68,6 @@ static void fix_session_test(struct fix_session *session)
 {
 	struct fix_field *fields;
 	struct fix_message *msg;
-	struct timeval before;
-	struct timeval after;
 	double average_time;
 	unsigned long nr;
 	int i;
@@ -78,12 +76,15 @@ static void fix_session_test(struct fix_session *session)
 	if (!fields)
 		return;
 
-	nr =fix_new_order_single_fields(fields);
+	nr = fix_new_order_single_fields(fields);
 
 	average_time = 0.0;
 
 	for (i = 0; i < test; i++) {
-		gettimeofday(&before, NULL);
+		struct timespec before, after;
+
+		clock_gettime(CLOCK_MONOTONIC, &before);
+
 		fix_session_new_order_single(session, fields, nr);
 
 retry:
@@ -94,10 +95,10 @@ retry:
 		if (!fix_message_type_is(msg, FIX_MSG_TYPE_EXECUTION_REPORT))
 			goto retry;
 
-		gettimeofday(&after, NULL);
+		clock_gettime(CLOCK_MONOTONIC, &after);
 
 		average_time += 1000000 * (after.tv_sec - before.tv_sec) +
-						(after.tv_usec - before.tv_usec);
+						(after.tv_nsec - before.tv_nsec) / 1000;
 	}
 
 	printf("Messages sent: %d, average latency: %.1lf\n", test, average_time / test);

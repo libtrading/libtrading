@@ -66,6 +66,7 @@ endif
 
 test-fix-server_EXTRA_DEPS += lib/die.o
 
+test-fix-client_EXTRA_LIBS += -lrt
 test-fix-client_EXTRA_DEPS += lib/die.o
 
 fix_client_EXTRA_DEPS += lib/die.o
@@ -146,7 +147,7 @@ endif
 $(foreach p,$(PROGRAMS),$(eval $(p): $($(notdir $p)_EXTRA_DEPS) $(LIBS)))
 $(PROGRAMS): % : %.o
 	$(E) "  LINK    " $@
-	$(Q) $(LD) $(LDFLAGS) -o $@ $^ $($@_EXTRA_OBJS)
+	$(Q) $(LD) $(LDFLAGS) -o $@ $^ $($(notdir $@)_EXTRA_LIBS)
 
 $(LIB_FILE): $(LIB_DEPS) $(LIB_OBJS)
 	$(E) "  AR      " $@
