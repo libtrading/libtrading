@@ -52,7 +52,7 @@ enum fix_msg_type fix_msg_type_parse(const char *s)
 	}
 }
 
-static int parse_tag(struct buffer *self)
+static int parse_tag(struct buffer *self, int *tag)
 {
 	const char *delim;
 	const char *start;
@@ -62,22 +62,21 @@ static int parse_tag(struct buffer *self)
 	start = buffer_start(self);
 	delim = buffer_find(self, '=');
 
-	if (!delim)
-		return 0;
-
-	if (*delim != '=')
-		return 0;
+	if (!delim || *delim != '=')
+		return FIX_MSG_STATE_PARTIAL;
 
 	ret = strtol(start, &end, 10);
 	if (end != delim)
-		return 0;
+		return FIX_MSG_STATE_GARBLED;
 
 	buffer_advance(self, 1);
 
-	return ret;
+	*tag = ret;
+
+	return 0;
 }
 
-static const char *parse_value(struct buffer *self)
+static int parse_value(struct buffer *self, const char **value)
 {
 	char *start, *end;
 
@@ -85,15 +84,14 @@ static const char *parse_value(struct buffer *self)
 
 	end = buffer_find(self, 0x01);
 
-	if (!end)
-		return NULL;
-
-	if (*end != 0x01)
-		return NULL;
+	if (!end || *end != 0x01)
+		return FIX_MSG_STATE_PARTIAL;
 
 	buffer_advance(self, 1);
 
-	return start;
+	*value = start;
+
+	return 0;
 }
 
 static void next_tag(struct buffer *self)
@@ -113,26 +111,40 @@ static void next_tag(struct buffer *self)
 	return;
 }
 
-static const char *parse_field(struct buffer *self, int tag)
+static int parse_field(struct buffer *self, int tag, const char **value)
 {
-	if (parse_tag(self) != tag) {
-		next_tag(self);
-		return NULL;
+	int ptag, ret;
+
+	ret = parse_tag(self, &ptag);
+
+	if (ret)
+		goto fail;
+	else if (ptag != tag) {
+		ret = FIX_MSG_STATE_GARBLED;
+		goto fail;
 	}
 
-	return parse_value(self);
+	return parse_value(self, value);
+
+fail:
+	next_tag(self);
+	return ret;
 }
 
-static const char *parse_field_promisc(struct buffer *self, int *tag)
+static int parse_field_promisc(struct buffer *self, int *tag, const char **value)
 {
-	*tag = parse_tag(self);
+	int ret;
 
-	if (!(*tag)) {
-		next_tag(self);
-		return NULL;
-	}
+	ret = parse_tag(self, tag);
 
-	return parse_value(self);
+	if (ret)
+		goto fail;
+
+	return parse_value(self, value);
+
+fail:
+	next_tag(self);
+	return ret;
 }
 
 static inline bool fix_message_is_session(struct fix_message *self)
@@ -162,7 +174,7 @@ static void rest_of_message_session(struct fix_message *self, struct buffer *buf
 	self->nr_fields = 0;
 
 retry:
-	if (!(tag_ptr = parse_field_promisc(buffer, &tag)))
+	if (parse_field_promisc(buffer, &tag, &tag_ptr))
 		return;
 
 	switch (tag) {
@@ -197,7 +209,7 @@ static void rest_of_message_application(struct fix_message *self, struct buffer 
 	self->nr_fields = 0;
 
 retry:
-	if (!(tag_ptr = parse_field_promisc(buffer, &tag)))
+	if (parse_field_promisc(buffer, &tag, &tag_ptr))
 		return;
 
 	switch (tag) {
@@ -268,10 +280,11 @@ static bool verify_checksum(struct fix_message *self, struct buffer *buffer)
  * - "CheckSum=" ("10=") is 3 bytes long
  * - "MsgType=" ("35=") is 3 bytes long
  */
-static bool checksum(struct fix_message *self, struct buffer *buffer)
+static int checksum(struct fix_message *self, struct buffer *buffer)
 {
 	const char *start;
 	int offset;
+	int ret;
 
 	start = buffer_start(buffer);
 
@@ -282,79 +295,99 @@ static bool checksum(struct fix_message *self, struct buffer *buffer)
 	 * Checksum tag and its trailing delimiter increase
 	 * the message's length by seven bytes - "10=***\x01"
 	 */
-	if (buffer_size(buffer) + offset < self->body_length + 7)
-		return false;
+	if (buffer_size(buffer) + offset < self->body_length + 7) {
+		ret = FIX_MSG_STATE_PARTIAL;
+		goto exit;
+	}
 
 	/* Buffer's start will point to the CheckSum tag */
 	buffer_advance(buffer, self->body_length - offset);
 
-	self->check_sum = parse_field(buffer, CheckSum);
-	if (!self->check_sum)
-		return false;
+	ret = parse_field(buffer, CheckSum, &self->check_sum);
+	if (ret)
+		goto exit;
 
-	if (!verify_checksum(self, buffer))
-		return false;
+	if (!verify_checksum(self, buffer)) {
+		ret = FIX_MSG_STATE_GARBLED;
+		goto exit;
+	}
 
 	/* Go back to analyze other fields */
 	buffer_advance(buffer, start - buffer_start(buffer));
 
-	return true;
+exit:
+	return ret;
 }
 
-static bool parse_msg_type(struct fix_message *self)
+static int parse_msg_type(struct fix_message *self)
 {
-	self->msg_type = parse_field(self->head_buf, MsgType);
+	int ret;
 
-	if (!self->msg_type)
-		return false;
+	ret = parse_field(self->head_buf, MsgType, &self->msg_type);
+
+	if (ret)
+		goto exit;
 
 	self->type = fix_msg_type_parse(self->msg_type);
 
 	// if third field is not MsgType -> garbled
 
-	return self->type != FIX_MSG_TYPE_UNKNOWN;
+	if (fix_message_type_is(self, FIX_MSG_TYPE_UNKNOWN))
+		ret = FIX_MSG_STATE_GARBLED;
+
+exit:
+	return ret;
 }
 
-static bool parse_body_length(struct fix_message *self)
+static int parse_body_length(struct fix_message *self)
 {
-	int len;
-	const char *ptr = parse_field(self->head_buf, BodyLength);
+	int len, ret;
+	const char *ptr;
 
-	if (!ptr)
-		return false;
+	ret = parse_field(self->head_buf, BodyLength, &ptr);
+
+	if (ret)
+		goto exit;
 
 	len = strtol(ptr, NULL, 10);
 	self->body_length = len;
 
 	if (len <= 0 || len > FIX_MAX_MESSAGE_SIZE)
-		return false;
+		ret = FIX_MSG_STATE_GARBLED;
 
-	return true;
+exit:
+	return ret;
 }
 
-static bool parse_begin_string(struct fix_message *self)
+static int parse_begin_string(struct fix_message *self)
 {
-	self->begin_string = parse_field(self->head_buf, BeginString);
-
 	// if first field is not BeginString -> garbled
 	// if BeginString is invalid or empty -> garbled
 
-	return self->begin_string != NULL;
+	return parse_field(self->head_buf, BeginString, &self->begin_string);
 }
 
-static bool first_three_fields(struct fix_message *self)
+static int first_three_fields(struct fix_message *self)
 {
-	if (!parse_begin_string(self))
-		return false;
+	int ret;
 
-	if (!parse_body_length(self))
-		return false;
+	ret = parse_begin_string(self);
+	if (ret)
+		goto exit;
+
+	ret = parse_body_length(self);
+	if (ret)
+		goto exit;
 
 	return parse_msg_type(self);
+
+exit:
+	return ret;
 }
 
 int fix_message_parse(struct fix_message *self, struct buffer *buffer)
 {
+	int ret = FIX_MSG_STATE_PARTIAL;
 	unsigned long size;
 	const char *start;
 
@@ -367,10 +400,12 @@ retry:
 	if (!size)
 		goto fail;
 
-	if (!first_three_fields(self))
+	ret = first_three_fields(self);
+	if (ret)
 		goto fail;
 
-	if (!checksum(self, buffer))
+	ret = checksum(self, buffer);
+	if (ret)
 		goto fail;
 
 	rest_of_message(self, buffer);
@@ -378,7 +413,7 @@ retry:
 	return 0;
 
 fail:
-	if (size > FIX_MAX_MESSAGE_SIZE)
+	if (ret != FIX_MSG_STATE_PARTIAL)
 		goto retry;
 
 	buffer_advance(buffer, start - buffer_start(buffer));

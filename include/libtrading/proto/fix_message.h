@@ -35,6 +35,9 @@ enum fix_msg_type {
 /* Total number of elements of fix_tag type*/
 #define FIX_MAX_FIELD_NUMBER	32
 
+#define	FIX_MSG_STATE_PARTIAL	1
+#define	FIX_MSG_STATE_GARBLED	2
+
 enum fix_type {
 	FIX_TYPE_INT,
 	FIX_TYPE_FLOAT,
