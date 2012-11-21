@@ -1,2 +1,10 @@
 - Fix overflows in message parsing
 - Latency test
+
+FAST:
+- Reset support
+- Encoding support
+- Test server / client
+- Sequences / Groups support
+- Decimal and Unicode support
+- Delta operation for strings
