@@ -12,6 +12,8 @@ world.
 
  * [BATS PITCH][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/pitch_message.h))
 
+ * [FAST][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/fast_message.h))
+
  * [FIX][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/fix_message.h))
 
  * [MBT Quote API][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/mbt_quote_message.h))
@@ -29,6 +31,7 @@ world.
 [BATS BOE]:          http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf
 [BATS PITCH]:        http://www.batstrading.com/resources/membership/BATS_PITCH_Specification.pdf
 [FIX]:               http://fixprotocol.org/specifications/
+[FAST]:              http://fixprotocol.org/fastspec/
 [MBT Quote API]:     http://www.mbtrading.com/developersMain.aspx?page=api
 [NASDAQ ITCH 4.0]:   http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/tvitch-v4.pdf
 [NASDAQ ITCH 4.1]:   http://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTV-ITCH-V4_1.pdf
