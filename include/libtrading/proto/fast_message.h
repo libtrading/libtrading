@@ -48,7 +48,9 @@ struct fast_field {
 	enum fast_op		op;
 
 	unsigned long		pmap_bit;
+
 	bool			is_none;
+	bool			is_none_previous;
 
 	union {
 		i64		int_value;
@@ -74,6 +76,11 @@ static inline bool field_is_none(struct fast_field *field)
 	return field->is_none;
 }
 
+static inline bool field_is_none_previous(struct fast_field *field)
+{
+	return field->is_none_previous;
+}
+
 static inline bool field_is_mandatory(struct fast_field *field)
 {
 	return field->presence == FAST_PRESENCE_MANDATORY;
@@ -85,7 +92,10 @@ struct fast_message {
 
 	struct fast_pmap	*pmap;
 
-	int			tid;
+	unsigned long		tid;
+
+	struct buffer		*pmap_buf;
+	struct buffer		*msg_buf;
 };
 
 static inline bool pmap_is_set(struct fast_pmap *pmap, unsigned long bit)
@@ -106,9 +116,57 @@ static inline bool pmap_set(struct fast_pmap *pmap, unsigned long bit)
 	return true;
 }
 
+static inline int transfer_size_int(i64 data)
+{
+	i64 tmp = data >= 0 ? data : ~data;
+
+	if (!(tmp >> 6))
+		return 1;
+	else if (!(tmp >> 13))
+		return 2;
+	else if (!(tmp >> 20))
+		return 3;
+	else if (!(tmp >> 27))
+		return 4;
+	else if (!(tmp >> 34))
+		return 5;
+	else if (!(tmp >> 41))
+		return 6;
+	else if (!(tmp >> 48))
+		return 7;
+	else if (!(tmp >> 55))
+		return 8;
+	else
+		return 9;
+}
+
+static inline int transfer_size_uint(u64 data)
+{
+	if (!(data >> 7))
+		return 1;
+	else if (!(data >> 14))
+		return 2;
+	else if (!(data >> 21))
+		return 3;
+	else if (!(data >> 28))
+		return 4;
+	else if (!(data >> 35))
+		return 5;
+	else if (!(data >> 42))
+		return 6;
+	else if (!(data >> 49))
+		return 7;
+	else if (!(data >> 56))
+		return 8;
+	else
+		return 9;
+}
+
 struct fast_message *fast_message_new(int nr_messages);
 void fast_message_free(struct fast_message *self, int nr_messages);
 bool fast_message_copy(struct fast_message *dest, struct fast_message *src);
 struct fast_message *fast_message_decode(struct fast_message *msgs, struct buffer *buffer, u64 last_tid);
+int fast_message_send(struct fast_message *self, int sockfd, int flags);
+int fast_message_encode(struct fast_message *msg);
 
 #endif

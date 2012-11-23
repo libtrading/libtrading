@@ -15,6 +15,18 @@ struct fast_session *fast_session_new(int sockfd)
 		return NULL;
 	}
 
+	self->tx_message_buffer		= buffer_new(FAST_TX_BUFFER_SIZE);
+	if (!self->tx_message_buffer) {
+		fast_session_free(self);
+		return NULL;
+	}
+
+	self->tx_pmap_buffer		= buffer_new(FAST_TX_BUFFER_SIZE);
+	if (!self->tx_pmap_buffer) {
+		fast_session_free(self);
+		return NULL;
+	}
+
 	self->rx_messages	= fast_message_new(FAST_TEMPLATE_MAX_NUMBER);
 	if (!self->rx_messages) {
 		fast_session_free(self);
@@ -34,6 +46,8 @@ void fast_session_free(struct fast_session *self)
 		return;
 
 	fast_message_free(self->rx_messages, FAST_TEMPLATE_MAX_NUMBER);
+	buffer_delete(self->tx_message_buffer);
+	buffer_delete(self->tx_pmap_buffer);
 	buffer_delete(self->rx_buffer);
 	free(self);
 }
@@ -93,4 +107,14 @@ struct fast_message *fast_session_recv(struct fast_session *self, int flags)
 		return NULL;
 
 	return fast_message_decode(msgs, buffer, last_tid);
+}
+
+int fast_session_send(struct fast_session *self, struct fast_message *msg, int flags)
+{
+	msg->pmap_buf = self->tx_pmap_buffer;
+	buffer_reset(msg->pmap_buf);
+	msg->msg_buf = self->tx_message_buffer;
+	buffer_reset(msg->msg_buf);
+
+	return fast_message_send(msg, self->sockfd, flags);
 }

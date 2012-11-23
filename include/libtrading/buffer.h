@@ -82,6 +82,12 @@ static inline void buffer_get_n(struct buffer *self, int n, char *dst)
 		*dst++ = buffer_get_8(self);
 }
 
+/* User must ensure that there is space to store a byte */
+static inline void buffer_put(struct buffer *self, char byte)
+{
+	self->data[self->end++] = byte;
+}
+
 static inline char *buffer_start(struct buffer *self)
 {
 	return &self->data[self->start];

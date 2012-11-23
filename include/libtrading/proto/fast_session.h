@@ -6,6 +6,7 @@
 #include <libtrading/buffer.h>
 
 #define	FAST_RECV_BUFFER_SIZE	4096UL
+#define	FAST_TX_BUFFER_SIZE	4096UL
 
 struct fast_message;
 
@@ -14,11 +15,14 @@ struct fast_session {
 	int			sockfd;
 
 	struct buffer		*rx_buffer;
+	struct buffer		*tx_pmap_buffer;
+	struct buffer		*tx_message_buffer;
 
 	int			nr_messages;
 	struct fast_message	*rx_messages;
 };
 
+int fast_session_send(struct fast_session *self, struct fast_message *msg, int flags);
 bool fast_session_message_add(struct fast_session *self, struct fast_message *msg);
 struct fast_message *fast_session_recv(struct fast_session *self, int flags);
 struct fast_session *fast_session_new(int sockfd);

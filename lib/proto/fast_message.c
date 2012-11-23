@@ -1,6 +1,8 @@
 #include "libtrading/proto/fast_message.h"
 
+#include "libtrading/read-write.h"
 #include "libtrading/buffer.h"
+#include "libtrading/array.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -560,4 +562,488 @@ bool fast_message_copy(struct fast_message *dest, struct fast_message *src)
 	memcpy(dest->fields, src->fields, src->nr_fields * sizeof(struct fast_field));
 
 	return true;
+}
+
+static int transfer_int(struct buffer *buffer, i64 tmp)
+{
+	int size = transfer_size_int(tmp);
+
+	if (buffer_remaining(buffer) < size)
+		return -1;
+
+	switch (size) {
+	case 9:
+		buffer_put(buffer, (tmp >> 56) & 0x7F);
+	case 8:
+		buffer_put(buffer, (tmp >> 49) & 0x7F);
+	case 7:
+		buffer_put(buffer, (tmp >> 42) & 0x7F);
+	case 6:
+		buffer_put(buffer, (tmp >> 35) & 0x7F);
+	case 5:
+		buffer_put(buffer, (tmp >> 28) & 0x7F);
+	case 4:
+		buffer_put(buffer, (tmp >> 21) & 0x7F);
+	case 3:
+		buffer_put(buffer, (tmp >> 14) & 0x7F);
+	case 2:
+		buffer_put(buffer, (tmp >> 7) & 0x7F);
+	case 1:
+		buffer_put(buffer, (tmp & 0x7F) | 0x80);
+		break;
+	default:
+		return -1;
+	};
+
+	return 0;
+}
+
+static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	i64 tmp = field->int_value;
+	bool pset = true;
+
+	switch (field->op) {
+	case FAST_OP_NONE:
+		pset = false;
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+
+			goto transfer;
+		} else {
+			if (field_is_none(field))
+				goto none;
+
+			goto transfer;
+		}
+
+		break;
+	case FAST_OP_COPY:
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+
+			if (field->int_value != field->int_previous)
+				goto transfer;
+		} else {
+			tmp = tmp >= 0 ? tmp + 1 : tmp;
+
+			if (field_is_none(field))
+				goto none;
+
+			if (field_is_none_previous(field))
+				goto transfer;
+
+			if (field->int_value != field->int_previous)
+				goto transfer;
+		}
+
+		break;
+	case FAST_OP_INCR:
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+
+			if (field->int_value != field->int_previous + 1)
+				goto transfer;
+			} else {
+				tmp = tmp >= 0 ? tmp + 1 : tmp;
+
+			if (field_is_none(field))
+				goto none;
+
+			if (field_is_none_previous(field))
+				goto transfer;
+
+			if (field->int_value != field->int_previous + 1)
+				goto transfer;
+		}
+
+		field->int_previous += 1;
+
+		break;
+	case FAST_OP_DELTA:
+		tmp = field->int_value - field->int_previous;
+		pset = false;
+
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+
+			goto transfer;
+		} else {
+			tmp = tmp >= 0 ? tmp + 1 : tmp;
+
+			if (field_is_none(field))
+				goto none;
+
+			goto transfer;
+		}
+
+		break;
+	case FAST_OP_CONSTANT:
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+		} else {
+			if (!field_is_none(field))
+				pmap_set(pmap, field->pmap_bit);
+		}
+
+		break;
+	default:
+		goto fail;
+	};
+
+	return 0;
+
+none:
+	tmp = 0;
+	field->int_value = field->int_previous;
+
+transfer:
+	field->int_previous = field->int_value;
+	field->is_none_previous = field->is_none;
+
+	if (transfer_int(buffer, tmp))
+		goto fail;
+
+	if (pset)
+		pmap_set(pmap, field->pmap_bit);
+
+	return 0;
+
+fail:
+	return -1;
+}
+
+static int transfer_uint(struct buffer *buffer, u64 tmp)
+{
+	int size = transfer_size_uint(tmp);
+
+	if (buffer_remaining(buffer) < size)
+		return -1;
+
+	switch (size) {
+	case 9:
+		buffer_put(buffer, (tmp >> 56) & 0x7F);
+	case 8:
+		buffer_put(buffer, (tmp >> 49) & 0x7F);
+	case 7:
+		buffer_put(buffer, (tmp >> 42) & 0x7F);
+	case 6:
+		buffer_put(buffer, (tmp >> 35) & 0x7F);
+	case 5:
+		buffer_put(buffer, (tmp >> 28) & 0x7F);
+	case 4:
+		buffer_put(buffer, (tmp >> 21) & 0x7F);
+	case 3:
+		buffer_put(buffer, (tmp >> 14) & 0x7F);
+	case 2:
+		buffer_put(buffer, (tmp >> 7) & 0x7F);
+	case 1:
+		buffer_put(buffer, (tmp & 0x7F) | 0x80);
+		break;
+	default:
+		return -1;
+	};
+
+	return 0;
+}
+
+static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	u64 tmp = field->uint_value;
+	bool pset = true;
+
+	switch (field->op) {
+	case FAST_OP_NONE:
+		pset = false;
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+
+			goto transfer;
+		} else {
+			if (field_is_none(field))
+				goto none;
+
+			goto transfer;
+		}
+
+		break;
+	case FAST_OP_COPY:
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+
+			if (field->uint_value != field->uint_previous)
+				goto transfer;
+		} else {
+			tmp += 1;
+
+			if (field_is_none(field))
+				goto none;
+
+			if (field_is_none_previous(field))
+				goto transfer;
+
+			if (field->uint_value != field->uint_previous)
+				goto transfer;
+		}
+
+		break;
+	case FAST_OP_INCR:
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+
+			if (field->uint_value != field->uint_previous + 1)
+				goto transfer;
+		} else {
+			tmp += 1;
+
+			if (field_is_none(field))
+				goto none;
+
+			if (field_is_none_previous(field))
+				goto transfer;
+
+			if (field->uint_value != field->uint_previous + 1)
+				goto transfer;
+		}
+
+		field->uint_previous += 1;
+
+		break;
+	case FAST_OP_DELTA:
+		tmp = field->uint_value - field->uint_previous;
+		pset = false;
+
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+
+			goto transfer;
+		} else {
+			tmp += 1;
+
+			if (field_is_none(field))
+				goto none;
+
+			goto transfer;
+		}
+
+		break;
+	case FAST_OP_CONSTANT:
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+		} else {
+			if (!field_is_none(field))
+				pmap_set(pmap, field->pmap_bit);
+		}
+
+		break;
+	default:
+		goto fail;
+	};
+
+	return 0;
+
+none:
+	tmp = 0;
+	field->uint_value = field->uint_previous;
+
+transfer:
+	field->uint_previous = field->uint_value;
+	field->is_none_previous = field->is_none;
+
+	if (transfer_uint(buffer, tmp))
+		goto fail;
+
+	if (pset)
+		pmap_set(pmap, field->pmap_bit);
+
+	return 0;
+
+fail:
+	return -1;
+}
+
+static int transfer_string(struct buffer *buffer, char *tmp)
+{
+	int size;
+	int i;
+
+	if (!tmp)
+		goto null;
+
+	size = strlen(tmp);
+
+	if (!size)
+		size = 1;
+
+	if (buffer_remaining(buffer) < size)
+		goto fail;
+
+	for (i = 0; i < size; i++)
+		buffer_put(buffer, tmp[i]);
+
+null:
+	if (buffer_remaining(buffer) < 1)
+		goto fail;
+
+	buffer_put(buffer, 0x80);
+
+	return 0;
+
+fail:
+	return -1;
+}
+
+static int fast_encode_string(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	char *tmp = field->string_value;
+	bool pset = true;
+
+	switch (field->op) {
+	case FAST_OP_NONE:
+		pset = false;
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+
+			goto transfer;
+		} else {
+			if (field_is_none(field))
+				goto none;
+
+			goto transfer;
+		}
+
+		break;
+	case FAST_OP_COPY:
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+
+			if (strcmp(field->string_value, field->string_previous))
+				goto transfer;
+		} else {
+			if (field_is_none(field))
+				goto none;
+
+			if (field_is_none_previous(field))
+				goto transfer;
+
+			if (strcmp(field->string_value, field->string_previous))
+				goto transfer;
+		}
+
+		break;
+	case FAST_OP_INCR:
+		goto fail;
+	case FAST_OP_DELTA:
+		goto fail;
+	case FAST_OP_CONSTANT:
+		if (field_is_mandatory(field)) {
+			field->is_none = false;
+		} else {
+			if (!field_is_none(field))
+				pmap_set(pmap, field->pmap_bit);
+		}
+
+		break;
+	default:
+		goto fail;
+	};
+
+none:
+	tmp = NULL;
+	memcpy(field->string_value, field->string_previous, strlen(field->string_previous) + 1);
+
+transfer:
+	memcpy(field->string_previous, field->string_value, strlen(field->string_value) + 1);
+	field->is_none_previous = field->is_none;
+
+	if (transfer_string(buffer, tmp))
+		goto fail;
+
+	if (pset)
+		pmap_set(pmap, field->pmap_bit);
+
+	return 0;
+
+fail:
+	return -1;
+}
+
+int fast_message_encode(struct fast_message *msg)
+{
+	struct fast_field *field;
+	struct fast_pmap pmap;
+	int i;
+
+	pmap.nr_bytes = FAST_PMAP_MAX_BYTES;
+	memset(pmap.bytes, 0, pmap.nr_bytes);
+	pmap_set(&pmap, 0);
+
+	msg->pmap = &pmap;
+
+	if (transfer_uint(msg->msg_buf, msg->tid))
+		goto fail;
+
+	for (i = 0; i < msg->nr_fields; i++) {
+		field = msg->fields + i;
+
+		switch (field->type) {
+		case FAST_TYPE_INT:
+			if (fast_encode_int(msg->msg_buf, msg->pmap, field))
+				goto fail;
+			break;
+		case FAST_TYPE_UINT:
+			if (fast_encode_uint(msg->msg_buf, msg->pmap, field))
+				goto fail;
+			break;
+		case FAST_TYPE_STRING:
+			if (fast_encode_string(msg->msg_buf, msg->pmap, field))
+				goto fail;
+			break;
+		default:
+			goto fail;
+		};
+	}
+
+	for (i = FAST_PMAP_MAX_BYTES; i > 0; i--) {
+		if (pmap.bytes[i - 1])
+			break;
+
+		pmap.nr_bytes--;
+	}
+
+	if (buffer_remaining(msg->pmap_buf) < pmap.nr_bytes)
+		goto fail;
+
+	for (i = 0; i < pmap.nr_bytes - 1; i++)
+		buffer_put(msg->pmap_buf, pmap.bytes[i] & 0x7F);
+
+	buffer_put(msg->pmap_buf, pmap.bytes[pmap.nr_bytes - 1] | 0x80);
+
+	return 0;
+
+fail:
+	return -1;
+}
+
+int fast_message_send(struct fast_message *self, int sockfd, int flags)
+{
+	struct iovec iov[2];
+	int ret = 0;
+
+	ret = fast_message_encode(self);
+	if (ret)
+		goto exit;
+
+	buffer_to_iovec(self->pmap_buf, &iov[0]);
+	buffer_to_iovec(self->msg_buf, &iov[1]);
+
+	if (xwritev(sockfd, iov, ARRAY_SIZE(iov)) < 0) {
+		ret = -1;
+		goto exit;
+	}
+
+exit:
+	self->pmap_buf = self->msg_buf = NULL;
+
+	return ret;
 }
