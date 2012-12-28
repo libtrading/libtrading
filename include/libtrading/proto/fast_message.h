@@ -37,6 +37,12 @@ enum fast_presence {
 	FAST_PRESENCE_MANDATORY,
 };
 
+enum fast_state {
+	FAST_STATE_UNDEFINED,
+	FAST_STATE_ASSIGNED,
+	FAST_STATE_EMPTY,
+};
+
 struct fast_pmap {
 	unsigned long	nr_bytes;
 	char	bytes[FAST_PMAP_MAX_BYTES];
@@ -49,8 +55,10 @@ struct fast_field {
 
 	unsigned long		pmap_bit;
 
-	bool			is_none;
-	bool			is_none_previous;
+	enum fast_state		state;
+	enum fast_state		state_previous;
+
+	bool			has_reset;
 
 	union {
 		i64		int_value;
@@ -71,19 +79,24 @@ struct fast_field {
 	};
 };
 
-static inline bool field_is_none(struct fast_field *field)
+static inline bool field_state_empty(struct fast_field *field)
 {
-	return field->is_none;
+	return field->state == FAST_STATE_EMPTY;
 }
 
-static inline bool field_is_none_previous(struct fast_field *field)
+static inline bool field_state_empty_previous(struct fast_field *field)
 {
-	return field->is_none_previous;
+	return field->state_previous == FAST_STATE_EMPTY;
 }
 
 static inline bool field_is_mandatory(struct fast_field *field)
 {
 	return field->presence == FAST_PRESENCE_MANDATORY;
+}
+
+static inline bool field_has_reset_value(struct fast_field *field)
+{
+	return field->has_reset;
 }
 
 struct fast_message {

@@ -144,23 +144,44 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		if (ret)
 			goto fail;
 
-		field->is_none = false;
+		field->state = FAST_STATE_ASSIGNED;
 
 		if (field_is_mandatory(field))
 			break;
 
 		if (!field->uint_value)
-			field->is_none = true;
+			field->state = FAST_STATE_EMPTY;
 		else
 			field->uint_value--;
 
 		break;
 	case FAST_OP_COPY:
 		if (!pmap_is_set(pmap, field->pmap_bit)) {
-			if (field_is_mandatory(field) &&
-						field_is_none(field)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					field->uint_value = field->uint_reset;
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			case FAST_STATE_ASSIGNED:
+				break;
+			case FAST_STATE_EMPTY:
+				if (field_is_mandatory(field)) {
 					ret = FAST_MSG_STATE_GARBLED;
 					goto fail;
+				}
+
+				break;
+			default:
+				break;
 			}
 		} else {
 			ret = parse_uint(buffer, &field->uint_value);
@@ -168,13 +189,13 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 			if (ret)
 				goto fail;
 
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			if (field_is_mandatory(field))
 				break;
 
 			if (!field->uint_value)
-				field->is_none = true;
+				field->state = FAST_STATE_EMPTY;
 			else
 				field->uint_value--;
 		}
@@ -182,26 +203,47 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		break;
 	case FAST_OP_INCR:
 		if (!pmap_is_set(pmap, field->pmap_bit)) {
-			if (field_is_mandatory(field) &&
-						field_is_none(field)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					field->uint_value = field->uint_reset;
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			case FAST_STATE_ASSIGNED:
+				field->uint_value++;
+
+				break;
+			case FAST_STATE_EMPTY:
+				if (field_is_mandatory(field)) {
 					ret = FAST_MSG_STATE_GARBLED;
 					goto fail;
-			}
+				}
 
-			field->uint_value++;
+				break;
+			default:
+				break;
+			}
 		} else {
 			ret = parse_uint(buffer, &field->uint_value);
 
 			if (ret)
 				goto fail;
 
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			if (field_is_mandatory(field))
 				break;
 
 			if (!field->uint_value)
-				field->is_none = true;
+				field->state = FAST_STATE_EMPTY;
 			else
 				field->uint_value--;
 		}
@@ -213,7 +255,7 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		if (ret)
 			goto fail;
 
-		field->is_none = false;
+		field->state = FAST_STATE_ASSIGNED;
 
 		if (field_is_mandatory(field)) {
 			field->uint_value += tmp;
@@ -221,7 +263,7 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		}
 
 		if (!tmp)
-			field->is_none = true;
+			field->state = FAST_STATE_EMPTY;
 		else {
 			tmp--;
 			field->uint_value += tmp;
@@ -229,13 +271,16 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 		break;
 	case FAST_OP_CONSTANT:
-		field->is_none = false;
+		if (field->state != FAST_STATE_ASSIGNED)
+			field->uint_value = field->uint_reset;
+
+		field->state = FAST_STATE_ASSIGNED;
 
 		if (field_is_mandatory(field))
 			break;
 
 		if (!pmap_is_set(pmap, field->pmap_bit))
-			field->is_none = true;
+			field->state = FAST_STATE_EMPTY;
 
 		break;
 	default:
@@ -260,23 +305,44 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		if (ret)
 			goto fail;
 
-		field->is_none = false;
+		field->state = FAST_STATE_ASSIGNED;
 
 		if (field_is_mandatory(field))
 			break;
 
 		if (!field->int_value)
-			field->is_none = true;
+			field->state = FAST_STATE_EMPTY;
 		else if (field->int_value > 0)
 			field->int_value--;
 
 		break;
 	case FAST_OP_COPY:
 		if (!pmap_is_set(pmap, field->pmap_bit)) {
-			if (field_is_mandatory(field) &&
-						field_is_none(field)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					field->int_value = field->int_reset;
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			case FAST_STATE_ASSIGNED:
+				break;
+			case FAST_STATE_EMPTY:
+				if (field_is_mandatory(field)) {
 					ret = FAST_MSG_STATE_GARBLED;
 					goto fail;
+				}
+
+				break;
+			default:
+				break;
 			}
 		} else {
 			ret = parse_int(buffer, &field->int_value);
@@ -284,13 +350,13 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 			if (ret)
 				goto fail;
 
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			if (field_is_mandatory(field))
 				break;
 
 			if (!field->int_value)
-				field->is_none = true;
+				field->state = FAST_STATE_EMPTY;
 			else if (field->int_value > 0)
 				field->int_value--;
 		}
@@ -298,26 +364,47 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		break;
 	case FAST_OP_INCR:
 		if (!pmap_is_set(pmap, field->pmap_bit)) {
-			if (field_is_mandatory(field) &&
-						field_is_none(field)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					field->int_value = field->int_reset;
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			case FAST_STATE_ASSIGNED:
+				field->int_value++;
+
+				break;
+			case FAST_STATE_EMPTY:
+				if (field_is_mandatory(field)) {
 					ret = FAST_MSG_STATE_GARBLED;
 					goto fail;
-			}
+				}
 
-			field->int_value++;
+				break;
+			default:
+				break;
+			}
 		} else {
 			ret = parse_int(buffer, &field->int_value);
 
 			if (ret)
 				goto fail;
 
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			if (field_is_mandatory(field))
 				break;
 
 			if (!field->int_value)
-				field->is_none = true;
+				field->state = FAST_STATE_EMPTY;
 			else if (field->int_value > 0)
 				field->int_value--;
 		}
@@ -329,7 +416,7 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		if (ret)
 			goto fail;
 
-		field->is_none = false;
+		field->state = FAST_STATE_ASSIGNED;
 
 		if (field_is_mandatory(field)) {
 			field->int_value += tmp;
@@ -337,7 +424,7 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		}
 
 		if (!tmp)
-			field->is_none = true;
+			field->state = FAST_STATE_EMPTY;
 		else if (tmp > 0) {
 			tmp--;
 			field->int_value += tmp;
@@ -346,13 +433,16 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 
 		break;
 	case FAST_OP_CONSTANT:
-		field->is_none = false;
+		if (field->state != FAST_STATE_ASSIGNED)
+			field->int_value = field->int_reset;
+
+		field->state = FAST_STATE_ASSIGNED;
 
 		if (field_is_mandatory(field))
 			break;
 
 		if (!pmap_is_set(pmap, field->pmap_bit))
-			field->is_none = true;
+			field->state = FAST_STATE_EMPTY;
 
 		break;
 	default:
@@ -376,21 +466,43 @@ static int fast_decode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 		if (ret < 0)
 			goto fail;
 
-		field->is_none = false;
+		field->state = FAST_STATE_ASSIGNED;
 
 		if (field_is_mandatory(field))
 			break;
 
 		if (ret == 1)
-			field->is_none = true;
+			field->state = FAST_STATE_EMPTY;
 
 		break;
 	case FAST_OP_COPY:
 		if (!pmap_is_set(pmap, field->pmap_bit)) {
-			if (field_is_mandatory(field) &&
-						field_is_none(field)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					memcpy(field->string_value, field->string_reset,
+								strlen(field->string_reset) + 1);
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			case FAST_STATE_ASSIGNED:
+				break;
+			case FAST_STATE_EMPTY:
+				if (field_is_mandatory(field)) {
 					ret = FAST_MSG_STATE_GARBLED;
 					goto fail;
+				}
+
+				break;
+			default:
+				break;
 			}
 		} else {
 			ret = parse_string(buffer, field->string_value);
@@ -398,13 +510,13 @@ static int fast_decode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 			if (ret < 0)
 				goto fail;
 
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			if (field_is_mandatory(field))
 				break;
 
 			if (ret == 1)
-				field->is_none = true;
+				field->state = FAST_STATE_EMPTY;
 		}
 
 		break;
@@ -415,13 +527,17 @@ static int fast_decode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 			ret = FAST_MSG_STATE_GARBLED;
 			goto fail;
 	case FAST_OP_CONSTANT:
-		field->is_none = false;
+		if (field->state != FAST_STATE_ASSIGNED)
+			memcpy(field->string_value, field->string_reset,
+						strlen(field->string_reset) + 1);
+
+		field->state = FAST_STATE_ASSIGNED;
 
 		if (field_is_mandatory(field))
 			break;
 
 		if (!pmap_is_set(pmap, field->pmap_bit))
-			field->is_none = true;
+			field->state = FAST_STATE_EMPTY;
 
 		break;
 	default:
@@ -607,12 +723,12 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 	case FAST_OP_NONE:
 		pset = false;
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			goto transfer;
 		} else {
-			if (field_is_none(field))
-				goto none;
+			if (field_state_empty(field))
+				goto empty;
 
 			goto transfer;
 		}
@@ -620,17 +736,17 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		break;
 	case FAST_OP_COPY:
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			if (field->int_value != field->int_previous)
 				goto transfer;
 		} else {
 			tmp = tmp >= 0 ? tmp + 1 : tmp;
 
-			if (field_is_none(field))
-				goto none;
+			if (field_state_empty(field))
+				goto empty;
 
-			if (field_is_none_previous(field))
+			if (field_state_empty_previous(field))
 				goto transfer;
 
 			if (field->int_value != field->int_previous)
@@ -640,17 +756,17 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		break;
 	case FAST_OP_INCR:
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			if (field->int_value != field->int_previous + 1)
 				goto transfer;
 			} else {
 				tmp = tmp >= 0 ? tmp + 1 : tmp;
 
-			if (field_is_none(field))
-				goto none;
+			if (field_state_empty(field))
+				goto empty;
 
-			if (field_is_none_previous(field))
+			if (field_state_empty_previous(field))
 				goto transfer;
 
 			if (field->int_value != field->int_previous + 1)
@@ -665,14 +781,14 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		pset = false;
 
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			goto transfer;
 		} else {
 			tmp = tmp >= 0 ? tmp + 1 : tmp;
 
-			if (field_is_none(field))
-				goto none;
+			if (field_state_empty(field))
+				goto empty;
 
 			goto transfer;
 		}
@@ -680,9 +796,9 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		break;
 	case FAST_OP_CONSTANT:
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 		} else {
-			if (!field_is_none(field))
+			if (!field_state_empty(field))
 				pmap_set(pmap, field->pmap_bit);
 		}
 
@@ -693,13 +809,13 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 
 	return 0;
 
-none:
+empty:
 	tmp = 0;
 	field->int_value = field->int_previous;
 
 transfer:
 	field->int_previous = field->int_value;
-	field->is_none_previous = field->is_none;
+	field->state_previous = field->state;
 
 	if (transfer_int(buffer, tmp))
 		goto fail;
@@ -756,12 +872,12 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 	case FAST_OP_NONE:
 		pset = false;
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			goto transfer;
 		} else {
-			if (field_is_none(field))
-				goto none;
+			if (field_state_empty(field))
+				goto empty;
 
 			goto transfer;
 		}
@@ -769,17 +885,17 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		break;
 	case FAST_OP_COPY:
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			if (field->uint_value != field->uint_previous)
 				goto transfer;
 		} else {
 			tmp += 1;
 
-			if (field_is_none(field))
-				goto none;
+			if (field_state_empty(field))
+				goto empty;
 
-			if (field_is_none_previous(field))
+			if (field_state_empty_previous(field))
 				goto transfer;
 
 			if (field->uint_value != field->uint_previous)
@@ -789,17 +905,17 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		break;
 	case FAST_OP_INCR:
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			if (field->uint_value != field->uint_previous + 1)
 				goto transfer;
 		} else {
 			tmp += 1;
 
-			if (field_is_none(field))
-				goto none;
+			if (field_state_empty(field))
+				goto empty;
 
-			if (field_is_none_previous(field))
+			if (field_state_empty_previous(field))
 				goto transfer;
 
 			if (field->uint_value != field->uint_previous + 1)
@@ -814,14 +930,14 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		pset = false;
 
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			goto transfer;
 		} else {
 			tmp += 1;
 
-			if (field_is_none(field))
-				goto none;
+			if (field_state_empty(field))
+				goto empty;
 
 			goto transfer;
 		}
@@ -829,9 +945,9 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		break;
 	case FAST_OP_CONSTANT:
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 		} else {
-			if (!field_is_none(field))
+			if (!field_state_empty(field))
 				pmap_set(pmap, field->pmap_bit);
 		}
 
@@ -842,13 +958,13 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 	return 0;
 
-none:
+empty:
 	tmp = 0;
 	field->uint_value = field->uint_previous;
 
 transfer:
 	field->uint_previous = field->uint_value;
-	field->is_none_previous = field->is_none;
+	field->state_previous = field->state;
 
 	if (transfer_uint(buffer, tmp))
 		goto fail;
@@ -902,12 +1018,12 @@ static int fast_encode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 	case FAST_OP_NONE:
 		pset = false;
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			goto transfer;
 		} else {
-			if (field_is_none(field))
-				goto none;
+			if (field_state_empty(field))
+				goto empty;
 
 			goto transfer;
 		}
@@ -915,15 +1031,15 @@ static int fast_encode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 		break;
 	case FAST_OP_COPY:
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 
 			if (strcmp(field->string_value, field->string_previous))
 				goto transfer;
 		} else {
-			if (field_is_none(field))
-				goto none;
+			if (field_state_empty(field))
+				goto empty;
 
-			if (field_is_none_previous(field))
+			if (field_state_empty_previous(field))
 				goto transfer;
 
 			if (strcmp(field->string_value, field->string_previous))
@@ -937,9 +1053,9 @@ static int fast_encode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 		goto fail;
 	case FAST_OP_CONSTANT:
 		if (field_is_mandatory(field)) {
-			field->is_none = false;
+			field->state = FAST_STATE_ASSIGNED;
 		} else {
-			if (!field_is_none(field))
+			if (!field_state_empty(field))
 				pmap_set(pmap, field->pmap_bit);
 		}
 
@@ -948,13 +1064,13 @@ static int fast_encode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 		goto fail;
 	};
 
-none:
+empty:
 	tmp = NULL;
 	memcpy(field->string_value, field->string_previous, strlen(field->string_previous) + 1);
 
 transfer:
 	memcpy(field->string_previous, field->string_value, strlen(field->string_value) + 1);
-	field->is_none_previous = field->is_none;
+	field->state_previous = field->state;
 
 	if (transfer_string(buffer, tmp))
 		goto fail;
