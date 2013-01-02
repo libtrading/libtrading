@@ -22,6 +22,7 @@ enum fast_type {
 	FAST_TYPE_INT,
 	FAST_TYPE_UINT,
 	FAST_TYPE_STRING,
+	FAST_TYPE_DECIMAL,
 };
 
 enum fast_op {
@@ -48,6 +49,11 @@ struct fast_pmap {
 	char	bytes[FAST_PMAP_MAX_BYTES];
 };
 
+struct fast_decimal {
+	i64			exp;
+	i64			mnt;
+};
+
 struct fast_field {
 	enum fast_presence	presence;
 	enum fast_type		type;
@@ -61,21 +67,24 @@ struct fast_field {
 	bool			has_reset;
 
 	union {
-		i64		int_value;
-		u64		uint_value;
-		char		string_value[FAST_STRING_MAX_BYTES];
+		i64			int_value;
+		u64			uint_value;
+		char			string_value[FAST_STRING_MAX_BYTES];
+		struct fast_decimal	decimal_value;
 	};
 
 	union {
-		i64		int_reset;
-		u64		uint_reset;
-		char		string_reset[FAST_STRING_MAX_BYTES];
+		i64			int_reset;
+		u64			uint_reset;
+		char			string_reset[FAST_STRING_MAX_BYTES];
+		struct fast_decimal	decimal_reset;
 	};
 
 	union {
-		i64		int_previous;
-		u64		uint_previous;
-		char		string_previous[FAST_STRING_MAX_BYTES];
+		i64			int_previous;
+		u64			uint_previous;
+		char			string_previous[FAST_STRING_MAX_BYTES];
+		struct fast_decimal	decimal_previous;
 	};
 };
 

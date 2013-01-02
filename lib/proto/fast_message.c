@@ -550,6 +550,162 @@ fail:
 	return ret;
 }
 
+static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	int ret = 0;
+	i64 exp, mnt;
+
+	switch (field->op) {
+	case FAST_OP_NONE:
+		ret = parse_int(buffer, &exp);
+
+		if (ret)
+			goto fail;
+
+		field->state = FAST_STATE_ASSIGNED;
+
+		if (!field_is_mandatory(field)) {
+			if (!exp) {
+				field->state = FAST_STATE_EMPTY;
+				break;
+			} else if (exp > 0)
+				exp--;
+		}
+
+		if (exp > 63 || exp < -63) {
+			ret = FAST_MSG_STATE_GARBLED;
+			goto fail;
+		}
+
+		ret = parse_int(buffer, &mnt);
+
+		if (ret)
+			goto fail;
+
+		field->decimal_value.exp = exp;
+		field->decimal_value.mnt = mnt;
+
+		break;
+	case FAST_OP_COPY:
+		if (!pmap_is_set(pmap, field->pmap_bit)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					field->decimal_value.exp = field->decimal_reset.exp;
+					field->decimal_value.mnt = field->decimal_reset.mnt;
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			case FAST_STATE_ASSIGNED:
+				break;
+			case FAST_STATE_EMPTY:
+				if (field_is_mandatory(field)) {
+					ret = FAST_MSG_STATE_GARBLED;
+					goto fail;
+				}
+
+				break;
+			default:
+				break;
+			}
+		} else {
+			ret = parse_int(buffer, &exp);
+
+			if (ret)
+				goto fail;
+
+			field->state = FAST_STATE_ASSIGNED;
+
+			if (!field_is_mandatory(field)) {
+				if (!exp) {
+					field->state = FAST_STATE_EMPTY;
+					break;
+				} else if (exp > 0)
+					exp--;
+			}
+
+			if (exp > 63 || exp < -63) {
+				ret = FAST_MSG_STATE_GARBLED;
+				goto fail;
+			}
+
+			ret = parse_int(buffer, &mnt);
+
+			if (ret)
+				goto fail;
+
+			field->decimal_value.exp = exp;
+			field->decimal_value.mnt = mnt;
+		}
+
+		break;
+	case FAST_OP_INCR:
+		/* Do not applicable to decimal */
+		ret = FAST_MSG_STATE_GARBLED;
+		goto fail;
+	case FAST_OP_DELTA:
+		ret = parse_int(buffer, &exp);
+
+		if (ret)
+			goto fail;
+
+		field->state = FAST_STATE_ASSIGNED;
+
+		if (!field_is_mandatory(field)) {
+			if (!exp) {
+				field->state = FAST_STATE_EMPTY;
+				break;
+			} else if (exp > 0)
+				exp--;
+		}
+
+		ret = parse_int(buffer, &mnt);
+
+		if (ret)
+			goto fail;
+
+		field->decimal_value.exp += exp;
+		field->decimal_value.mnt += mnt;
+
+		if (field->decimal_value.exp > 63 ||
+			field->decimal_value.exp < -63) {
+			ret = FAST_MSG_STATE_GARBLED;
+			goto fail;
+		}
+
+		break;
+	case FAST_OP_CONSTANT:
+		if (field->state != FAST_STATE_ASSIGNED) {
+			field->decimal_value.exp = field->decimal_reset.exp;
+			field->decimal_value.mnt = field->decimal_reset.mnt;
+		}
+
+		field->state = FAST_STATE_ASSIGNED;
+
+		if (field_is_mandatory(field))
+			break;
+
+		if (!pmap_is_set(pmap, field->pmap_bit))
+			field->state = FAST_STATE_EMPTY;
+
+		break;
+	default:
+		return FAST_MSG_STATE_GARBLED;
+	}
+
+	return 0;
+
+fail:
+	return ret;
+}
+
 static inline struct fast_message *fast_get_msg(struct fast_message *msgs, int tid)
 {
 	int i;
@@ -619,6 +775,11 @@ retry:
 			break;
 		case FAST_TYPE_STRING:
 			ret = fast_decode_string(buffer, msg->pmap, field);
+			if (ret)
+				goto fail;
+			break;
+		case FAST_TYPE_DECIMAL:
+			ret = fast_decode_decimal(buffer, msg->pmap, field);
 			if (ret)
 				goto fail;
 			break;
@@ -1084,6 +1245,114 @@ fail:
 	return -1;
 }
 
+static int fast_encode_decimal(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	i64 exp = field->decimal_value.exp;
+	i64 mnt = field->decimal_value.mnt;
+
+	bool pset = true;
+	bool empty = false;
+
+	switch (field->op) {
+	case FAST_OP_NONE:
+		pset = false;
+		if (field_is_mandatory(field)) {
+			field->state = FAST_STATE_ASSIGNED;
+
+			goto transfer;
+		} else {
+			if (field_state_empty(field))
+				goto empty;
+
+			goto transfer;
+		}
+
+		break;
+	case FAST_OP_COPY:
+		if (field_is_mandatory(field)) {
+			field->state = FAST_STATE_ASSIGNED;
+
+			if ((field->decimal_value.exp != field->decimal_previous.exp) ||
+				(field->decimal_value.mnt != field->decimal_previous.mnt))
+				goto transfer;
+		} else {
+			exp = exp >= 0 ? exp + 1 : exp;
+
+			if (field_state_empty(field))
+				goto empty;
+
+			if (field_state_empty_previous(field))
+				goto transfer;
+
+			if ((field->decimal_value.exp != field->decimal_previous.exp) ||
+				(field->decimal_value.mnt != field->decimal_previous.mnt))
+				goto transfer;
+		}
+
+		break;
+	case FAST_OP_INCR:
+		/* Not applicable to decimal */
+		break;
+	case FAST_OP_DELTA:
+		exp = field->decimal_value.exp - field->decimal_previous.exp;
+		mnt = field->decimal_value.mnt - field->decimal_previous.mnt;
+		pset = false;
+
+		if (field_is_mandatory(field)) {
+			field->state = FAST_STATE_ASSIGNED;
+
+			goto transfer;
+		} else {
+			exp = exp >= 0 ? exp + 1 : exp;
+
+			if (field_state_empty(field))
+				goto empty;
+
+			goto transfer;
+		}
+
+		break;
+	case FAST_OP_CONSTANT:
+		if (field_is_mandatory(field)) {
+			field->state = FAST_STATE_ASSIGNED;
+		} else {
+			if (!field_state_empty(field))
+				pmap_set(pmap, field->pmap_bit);
+		}
+
+		break;
+	default:
+		goto fail;
+	};
+
+	return 0;
+
+empty:
+	exp = 0;
+	empty = true;
+
+transfer:
+	if (!empty) {
+		field->decimal_previous.exp = field->decimal_value.exp;
+		field->decimal_previous.mnt = field->decimal_value.mnt;
+	}
+	field->state_previous = field->state;
+
+	if (transfer_int(buffer, exp))
+		goto fail;
+
+	if (!empty && transfer_int(buffer, mnt))
+		goto fail;
+
+	if (pset)
+		pmap_set(pmap, field->pmap_bit);
+
+	return 0;
+
+fail:
+	return -1;
+}
+
 int fast_message_encode(struct fast_message *msg)
 {
 	struct fast_field *field;
@@ -1113,6 +1382,10 @@ int fast_message_encode(struct fast_message *msg)
 			break;
 		case FAST_TYPE_STRING:
 			if (fast_encode_string(msg->msg_buf, msg->pmap, field))
+				goto fail;
+			break;
+		case FAST_TYPE_DECIMAL:
+			if (fast_encode_decimal(msg->msg_buf, msg->pmap, field))
 				goto fail;
 			break;
 		default:
