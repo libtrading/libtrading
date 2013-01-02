@@ -888,6 +888,8 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 
 			goto transfer;
 		} else {
+			tmp = tmp >= 0 ? tmp + 1 : tmp;
+
 			if (field_state_empty(field))
 				goto empty;
 
@@ -921,8 +923,8 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 
 			if (field->int_value != field->int_previous + 1)
 				goto transfer;
-			} else {
-				tmp = tmp >= 0 ? tmp + 1 : tmp;
+		} else {
+			tmp = tmp >= 0 ? tmp + 1 : tmp;
 
 			if (field_state_empty(field))
 				goto empty;
@@ -1037,6 +1039,8 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 			goto transfer;
 		} else {
+			tmp += 1;
+
 			if (field_state_empty(field))
 				goto empty;
 
@@ -1261,6 +1265,8 @@ static int fast_encode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 
 			goto transfer;
 		} else {
+			exp = exp >= 0 ? exp + 1 : exp;
+
 			if (field_state_empty(field))
 				goto empty;
 
