@@ -262,9 +262,7 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 			break;
 		}
 
-		if (!tmp)
-			field->state = FAST_STATE_EMPTY;
-		else {
+		if (tmp) {
 			tmp--;
 			field->uint_value += tmp;
 		}
@@ -423,13 +421,10 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 			break;
 		}
 
-		if (!tmp)
-			field->state = FAST_STATE_EMPTY;
-		else if (tmp > 0) {
+		if (tmp > 0)
 			tmp--;
-			field->int_value += tmp;
-		} else
-			field->int_value += tmp;
+
+		field->int_value += tmp;
 
 		break;
 	case FAST_OP_CONSTANT:
@@ -659,10 +654,9 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 		field->state = FAST_STATE_ASSIGNED;
 
 		if (!field_is_mandatory(field)) {
-			if (!exp) {
-				field->state = FAST_STATE_EMPTY;
+			if (!exp)
 				break;
-			} else if (exp > 0)
+			else if (exp > 0)
 				exp--;
 		}
 
