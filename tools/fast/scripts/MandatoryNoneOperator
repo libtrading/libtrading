@@ -1,0 +1,7 @@
+4
+int,mandatory,none,0,0
+uint,mandatory,none,0,0
+decimal,mandatory,none,0,0
+string,mandatory,none,0,none
+-1,2,1,1,one
+-2,1,2,2,two
