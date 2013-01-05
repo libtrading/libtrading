@@ -54,7 +54,7 @@ endif
 export E Q
 
 # Project files
-PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-itch41 tools/fix/fix_client tools/fix/fix_server
+PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-itch41 tools/fix/fix_client tools/fix/fix_server tools/fast/fast_client tools/fast/fast_server
 
 DEFINES =
 INCLUDES =
@@ -74,6 +74,12 @@ fix_client_EXTRA_DEPS += tools/fix/test.o
 
 fix_server_EXTRA_DEPS += lib/die.o
 fix_server_EXTRA_DEPS += tools/fix/test.o
+
+fast_client_EXTRA_DEPS += lib/die.o
+fast_client_EXTRA_DEPS += tools/fast/test.o
+
+fast_server_EXTRA_DEPS += lib/die.o
+fast_server_EXTRA_DEPS += tools/fast/test.o
 
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
