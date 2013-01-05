@@ -51,8 +51,14 @@ To run the test harness:
 
 ## License
 
-Copyright (C) 2011-2012 Pekka Enberg
+Copyright (C) 2011-2013 Pekka Enberg and contributors
 
 libtrading is available for use under the 3-clause (or "modified") BSD license.
-See the file [LICENSE](https://github.com/penberg/libtrading/blob/master/LICENSE)
-for details.
+See the file [LICENSE][] for details.
+
+[LICENSE]:	https://github.com/penberg/libtrading/blob/master/LICENSE
+
+## Contributors
+
+* Marat Stanichenko
+* Jussi Virtanen
