@@ -1,0 +1,14 @@
+8
+int,mandatory,const,0,1
+int,optional,const,1,-1
+uint,mandatory,const,0,2
+uint,optional,const,2,2
+decimal,mandatory,const,0,-3,3
+decimal,optional,const,3,4,-4
+string,mandatory,const,0,one
+string,optional,const,4,four
+1,none,2,2,-3,3,none,one,none
+1,-1,2,none,-3,3,none,one,four
+1,-1,2,2,-3,3,4,-4,one,none
+1,-1,2,2,-3,3,4,-4,one,none
+1,-1,2,2,-3,3,4,-4,one,four

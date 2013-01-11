@@ -108,7 +108,11 @@ if result != 0:
     sys.exit(result)
 
 fast_tests = [
-  "MandatoryNoneOperator"
+  "IncrementOperator",
+  "ConstantOperator",
+  "DeltaOperator",
+  "CopyOperator",
+  "NoneOperator",
 ]
 
 def popen_fast_server():

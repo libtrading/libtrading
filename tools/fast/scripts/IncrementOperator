@@ -1,0 +1,12 @@
+4
+int,mandatory,incr,1,0
+int,optional,incr,2,0
+uint,mandatory,incr,3,0
+uint,optional,incr,4,0
+-5,-5,1,1
+-4,-4,2,2
+-3,-3,3,3
+-1,-1,5,5
+0,none,6,none
+2,none,8,none
+3,0,9,6

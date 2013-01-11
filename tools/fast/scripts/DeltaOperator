@@ -1,0 +1,14 @@
+6
+int,mandatory,delta,0,1
+int,optional,delta,0,-1
+uint,mandatory,delta,0,1
+uint,optional,delta,0,none
+decimal,mandatory,delta,0,-1,1
+decimal,optional,delta,0,1,-1
+-1,-1,2,2,-1,-1,-1,-1
+-2,-2,1,1,-2,-2,-2,-2
+-2,-2,1,1,-2,-2,-2,-2
+-1,none,2,none,-1,-1
+-1,none,2,none,-1,-1
+-2,-2,1,1,-2,-2,-2,-2
+0,0,3,4,-3,-3,-6,-6
