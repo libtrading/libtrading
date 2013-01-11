@@ -22,26 +22,6 @@ struct protocol_info {
 	int			(*session_accept)(int incoming_fd, const char *script);
 };
 
-static struct fast_message *fast_send_init(struct felem *elem)
-{
-	struct fast_message *msg = NULL;
-	struct fast_field *field;
-	int i;
-
-	if (!elem)
-		goto exit;
-
-	msg = &elem->msg;
-
-	for (i = 0; i < msg->nr_fields; i++) {
-		field = msg->fields + i;
-		field->state_previous = FAST_STATE_EMPTY;
-	}
-
-exit:
-	return msg;
-}
-
 static void fast_send_prepare(struct fast_message *msg, struct felem *elem)
 {
 	struct fast_message *elem_msg;
@@ -116,7 +96,9 @@ static int fast_session_accept(int incoming_fd, const char *script)
 	}
 
 	expected_elem = cur_elem(container);
-	msg = fast_send_init(expected_elem);
+	msg = &expected_elem->msg;
+
+	expected_elem = next_elem(container);
 
 	while (expected_elem) {
 		fast_send_prepare(msg, expected_elem);

@@ -99,14 +99,12 @@ int init_elem(struct felem *elem, char *line)
 
 		if (!strncmp(start, "none", 4)) {
 			if (!field_is_mandatory(field)) {
-				field->state = FAST_STATE_EMPTY;
+				field_set_empty(field);
 				start += 5;
 				continue;
 			} else
 				goto fail;
 		}
-
-		field->state = FAST_STATE_ASSIGNED;
 
 		switch (field->type) {
 		case FAST_TYPE_INT:
@@ -250,6 +248,8 @@ int script_read(FILE *stream, struct fcontainer *self)
 
 	fcontainer_init(self, fields, nr_fields);
 
+	fast_message_init(&add_elem(self)->msg);
+
 	free(fields);
 
 	while (fgets(line, size, stream)) {
@@ -289,8 +289,8 @@ int fmsgcmp(struct fast_message *expected, struct fast_message *actual)
 		if (actual_field->op != expected_field->op)
 			goto exit;
 
-		if (actual_field->state == FAST_STATE_EMPTY) {
-			if (expected_field->state == FAST_STATE_EMPTY)
+		if (field_state_empty(actual_field)) {
+			if (field_state_empty(expected_field))
 				continue;
 			else
 				goto exit;

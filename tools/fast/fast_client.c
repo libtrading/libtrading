@@ -24,26 +24,6 @@ struct protocol_info {
 	int			(*session_initiate)(const struct protocol_info *, int, const char *);
 };
 
-static struct fast_message *fast_recv_init(struct felem *elem)
-{
-	struct fast_message *msg = NULL;
-	struct fast_field *field;
-	int i;
-
-	if (!elem)
-		goto exit;
-
-	msg = &elem->msg;
-
-	for (i = 0; i < msg->nr_fields; i++) {
-		field = msg->fields + i;
-		field->state = FAST_STATE_UNDEFINED;
-	}
-
-exit:
-	return msg;
-}
-
 static int fast_session_initiate(const struct protocol_info *proto, int sockfd, const char *script)
 {
 	struct fcontainer *container = NULL;
@@ -76,15 +56,12 @@ static int fast_session_initiate(const struct protocol_info *proto, int sockfd, 
 		goto exit;
 	}
 
-	if (!fast_recv_init(container->felems))
-		goto exit;
-
 	if (!fast_session_message_add(session, &container->felems->msg)) {
 		fprintf(stderr, "FAST template cannot be added\n");
 		goto exit;
 	}
 
-	expected_elem = cur_elem(container);
+	expected_elem = next_elem(container);
 
 	while (expected_elem) {
 		msg = fast_session_recv(session, 0);

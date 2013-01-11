@@ -98,6 +98,13 @@ static inline bool field_state_empty_previous(struct fast_field *field)
 	return field->state_previous == FAST_STATE_EMPTY;
 }
 
+static inline void field_set_empty(struct fast_field *field)
+{
+	field->state = FAST_STATE_EMPTY;
+
+	return;
+}
+
 static inline bool field_is_mandatory(struct fast_field *field)
 {
 	return field->presence == FAST_PRESENCE_MANDATORY;
@@ -190,5 +197,6 @@ bool fast_message_copy(struct fast_message *dest, struct fast_message *src);
 struct fast_message *fast_message_decode(struct fast_message *msgs, struct buffer *buffer, u64 last_tid);
 int fast_message_send(struct fast_message *self, int sockfd, int flags);
 int fast_message_encode(struct fast_message *msg);
+void fast_message_init(struct fast_message *self);
 
 #endif
