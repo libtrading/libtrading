@@ -1007,20 +1007,16 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		tmp = field->int_value - field->int_previous;
 		pset = false;
 
-		if (field_is_mandatory(field)) {
-			field->state = FAST_STATE_ASSIGNED;
-
-			goto transfer;
-		} else {
+		if (!field_is_mandatory(field)) {
 			tmp = tmp >= 0 ? tmp + 1 : tmp;
 
 			if (field_state_empty(field))
 				goto empty;
-
-			goto transfer;
 		}
 
-		break;
+		field->state = FAST_STATE_ASSIGNED;
+
+		goto transfer;
 	case FAST_OP_CONSTANT:
 		if (field_is_mandatory(field)) {
 			field->state = FAST_STATE_ASSIGNED;
@@ -1094,6 +1090,7 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 {
 	u64 tmp = field->uint_value;
 	bool pset = true;
+	i64 delta = 0;
 
 	switch (field->op) {
 	case FAST_OP_NONE:
@@ -1155,23 +1152,20 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 		break;
 	case FAST_OP_DELTA:
-		tmp = field->uint_value - field->uint_previous;
+		delta = field->uint_value - field->uint_previous;
 		pset = false;
 
-		if (field_is_mandatory(field)) {
-			field->state = FAST_STATE_ASSIGNED;
-
-			goto transfer;
-		} else {
-			tmp += 1;
+		if (!field_is_mandatory(field)) {
+			delta = delta >= 0 ? delta + 1 : delta;
 
 			if (field_state_empty(field))
 				goto empty;
-
-			goto transfer;
 		}
 
-		break;
+		field->state = FAST_STATE_ASSIGNED;
+		tmp = delta;
+
+		goto transfer;
 	case FAST_OP_CONSTANT:
 		if (field_is_mandatory(field)) {
 			field->state = FAST_STATE_ASSIGNED;
@@ -1195,8 +1189,13 @@ transfer:
 	field->uint_previous = field->uint_value;
 	field->state_previous = field->state;
 
-	if (transfer_uint(buffer, tmp))
-		goto fail;
+	if (field->op != FAST_OP_DELTA) {
+		if (transfer_uint(buffer, tmp))
+			goto fail;
+	} else {
+		if (transfer_int(buffer, tmp))
+			goto fail;
+	}
 
 	if (pset)
 		pmap_set(pmap, field->pmap_bit);
@@ -1368,20 +1367,16 @@ static int fast_encode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 		mnt = field->decimal_value.mnt - field->decimal_previous.mnt;
 		pset = false;
 
-		if (field_is_mandatory(field)) {
-			field->state = FAST_STATE_ASSIGNED;
-
-			goto transfer;
-		} else {
+		if (!field_is_mandatory(field)) {
 			exp = exp >= 0 ? exp + 1 : exp;
 
 			if (field_state_empty(field))
 				goto empty;
-
-			goto transfer;
 		}
 
-		break;
+		field->state = FAST_STATE_ASSIGNED;
+
+		goto transfer;
 	case FAST_OP_CONSTANT:
 		if (field_is_mandatory(field)) {
 			field->state = FAST_STATE_ASSIGNED;
