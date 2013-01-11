@@ -135,7 +135,7 @@ partial:
 static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
 {
 	int ret = 0;
-	u64 tmp;
+	i64 tmp;
 
 	switch (field->op) {
 	case FAST_OP_NONE:
@@ -250,22 +250,25 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 		break;
 	case FAST_OP_DELTA:
-		ret = parse_uint(buffer, &tmp);
+		ret = parse_int(buffer, &tmp);
 
 		if (ret)
 			goto fail;
 
 		field->state = FAST_STATE_ASSIGNED;
 
-		if (field_is_mandatory(field)) {
+		if (tmp < 0)
+			field->uint_value -= (-tmp);
+		else
 			field->uint_value += tmp;
-			break;
-		}
 
-		if (tmp) {
-			tmp--;
-			field->uint_value += tmp;
-		}
+		if (field_is_mandatory(field))
+			break;
+
+		if (!tmp)
+			field->state = FAST_STATE_EMPTY;
+		else if (tmp > 0)
+			field->uint_value--;
 
 		break;
 	case FAST_OP_CONSTANT:
@@ -415,16 +418,15 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 			goto fail;
 
 		field->state = FAST_STATE_ASSIGNED;
-
-		if (field_is_mandatory(field)) {
-			field->int_value += tmp;
-			break;
-		}
-
-		if (tmp > 0)
-			tmp--;
-
 		field->int_value += tmp;
+
+		if (field_is_mandatory(field))
+			break;
+
+		if (!tmp)
+			field->state = FAST_STATE_EMPTY;
+		else if (tmp > 0)
+			field->int_value--;
 
 		break;
 	case FAST_OP_CONSTANT:
@@ -652,12 +654,20 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 			goto fail;
 
 		field->state = FAST_STATE_ASSIGNED;
+		field->decimal_value.exp += exp;
 
 		if (!field_is_mandatory(field)) {
-			if (!exp)
+			if (!exp) {
+				field->state = FAST_STATE_EMPTY;
 				break;
-			else if (exp > 0)
-				exp--;
+			} else if (exp > 0)
+				field->decimal_value.exp--;
+		}
+
+		if (field->decimal_value.exp > 63 ||
+			field->decimal_value.exp < -63) {
+			ret = FAST_MSG_STATE_GARBLED;
+			goto fail;
 		}
 
 		ret = parse_int(buffer, &mnt);
@@ -665,14 +675,7 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 		if (ret)
 			goto fail;
 
-		field->decimal_value.exp += exp;
 		field->decimal_value.mnt += mnt;
-
-		if (field->decimal_value.exp > 63 ||
-			field->decimal_value.exp < -63) {
-			ret = FAST_MSG_STATE_GARBLED;
-			goto fail;
-		}
 
 		break;
 	case FAST_OP_CONSTANT:
