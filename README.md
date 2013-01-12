@@ -1,10 +1,15 @@
-# libtrading [![Build Status](https://secure.travis-ci.org/penberg/libtrading.png)](http://travis-ci.org/penberg/libtrading)
+# Libtrading
 
-libtrading is a library for electronic trading. Its purpose is to support
-market data and order entry network protocols used by trading venues across the
-world.
+[![Build Status](https://secure.travis-ci.org/penberg/libtrading.png?branch=master)](http://travis-ci.org/penberg/libtrading)
 
-![alt text](https://github.com/penberg/libtrading/raw/master/htdocs/ticker-tape.jpg "Ticker Tape")
+Libtrading is a free and open source C library for trading securities, foreign
+exchange and financial derivatives electronically. It implements market data,
+order entry, drop copy, and related communications protocols used by exchanges
+and alternative trading venues across the world.
+
+The library is designed for high performance and robustness. Although latency
+is very important in trading today's markets, achieving it it must not
+jeopardise trading reliability.
 
 ## Supported Protocols
 
