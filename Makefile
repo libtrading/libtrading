@@ -109,6 +109,7 @@ LIB_OBJS	+= lib/proto/ouch42_message.o
 LIB_OBJS	+= lib/proto/pitch_message.o
 LIB_OBJS	+= lib/proto/soupbin3_session.o
 LIB_OBJS	+= lib/proto/xdp_message.o
+LIB_OBJS	+= lib/proto/lse_itch_message.o
 
 LIB_DEPS	:= $(patsubst %.o,%.d,$(LIB_OBJS))
 
