@@ -12,8 +12,7 @@ struct fcontainer {
 	struct felem felems[FAST_MAX_ELEMENTS_NUMBER];
 };
 
-void fcontainer_init(struct fcontainer *self,
-		struct fast_field *fields, unsigned long nr_fields);
+void fcontainer_init(struct fcontainer *self, struct fast_message *init_msg);
 void fcontainer_free(struct fcontainer *container);
 struct felem *next_elem(struct fcontainer *self);
 struct felem *cur_elem(struct fcontainer *self);

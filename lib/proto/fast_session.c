@@ -52,19 +52,6 @@ void fast_session_free(struct fast_session *self)
 	free(self);
 }
 
-bool fast_session_message_add(struct fast_session *self, struct fast_message *msg)
-{
-	if (self->nr_messages >= FAST_TEMPLATE_MAX_NUMBER)
-		return false;
-
-	if (!fast_message_copy(self->rx_messages + self->nr_messages, msg))
-		return false;
-
-	self->nr_messages++;
-
-	return true;
-}
-
 static inline bool fast_session_buffer_full(struct fast_session *session)
 {
 	return buffer_remaining(session->rx_buffer) <= FAST_MESSAGE_MAX_SIZE;

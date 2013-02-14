@@ -1,0 +1,16 @@
+<templates>
+   <template>
+      <int32>
+         <increment />
+      </int32>
+      <int32 presence="optional">
+         <increment />
+      </int32>
+      <uInt32>
+         <increment />
+      </uInt32>
+      <uInt32 presence="optional">
+         <increment />
+      </uInt32>
+   </template>
+</templates>

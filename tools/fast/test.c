@@ -44,10 +44,15 @@ void fcontainer_free(struct fcontainer *container)
 	free(container);
 }
 
-void fcontainer_init(struct fcontainer *self, struct fast_field *fields, unsigned long nr_fields)
+void fcontainer_init(struct fcontainer *self, struct fast_message *init_msg)
 {
 	int i;
+	unsigned long nr_fields;
 	struct fast_message *msg;
+	struct fast_field *fields;
+
+	nr_fields = init_msg->nr_fields;
+	fields = init_msg->fields;
 
 	for (i = 0; i < FAST_MAX_ELEMENTS_NUMBER; i++) {
 		msg = &self->felems[i].msg;
@@ -142,116 +147,10 @@ int script_read(FILE *stream, struct fcontainer *self)
 {
 	char line[FAST_MAX_LINE_LENGTH];
 	int size = FAST_MAX_LINE_LENGTH;
-	char buf[FAST_MAX_LINE_LENGTH];
-	struct fast_field *fields;
-	struct fast_field *field;
-	unsigned long nr_fields;
-	unsigned long i;
-	char *start;
-	char *end;
 
 	line[size - 1] = 0;
 
-	if (!fgets(line, size, stream) || line[size - 1])
-		goto fail;
-
-	if (sscanf(line, "%ld", &nr_fields) != 1)
-		goto fail;
-
-	fields = calloc(nr_fields, sizeof(struct fast_field));
-	if (!fields)
-		goto fail;
-
-	for (i = 0; i < nr_fields; i++) {
-		field = fields + i;
-
-		if (!fgets(line, size, stream) || line[size - 1])
-			goto fail;
-
-		start = line;
-
-		if (sscanf(start, "%[^" DELIMS "]s", buf) != 1)
-			goto fail;
-
-		start += (strlen(buf) + 1);
-
-		if (!strncmp(buf, "int", 3))
-			field->type = FAST_TYPE_INT;
-		else if (!strncmp(buf, "uint", 4))
-			field->type = FAST_TYPE_UINT;
-		else if (!strncmp(buf, "string", 6))
-			field->type = FAST_TYPE_STRING;
-		else if (!strncmp(buf, "decimal", 7))
-			field->type = FAST_TYPE_DECIMAL;
-		else
-			goto fail;
-
-		if (sscanf(start, "%[^" DELIMS "]s", buf) != 1)
-			goto fail;
-
-		start += (strlen(buf) + 1);
-
-		if (!strncmp(buf, "optional", 8))
-			field->presence = FAST_PRESENCE_OPTIONAL;
-		else if (!strncmp(buf, "mandatory", 9))
-			field->presence = FAST_PRESENCE_MANDATORY;
-		else
-			goto fail;
-
-		if (sscanf(start, "%[^" DELIMS "]s", buf) != 1)
-			goto fail;
-
-		start += (strlen(buf) + 1);
-
-		if (!strncmp(buf, "none", 4))
-			field->op = FAST_OP_NONE;
-		else if (!strncmp(buf, "copy", 4))
-			field->op = FAST_OP_COPY;
-		else if (!strncmp(buf, "incr", 4))
-			field->op = FAST_OP_INCR;
-		else if (!strncmp(buf, "delta", 5))
-			field->op = FAST_OP_DELTA;
-		else if (!strncmp(buf, "const", 5))
-			field->op = FAST_OP_CONSTANT;
-		else
-			goto fail;
-
-		field->pmap_bit = strtoul(start, &end, 10);
-		start = end + 1;
-
-		if (!strncmp(start, "none", 4)) {
-			field->has_reset = false;
-			continue;
-		} else
-			field->has_reset = true;
-
-		switch (field->type) {
-		case FAST_TYPE_INT:
-			field->int_reset = strtol(start, NULL, 10);
-			break;
-		case FAST_TYPE_UINT:
-			field->uint_reset = strtoul(start, NULL, 10);
-			break;
-		case FAST_TYPE_STRING:
-			if (sscanf(start, "%[^" DELIMS "]s", field->string_reset) != 1)
-				goto fail;
-			break;
-		case FAST_TYPE_DECIMAL:
-			field->decimal_reset.exp = strtol(start, &end, 10);
-			start = end + 1;
-			field->decimal_reset.mnt = strtol(start, &end, 10);
-			break;
-		default:
-			goto fail;
-		}
-	}
-
-	fcontainer_init(self, fields, nr_fields);
-
-	fast_message_init(&add_elem(self)->msg);
-
-	free(fields);
-
+	add_elem(self);
 	while (fgets(line, size, stream)) {
 		if (line[size - 1])
 			goto fail;

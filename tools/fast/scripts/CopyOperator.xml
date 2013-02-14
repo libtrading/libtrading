@@ -1,0 +1,28 @@
+<templates>
+   <template>
+      <int32>
+         <copy />
+      </int32>
+      <int32 presence="optional">
+         <copy />
+      </int32>
+      <uInt32>
+         <copy />
+      </uInt32>
+      <uInt32 presence="optional">
+         <copy />
+      </uInt32>
+      <decimal>
+         <copy />
+      </decimal>
+      <decimal presence="optional">
+         <copy />
+      </decimal>
+      <string>
+         <copy />
+      </string>
+      <string presence="optional">
+         <copy />
+      </string>
+   </template>
+</templates>

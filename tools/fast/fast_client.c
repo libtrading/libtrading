@@ -21,10 +21,11 @@
 
 struct protocol_info {
 	const char		*name;
-	int			(*session_initiate)(const struct protocol_info *, int, const char *);
+	int			(*session_initiate)(const struct protocol_info *, int, const char *, const char *);
 };
 
-static int fast_session_initiate(const struct protocol_info *proto, int sockfd, const char *script)
+static int fast_session_initiate(const struct protocol_info *proto, int sockfd,
+						const char *xml, const char *script)
 {
 	struct fcontainer *container = NULL;
 	struct fast_session *session = NULL;
@@ -51,13 +52,15 @@ static int fast_session_initiate(const struct protocol_info *proto, int sockfd, 
 		goto exit;
 	}
 
-	if (script_read(stream, container)) {
-		fprintf(stderr, "Invalid script: %s\n", script);
+	if (fast_suite_template(session, xml)) {
+		fprintf(stderr, "Cannot read template xml file\n");
 		goto exit;
 	}
 
-	if (!fast_session_message_add(session, &container->felems->msg)) {
-		fprintf(stderr, "FAST template cannot be added\n");
+	fcontainer_init(container, session->rx_messages);
+
+	if (script_read(stream, container)) {
+		fprintf(stderr, "Invalid script: %s\n", script);
 		goto exit;
 	}
 
@@ -111,7 +114,7 @@ static const struct protocol_info *lookup_protocol_info(const char *name)
 
 static void usage(void)
 {
-	printf("\n  usage: trade client -f [filename] -h [hostname] -p [port] -c [protocol]\n\n");
+	printf("\n  usage: trade client -t [template] -f [filename] -h [hostname] -p [port] -c [protocol]\n\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -126,6 +129,7 @@ int main(int argc, char *argv[])
 	const char *filename = NULL;
 	const char *proto = NULL;
 	const char *host = NULL;
+	const char *xml = NULL;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
 	struct hostent *he;
@@ -135,7 +139,7 @@ int main(int argc, char *argv[])
 	char **ap;
 	int opt;
 
-	while ((opt = getopt(argc, argv, "f:h:p:c:")) != -1) {
+	while ((opt = getopt(argc, argv, "f:h:p:c:t:")) != -1) {
 		switch (opt) {
 		case 'p':
 			port = atoi(optarg);
@@ -149,13 +153,16 @@ int main(int argc, char *argv[])
 		case 'h':
 			host = optarg;
 			break;
+		case 't':
+			xml = optarg;
+			break;
 		default: /* '?' */
 			usage();
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	if (!port || !proto || !filename || !host) {
+	if (!port || !proto || !filename || !host || !xml) {
 		usage();
 		exit(EXIT_FAILURE);
 	}
@@ -198,7 +205,7 @@ int main(int argc, char *argv[])
 	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	retval = proto_info->session_initiate(proto_info, sockfd, filename);
+	retval = proto_info->session_initiate(proto_info, sockfd, xml, filename);
 
 	shutdown(sockfd, SHUT_RDWR);
 
