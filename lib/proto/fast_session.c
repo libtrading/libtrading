@@ -71,8 +71,10 @@ struct fast_message *fast_session_recv(struct fast_session *self, int flags)
 	start_prev = buffer_start(buffer);
 
 	msg = fast_message_decode(msgs, buffer, last_tid);
-	if (msg)
+	if (msg) {
+		self->last_tid = msg->tid;
 		return msg;
+	}
 
 	shift = start_prev - buffer_start(buffer);
 
@@ -93,7 +95,11 @@ struct fast_message *fast_session_recv(struct fast_session *self, int flags)
 	if (!buffer_size(buffer))
 		return NULL;
 
-	return fast_message_decode(msgs, buffer, last_tid);
+	msg = fast_message_decode(msgs, buffer, last_tid);
+	if (msg)
+		self->last_tid = msg->tid;
+
+	return msg;
 }
 
 int fast_session_send(struct fast_session *self, struct fast_message *msg, int flags)
