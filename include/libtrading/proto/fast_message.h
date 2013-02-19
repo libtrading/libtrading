@@ -228,6 +228,7 @@ static inline int transfer_size_uint(u64 data)
 struct fast_message *fast_message_new(int nr_messages);
 void fast_fields_free(struct fast_message *self);
 void fast_message_free(struct fast_message *self, int nr_messages);
+void fast_message_reset(struct fast_message *msg);
 struct fast_message *fast_message_decode(struct fast_message *msgs, struct buffer *buffer, u64 last_tid);
 int fast_message_send(struct fast_message *self, int sockfd, int flags);
 int fast_message_encode(struct fast_message *msg);

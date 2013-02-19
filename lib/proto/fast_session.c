@@ -105,3 +105,11 @@ int fast_session_send(struct fast_session *self, struct fast_message *msg, int f
 
 	return fast_message_send(msg, self->sockfd, flags);
 }
+
+void fast_session_reset(struct fast_session *self)
+{
+	int i;
+
+	for (i = 0; i < self->nr_messages; i++)
+		fast_message_reset(self->rx_messages + i);
+}

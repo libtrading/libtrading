@@ -28,5 +28,6 @@ int fast_micex_template(struct fast_session *self, const char *xml);
 int fast_suite_template(struct fast_session *self, const char *xml);
 struct fast_session *fast_session_new(int sockfd);
 void fast_session_free(struct fast_session *self);
+void fast_session_reset(struct fast_session *self);
 
 #endif

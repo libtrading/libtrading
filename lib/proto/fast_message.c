@@ -945,6 +945,73 @@ void fast_message_free(struct fast_message *self, int nr_messages)
 	return;
 }
 
+void fast_message_reset(struct fast_message *msg)
+{
+	struct fast_sequence *seq;
+	struct fast_field *field;
+	int i;
+
+	for (i = 0; i < msg->nr_fields; i++) {
+		field = msg->fields + i;
+
+		switch (field->type) {
+		case FAST_TYPE_INT:
+			if (field->has_reset) {
+				field->int_value = field->int_reset;
+				field->int_previous = field->int_reset;
+			} else {
+				field->int_value = 0;
+				field->int_previous = 0;
+			}
+
+			break;
+		case FAST_TYPE_UINT:
+			if (field->has_reset) {
+				field->uint_value = field->uint_reset;
+				field->uint_previous = field->uint_reset;
+			} else {
+				field->uint_value = 0;
+				field->uint_previous = 0;
+			}
+
+			break;
+		case FAST_TYPE_STRING:
+			if (field->has_reset) {
+				strcpy(field->string_value, field->string_reset);
+				strcpy(field->string_previous, field->string_reset);
+			} else {
+				field->string_value[0] = 0;
+				field->string_previous[0] = 0;
+			}
+
+			break;
+		case FAST_TYPE_DECIMAL:
+			if (field->has_reset) {
+				field->decimal_value.exp = field->decimal_reset.exp;
+				field->decimal_value.mnt = field->decimal_reset.mnt;
+				field->decimal_previous.exp = field->decimal_reset.exp;
+				field->decimal_previous.mnt = field->decimal_reset.mnt;
+			} else {
+				field->decimal_value.exp = 0;
+				field->decimal_value.mnt = 0;
+				field->decimal_previous.exp = 0;
+				field->decimal_previous.mnt = 0;
+			}
+
+			break;
+		case FAST_TYPE_SEQUENCE:
+			seq = field->ptr_value;
+
+			fast_message_reset(seq->elements);
+			break;
+		default:
+			break;
+		}
+	}
+
+	return;
+}
+
 static int transfer_int(struct buffer *buffer, i64 tmp)
 {
 	int size = transfer_size_int(tmp);
