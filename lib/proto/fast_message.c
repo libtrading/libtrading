@@ -703,6 +703,98 @@ fail:
 	return ret;
 }
 
+static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	struct fast_sequence *seq;
+	unsigned long nr_fields;
+	struct fast_pmap spmap;
+	struct fast_field *cur;
+	int ret = 0;
+	int i, j;
+
+	seq = field->ptr_value;
+
+	ret = fast_decode_uint(buffer, pmap, &seq->length);
+
+	if (ret)
+		goto exit;
+
+	if (field_state_empty(&seq->length)) {
+		if (field_is_mandatory(field))
+			ret = FAST_MSG_STATE_GARBLED;
+
+		goto exit;
+	}
+
+	if (seq->length.uint_value >= FAST_SEQUENCE_ELEMENTS) {
+		ret = FAST_MSG_STATE_GARBLED;
+		goto exit;
+	}
+
+	for (i = 1; i <= seq->length.uint_value; i++) {
+		ret = parse_pmap(buffer, &spmap);
+
+		if (ret)
+			goto exit;
+
+		nr_fields = seq->elements->nr_fields;
+
+		for (j = 0; j < nr_fields; j++) {
+			cur = (seq->elements + i)->fields + j;
+			field = seq->elements->fields + j;
+
+			switch (field->type) {
+			case FAST_TYPE_INT:
+				ret = fast_decode_int(buffer, &spmap, field);
+				if (ret)
+					goto exit;
+
+				cur->int_value = field->int_value;
+				cur->state = field->state;
+				break;
+			case FAST_TYPE_UINT:
+				ret = fast_decode_uint(buffer, &spmap, field);
+				if (ret)
+					goto exit;
+
+				cur->uint_value = field->uint_value;
+				cur->state = field->state;
+				break;
+			case FAST_TYPE_STRING:
+				ret = fast_decode_string(buffer, &spmap, field);
+				if (ret)
+					goto exit;
+
+				strcpy(cur->string_value, field->string_value);
+				cur->state = field->state;
+				break;
+			case FAST_TYPE_DECIMAL:
+				ret = fast_decode_decimal(buffer, &spmap, field);
+				if (ret)
+					goto exit;
+
+				cur->decimal_value.exp = field->decimal_value.exp;
+				cur->decimal_value.mnt = field->decimal_value.mnt;
+				cur->state = field->state;
+				break;
+			case FAST_TYPE_SEQUENCE:
+				/* At the moment we do no support nested sequences */
+				ret = FAST_MSG_STATE_GARBLED;
+
+				if (ret)
+					goto exit;
+				break;
+			default:
+				ret = FAST_MSG_STATE_GARBLED;
+				goto exit;
+			}
+		}
+	}
+
+exit:
+	return ret;
+}
+
 static inline struct fast_message *fast_get_msg(struct fast_message *msgs, int tid)
 {
 	int i;
@@ -780,6 +872,11 @@ retry:
 			if (ret)
 				goto fail;
 			break;
+		case FAST_TYPE_SEQUENCE:
+			ret = fast_decode_sequence(buffer, msg->pmap, field);
+			if (ret)
+				goto fail;
+			break;
 		default:
 			ret = FAST_MSG_STATE_GARBLED;
 			goto fail;
@@ -808,6 +905,31 @@ struct fast_message *fast_message_new(int nr_messages)
 	return self;
 }
 
+void fast_fields_free(struct fast_message *self)
+{
+	struct fast_sequence *seq;
+	struct fast_field *field;
+	int i, j;
+
+	if (!self)
+		return;
+
+	for (i = 0; i < self->nr_fields; i++) {
+		field = self->fields + i;
+
+		if (field->type == FAST_TYPE_SEQUENCE) {
+			seq = field->ptr_value;
+
+			for (j = 0; j < FAST_SEQUENCE_ELEMENTS; j++)
+				free((seq->elements + j)->fields);
+
+			free(field->ptr_value);
+		}
+	}
+
+	free(self->fields);
+}
+
 void fast_message_free(struct fast_message *self, int nr_messages)
 {
 	int i;
@@ -816,7 +938,7 @@ void fast_message_free(struct fast_message *self, int nr_messages)
 		return;
 
 	for (i = 0; i < nr_messages; i++)
-		free(self[i].fields);
+		fast_fields_free(self + i);
 
 	free(self);
 
@@ -1410,6 +1532,8 @@ int fast_message_encode(struct fast_message *msg)
 			if (fast_encode_decimal(msg->msg_buf, msg->pmap, field))
 				goto fail;
 			break;
+		case FAST_TYPE_SEQUENCE:
+			goto fail;
 		default:
 			goto fail;
 		};

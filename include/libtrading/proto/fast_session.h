@@ -24,6 +24,7 @@ struct fast_session {
 
 int fast_session_send(struct fast_session *self, struct fast_message *msg, int flags);
 struct fast_message *fast_session_recv(struct fast_session *self, int flags);
+int fast_micex_template(struct fast_session *self, const char *xml);
 int fast_suite_template(struct fast_session *self, const char *xml);
 struct fast_session *fast_session_new(int sockfd);
 void fast_session_free(struct fast_session *self);

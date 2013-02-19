@@ -132,6 +132,8 @@ int init_elem(struct felem *elem, char *line)
 			field->decimal_value.mnt = strtol(start, &end, 10);
 			start = end + 1;
 			break;
+		case FAST_TYPE_SEQUENCE:
+			goto fail;
 		default:
 			goto fail;
 		}
@@ -216,6 +218,8 @@ int fmsgcmp(struct fast_message *expected, struct fast_message *actual)
 				goto exit;
 
 			break;
+		case FAST_TYPE_SEQUENCE:
+			break;
 		default:
 			break;
 		}
@@ -227,47 +231,92 @@ exit:
 	return ret;
 }
 
-void fprintmsg(FILE *stream, struct fast_message *msg)
+int snprintmsg(char *buf, size_t size, struct fast_message *msg)
 {
-	char buf[FAST_MAX_LINE_LENGTH];
 	struct fast_field *field;
-	int size = sizeof(buf);
 	char delim = '|';
 	int len = 0;
 	int i;
 
 	if (!msg)
-		return;
+		goto exit;
+
+	if (len < size)
+		len += snprintf(buf + len, size - len, "%c", delim);
 
 	for (i = 0; i < msg->nr_fields && len < size; i++) {
 		field = msg->fields + i;
 
 		if (field_state_empty(field)) {
-			len += snprintf(buf + len, size - len, "%cnone", delim);
+			len += snprintf(buf + len, size - len, "none%c", delim);
 			continue;
 		}
 
 		switch (field->type) {
 		case FAST_TYPE_INT:
-			len += snprintf(buf + len, size - len, "%c%" PRId64, delim, field->int_value);
+			len += snprintf(buf + len, size - len, "%" PRId64 "%c", field->int_value, delim);
 			break;
 		case FAST_TYPE_UINT:
-			len += snprintf(buf + len, size - len, "%c%" PRIu64, delim, field->uint_value);
+			len += snprintf(buf + len, size - len, "%" PRIu64 "%c", field->uint_value, delim);
 			break;
 		case FAST_TYPE_STRING:
-			len += snprintf(buf + len, size - len, "%c%s", delim, field->string_value);
+			len += snprintf(buf + len, size - len, "%s%c", field->string_value, delim);
 			break;
 		case FAST_TYPE_DECIMAL:
-			len += snprintf(buf + len, size - len, "%c%" PRId64, delim, field->decimal_value.exp);
-			len += snprintf(buf + len, size - len, "%c%" PRId64, delim, field->decimal_value.mnt);
+			len += snprintf(buf + len, size - len, "%" PRId64 "%c", field->decimal_value.exp, delim);
+			len += snprintf(buf + len, size - len, "%" PRId64 "%c", field->decimal_value.mnt, delim);
+			break;
+		case FAST_TYPE_SEQUENCE:
+			len += snprintseq(buf + len, size - len, field);
 			break;
 		default:
 			break;
 		}
 	}
 
+exit:
+	return len;
+}
+
+int snprintseq(char *buf, size_t size, struct fast_field *field)
+{
+	struct fast_sequence *seq;
+	struct fast_message *msg;
+	int len = 0;
+	int i;
+
+	if (!field || field->type != FAST_TYPE_SEQUENCE)
+		goto exit;
+
+	if (len < size)
+		len += snprintf(buf + len, size - len, "\n<sequence>\n");
+
+	seq = field->ptr_value;
+
+	for (i = 1; i <= seq->length.uint_value && len < size; i++) {
+		msg = seq->elements + i;
+
+		len += snprintmsg(buf + len, size - len, msg);
+		len += snprintf(buf + len, size - len, "\n");
+	}
+
+	if (len < size)
+		len += snprintf(buf + len, size - len, "</sequence>");
+
+exit:
+	return len;
+}
+
+void fprintmsg(FILE *stream, struct fast_message *msg)
+{
+	char buf[FAST_MAX_LINE_LENGTH];
+	int size = sizeof(buf);
+	int len = 0;
+
+	len += snprintmsg(buf, size, msg);
+
 	if (len < size)
 		buf[len++] = '\0';
 
-	fprintf(stream, "%s%c\n", buf, delim);
+	fprintf(stream, "%s\n", buf);
 }

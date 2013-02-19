@@ -5,6 +5,8 @@
 #include <libxml/parser.h>
 #include <string.h>
 
+static int fast_field_init(xmlNodePtr node, struct fast_field *field);
+
 static int fast_presence_init(xmlNodePtr node, struct fast_field *field)
 {
 	xmlChar *prop;
@@ -41,12 +43,18 @@ static int fast_type_init(xmlNodePtr node, struct fast_field *field)
 	else if (!xmlStrcmp(node->name, (const xmlChar *)"uInt32") ||
 			!xmlStrcmp(node->name, (const xmlChar *)"uInt64"))
 		field->type = FAST_TYPE_UINT;
+	else if (!xmlStrcmp(node->name, (const xmlChar *)"length") ||
+			!xmlStrcmp(node->name, (const xmlChar *)"Length"))
+		field->type = FAST_TYPE_UINT;
 	else if (!xmlStrcmp(node->name, (const xmlChar *)"string") ||
 			!xmlStrcmp(node->name, (const xmlChar *)"String"))
 		field->type = FAST_TYPE_STRING;
 	else if (!xmlStrcmp(node->name, (const xmlChar *)"decimal") ||
 			!xmlStrcmp(node->name, (const xmlChar *)"Decimal"))
 		field->type = FAST_TYPE_DECIMAL;
+	else if (!xmlStrcmp(node->name, (const xmlChar *)"sequence") ||
+			!xmlStrcmp(node->name, (const xmlChar *)"Sequence"))
+		field->type = FAST_TYPE_SEQUENCE;
 	else
 		ret = 1;
 
@@ -145,11 +153,79 @@ static int fast_reset_init(xmlNodePtr node, struct fast_field *field)
 		field->decimal_previous.mnt = 0;
 
 		break;
+	case FAST_TYPE_SEQUENCE:
+		ret = 1;
+		break;
 	default:
 		ret = 1;
 		break;
 	}
 
+	return ret;
+}
+
+static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
+{
+	struct fast_sequence *seq;
+	struct fast_message *msg;
+	xmlNodePtr tmp;
+	int i, ret = 1;
+	int nr_fields;
+	int pmap_bit;
+
+	field->ptr_value = calloc(1, sizeof(struct fast_sequence));
+	if (!field->ptr_value)
+		goto exit;
+
+	seq = field->ptr_value;
+
+	nr_fields = xmlChildElementCount(node);
+
+	node = node->xmlChildrenNode;
+	while (node && node->type != XML_ELEMENT_NODE)
+		node = node->next;
+
+	if (xmlStrcmp(node->name, (const xmlChar *)"length"))
+		goto exit;
+
+	if (fast_field_init(node, &seq->length))
+		goto exit;
+
+	node = node->next;
+
+	for (i = 0; i < FAST_SEQUENCE_ELEMENTS; i++) {
+		msg = seq->elements + i;
+		tmp = node;
+
+		msg->fields = calloc(nr_fields, sizeof(struct fast_field));
+		if (!msg->fields)
+			goto exit;
+
+		msg->nr_fields = 0;
+		pmap_bit = 0;
+
+		while (tmp != NULL) {
+			if (tmp->type != XML_ELEMENT_NODE) {
+				tmp = tmp->next;
+				continue;
+			}
+
+			field = msg->fields + msg->nr_fields;
+
+			if (fast_field_init(tmp, field))
+				goto exit;
+
+			if (pmap_required(field))
+				field->pmap_bit = pmap_bit++;
+
+			msg->nr_fields++;
+			tmp = tmp->next;
+		}
+	}
+
+	ret = 0;
+
+exit:
 	return ret;
 }
 
@@ -174,7 +250,7 @@ static int fast_field_init(xmlNodePtr node, struct fast_field *field)
 	case FAST_TYPE_DECIMAL:
 		node = node->xmlChildrenNode;
 
-		while (node && node->type == XML_TEXT_NODE)
+		while (node && node->type != XML_ELEMENT_NODE)
 			node = node->next;
 
 		ret = fast_op_init(node, field);
@@ -186,6 +262,9 @@ static int fast_field_init(xmlNodePtr node, struct fast_field *field)
 			goto exit;
 
 		break;
+	case FAST_TYPE_SEQUENCE:
+		ret = fast_sequence_init(node, field);
+		break;
 	default:
 		ret = 1;
 		goto exit;
@@ -195,74 +274,137 @@ exit:
 	return ret;
 }
 
+static int fast_message_init(xmlNodePtr node, struct fast_message *msg)
+{
+	struct fast_field *field;
+	int nr_fields;
+	xmlChar *prop;
+	int pmap_bit;
+	int ret = 1;
+
+	if (xmlStrcmp(node->name, (const xmlChar *)"template"))
+		goto exit;
+
+	nr_fields = xmlChildElementCount(node);
+
+	prop = xmlGetProp(node, (const xmlChar *)"id");
+
+	msg->fields = calloc(nr_fields, sizeof(struct fast_field));
+	if (!msg->fields)
+		goto exit;
+
+	if (prop != NULL)
+		msg->tid = strtol((char *)prop, NULL, 10);
+	else
+		msg->tid = 0;
+
+	msg->nr_fields = 0;
+	pmap_bit = 1;
+
+	node = node->xmlChildrenNode;
+	while (node != NULL) {
+		if (node->type != XML_ELEMENT_NODE) {
+			node = node->next;
+			continue;
+		}
+
+		field = msg->fields + msg->nr_fields;
+
+		if (fast_field_init(node, field))
+			goto exit;
+
+		if (pmap_required(field))
+			field->pmap_bit = pmap_bit++;
+
+		msg->nr_fields++;
+		node = node->next;
+	}
+
+	ret = 0;
+
+exit:
+	return ret;
+}
+
 int fast_suite_template(struct fast_session *self, const char *xml)
 {
 	struct fast_message *msg;
-	struct fast_field *field;
-	xmlNodePtr template;
-	xmlNodePtr element;
-	int nr_fields;
+	xmlNodePtr node;
 	xmlDocPtr doc;
-	int pmap_bit;
 	int ret = 1;
 
 	doc = xmlParseFile(xml);
 	if (doc == NULL)
 		goto exit;
 
-	template = xmlDocGetRootElement(doc);
-	if (template == NULL)
+	node = xmlDocGetRootElement(doc);
+	if (node == NULL)
 		goto exit;
 
-	if (xmlStrcmp(template->name, (const xmlChar *)"templates"))
+	if (xmlStrcmp(node->name, (const xmlChar *)"templates"))
 		goto free;
 
-	if (xmlChildElementCount(template) > FAST_TEMPLATE_MAX_NUMBER)
+	if (xmlChildElementCount(node) > FAST_TEMPLATE_MAX_NUMBER)
 		goto free;
 
-	template = template->xmlChildrenNode;
-	while (template != NULL) {
-		if (template->type == XML_TEXT_NODE) {
-			template = template->next;
+	node = node->xmlChildrenNode;
+	while (node != NULL) {
+		if (node->type != XML_ELEMENT_NODE) {
+			node = node->next;
 			continue;
 		}
 
-		if (xmlStrcmp(template->name, (const xmlChar *)"template"))
-			goto free;
-
 		msg = self->rx_messages + self->nr_messages;
-		nr_fields = xmlChildElementCount(template);
-
-		msg->fields = calloc(nr_fields, sizeof(struct fast_field));
-		if (!msg->fields)
+		if (fast_message_init(node, msg))
 			goto free;
-
-		msg->nr_fields = 0;
-		msg->tid = 0;
-
-		pmap_bit = 1;
-
-		element = template->xmlChildrenNode;
-		while (element != NULL) {
-			if (element->type == XML_TEXT_NODE) {
-				element = element->next;
-				continue;
-			}
-
-			field = msg->fields + msg->nr_fields;
-
-			if (fast_field_init(element, field))
-				goto free;
-
-			if (pmap_required(field))
-				field->pmap_bit = pmap_bit++;
-
-			msg->nr_fields++;
-			element = element->next;
-		}
 
 		self->nr_messages++;
-		template = template->next;
+		node = node->next;
+	}
+
+	ret = 0;
+
+free:
+	xmlFreeDoc(doc);
+
+exit:
+	return ret;
+}
+
+int fast_micex_template(struct fast_session *self, const char *xml)
+{
+	struct fast_message *msg;
+	xmlNodePtr node;
+	xmlDocPtr doc;
+	int ret = 1;
+
+	doc = xmlParseFile(xml);
+	if (doc == NULL)
+		goto exit;
+
+	node = xmlDocGetRootElement(doc);
+	if (node == NULL)
+		goto exit;
+
+	if (xmlStrcmp(node->name, (const xmlChar *)"templates"))
+		goto free;
+
+	if (xmlChildElementCount(node) > FAST_TEMPLATE_MAX_NUMBER)
+		goto free;
+
+	node = node->xmlChildrenNode;
+	while (node != NULL) {
+		if (node->type != XML_ELEMENT_NODE) {
+			node = node->next;
+			continue;
+		}
+
+		msg = self->rx_messages + self->nr_messages;
+		if (fast_message_init(node, msg))
+			goto free;
+
+		self->nr_messages++;
+		node = node->next;
 	}
 
 	ret = 0;

@@ -1,5 +1,5 @@
 #define	FAST_MAX_ELEMENTS_NUMBER	32
-#define	FAST_MAX_LINE_LENGTH		256
+#define	FAST_MAX_LINE_LENGTH		4096
 
 struct felem {
 	struct fast_message msg;
@@ -22,4 +22,6 @@ struct fcontainer *fcontainer_new(void);
 
 int script_read(FILE *stream, struct fcontainer *self);
 int fmsgcmp(struct fast_message *expected, struct fast_message *actual);
+int snprintseq(char *buf, size_t size, struct fast_field *field);
+int snprintmsg(char *buf, size_t size, struct fast_message *msg);
 void fprintmsg(FILE *stream, struct fast_message *msg);

@@ -54,6 +54,8 @@ static void fast_send_prepare(struct fast_message *msg, struct felem *elem)
 			field->decimal_value.exp = elem_field->decimal_value.exp;
 			field->decimal_value.mnt = elem_field->decimal_value.mnt;
 			break;
+		case FAST_TYPE_SEQUENCE:
+			break;
 		default:
 			break;
 		}
