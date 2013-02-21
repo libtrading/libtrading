@@ -33,6 +33,8 @@ struct fast_session *fast_session_new(int sockfd)
 		return NULL;
 	}
 
+	buffer_set_ptr(self->rx_buffer, &self->sockfd);
+
 	self->sockfd		= sockfd;
 	self->last_tid		= 0;
 	self->nr_messages	= 0;
@@ -52,48 +54,12 @@ void fast_session_free(struct fast_session *self)
 	free(self);
 }
 
-static inline bool fast_session_buffer_full(struct fast_session *session)
-{
-	return buffer_remaining(session->rx_buffer) <= FAST_MESSAGE_MAX_SIZE;
-}
-
 struct fast_message *fast_session_recv(struct fast_session *self, int flags)
 {
 	struct fast_message *msgs = self->rx_messages;
 	struct buffer *buffer = self->rx_buffer;
 	u64 last_tid = self->last_tid;
 	struct fast_message *msg;
-	const char *start_prev;
-	size_t size;
-	ssize_t nr;
-	long shift;
-
-	start_prev = buffer_start(buffer);
-
-	msg = fast_message_decode(msgs, buffer, last_tid);
-	if (msg) {
-		self->last_tid = msg->tid;
-		return msg;
-	}
-
-	shift = start_prev - buffer_start(buffer);
-
-	buffer_advance(buffer, shift);
-
-	if (fast_session_buffer_full(self))
-		buffer_compact(buffer);
-
-	size = buffer_remaining(buffer);
-	if (size > FAST_MESSAGE_MAX_SIZE) {
-		size -= FAST_MESSAGE_MAX_SIZE;
-
-		nr = buffer_nread(buffer, self->sockfd, size);
-		if (nr < 0)
-			return NULL;
-	}
-
-	if (!buffer_size(buffer))
-		return NULL;
 
 	msg = fast_message_decode(msgs, buffer, last_tid);
 	if (msg)

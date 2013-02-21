@@ -12,6 +12,9 @@ struct buffer {
 	unsigned long		end;
 	unsigned long		capacity;
 	char			*data;
+
+	/* To store private info */
+	void			*ptr;
 };
 
 struct buffer *buffer_new(unsigned long capacity);
@@ -80,6 +83,16 @@ static inline void buffer_get_n(struct buffer *self, int n, char *dst)
 
 	for (i = 0; i < n; i++)
 		*dst++ = buffer_get_8(self);
+}
+
+static inline void *buffer_get_ptr(struct buffer *self)
+{
+	return self->ptr;
+}
+
+static inline void buffer_set_ptr(struct buffer *self, void *ptr)
+{
+	self->ptr = ptr;
 }
 
 /* User must ensure that there is space to store a byte */

@@ -7,12 +7,37 @@
 #include <string.h>
 #include <stdlib.h>
 
+static ssize_t data_read(struct buffer *buffer)
+{
+	ssize_t nr = 0;
+	size_t size;
+	int *fd;
+
+	fd = buffer_get_ptr(buffer);
+
+	size = buffer_remaining(buffer);
+	if (size <= FAST_MESSAGE_MAX_SIZE)
+		buffer_compact(buffer);
+
+	/*
+	 * If buffer's capacity is at least
+	 * 2 times FAST_MESSAGE_MAX_SIZE then,
+	 * remaining > FAST_MESSAGE_MAX_SIZE
+	 */
+	nr = buffer_nread(buffer, *fd, FAST_MESSAGE_MAX_SIZE);
+
+	return nr;
+}
+
 static int parse_uint(struct buffer *buffer, u64 *value)
 {
 	const int bytes = 9;
-	u64 result = 0;
+	u64 result;
 	int i;
 	u8 c;
+
+retry:
+	result = 0;
 
 	for (i = 0; i < bytes; i++) {
 		if (!buffer_size(buffer))
@@ -31,18 +56,28 @@ static int parse_uint(struct buffer *buffer, u64 *value)
 		result = (result << 7) | c;
 	}
 
+fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	return FAST_MSG_STATE_PARTIAL;
+	buffer_advance(buffer, -i);
+
+	if (data_read(buffer) > 0)
+		goto retry;
+	else
+		goto fail;
 }
 
 static int parse_int(struct buffer *buffer, i64 *value)
 {
 	const int bytes = 9;
-	i64 result = 0;
+	i64 result;
 	int i;
 	u8 c;
+
+retry:
+	result = 0;
+	i = 0;
 
 	if (!buffer_size(buffer))
 		goto partial;
@@ -67,10 +102,16 @@ static int parse_int(struct buffer *buffer, i64 *value)
 		result = (result << 7) | c;
 	}
 
+fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	return FAST_MSG_STATE_PARTIAL;
+	buffer_advance(buffer, -i);
+
+	if (data_read(buffer) > 0)
+		goto retry;
+	else
+		goto fail;
 }
 
 /*
@@ -82,8 +123,11 @@ partial:
  */
 static int parse_string(struct buffer *buffer, char *value)
 {
-	int len = 0;
+	int len;
 	u8 c;
+
+retry:
+	len = 0;
 
 	while (len < FAST_STRING_MAX_BYTES - 1) {
 		if (!buffer_size(buffer))
@@ -101,16 +145,23 @@ static int parse_string(struct buffer *buffer, char *value)
 			value[len++] = c;
 	}
 
+fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	return FAST_MSG_STATE_PARTIAL;
+	buffer_advance(buffer, -len);
+
+	if (data_read(buffer) > 0)
+		goto retry;
+	else
+		goto fail;
 }
 
 static int parse_pmap(struct buffer *buffer, struct fast_pmap *pmap)
 {
 	char c;
 
+retry:
 	pmap->nr_bytes = 0;
 
 	while (pmap->nr_bytes < FAST_PMAP_MAX_BYTES) {
@@ -126,10 +177,16 @@ static int parse_pmap(struct buffer *buffer, struct fast_pmap *pmap)
 			return 0;
 	}
 
+fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	return FAST_MSG_STATE_PARTIAL;
+	buffer_advance(buffer, -pmap->nr_bytes);
+
+	if (data_read(buffer) > 0)
+		goto retry;
+	else
+		goto fail;
 }
 
 static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
@@ -809,23 +866,12 @@ static inline struct fast_message *fast_get_msg(struct fast_message *msgs, int t
 
 struct fast_message *fast_message_decode(struct fast_message *msgs, struct buffer *buffer, u64 last_tid)
 {
-	int ret = FAST_MSG_STATE_PARTIAL;
 	struct fast_message *msg;
 	struct fast_field *field;
 	struct fast_pmap pmap;
-
-	unsigned long size;
-	const char *start;
 	unsigned long i;
-
+	int ret;
 	u64 tid;
-
-retry:
-	start	= buffer_start(buffer);
-	size	= buffer_size(buffer);
-
-	if (!size)
-		goto fail;
 
 	ret = parse_pmap(buffer, &pmap);
 	if (ret)
@@ -833,7 +879,6 @@ retry:
 
 	if (pmap_is_set(&pmap, 0)) {
 		ret = parse_uint(buffer, &tid);
-
 		if (ret)
 			goto fail;
 	} else
@@ -841,10 +886,8 @@ retry:
 
 	msg = fast_get_msg(msgs, tid);
 
-	if (!msg) {
-		ret = FAST_MSG_STATE_GARBLED;
+	if (!msg)
 		goto fail;
-	}
 
 	msg->pmap = &pmap;
 
@@ -886,12 +929,6 @@ retry:
 	return msg;
 
 fail:
-	/* Should we stop FAST decoding? */
-	if (ret != FAST_MSG_STATE_PARTIAL)
-		goto retry;
-
-	buffer_advance(buffer, start - buffer_start(buffer));
-
 	return NULL;
 }
 

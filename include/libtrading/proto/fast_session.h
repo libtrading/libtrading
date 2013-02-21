@@ -5,8 +5,8 @@
 
 #include <libtrading/buffer.h>
 
-#define	FAST_RECV_BUFFER_SIZE	4096UL
-#define	FAST_TX_BUFFER_SIZE	4096UL
+#define	FAST_RECV_BUFFER_SIZE	(2 * FAST_MESSAGE_MAX_SIZE)
+#define	FAST_TX_BUFFER_SIZE	(2 * FAST_MESSAGE_MAX_SIZE)
 
 struct fast_message;
 

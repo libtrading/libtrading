@@ -15,8 +15,7 @@
 
 #define	FAST_SEQUENCE_ELEMENTS		32
 
-#define	FAST_MSG_STATE_PARTIAL	(-1)
-#define	FAST_MSG_STATE_GARBLED	(-2)
+#define	FAST_MSG_STATE_GARBLED	(-1)
 
 struct buffer;
 
