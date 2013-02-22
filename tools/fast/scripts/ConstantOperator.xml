@@ -1,0 +1,22 @@
+<templates>
+   <template>
+      <int32>
+         <constant value="1" />
+      </int32>
+      <int32 presence="optional">
+         <constant value="-1" />
+      </int32>
+      <uInt32>
+         <constant value="2" />
+      </uInt32>
+      <uInt32 presence="optional">
+         <constant value="2" />
+      </uInt32>
+      <string>
+         <constant value="one" />
+      </string>
+      <string presence="optional">
+         <constant value="four" />
+      </string>
+   </template>
+</templates>

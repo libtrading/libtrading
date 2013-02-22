@@ -1,0 +1,12 @@
+<templates>
+   <template>
+      <int32 />
+      <int32 presence="optional" />
+      <uInt32 />
+      <uInt32 presence="optional" />
+      <decimal />
+      <decimal presence="optional" />
+      <string />
+      <string presence="optional" />
+   </template>
+</templates>

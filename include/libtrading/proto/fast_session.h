@@ -5,8 +5,8 @@
 
 #include <libtrading/buffer.h>
 
-#define	FAST_RECV_BUFFER_SIZE	4096UL
-#define	FAST_TX_BUFFER_SIZE	4096UL
+#define	FAST_RECV_BUFFER_SIZE	(2 * FAST_MESSAGE_MAX_SIZE)
+#define	FAST_TX_BUFFER_SIZE	(2 * FAST_MESSAGE_MAX_SIZE)
 
 struct fast_message;
 
@@ -23,9 +23,11 @@ struct fast_session {
 };
 
 int fast_session_send(struct fast_session *self, struct fast_message *msg, int flags);
-bool fast_session_message_add(struct fast_session *self, struct fast_message *msg);
 struct fast_message *fast_session_recv(struct fast_session *self, int flags);
+int fast_micex_template(struct fast_session *self, const char *xml);
+int fast_suite_template(struct fast_session *self, const char *xml);
 struct fast_session *fast_session_new(int sockfd);
 void fast_session_free(struct fast_session *self);
+void fast_session_reset(struct fast_session *self);
 
 #endif

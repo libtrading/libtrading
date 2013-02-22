@@ -44,10 +44,15 @@ void fcontainer_free(struct fcontainer *container)
 	free(container);
 }
 
-void fcontainer_init(struct fcontainer *self, struct fast_field *fields, unsigned long nr_fields)
+void fcontainer_init(struct fcontainer *self, struct fast_message *init_msg)
 {
 	int i;
+	unsigned long nr_fields;
 	struct fast_message *msg;
+	struct fast_field *fields;
+
+	nr_fields = init_msg->nr_fields;
+	fields = init_msg->fields;
 
 	for (i = 0; i < FAST_MAX_ELEMENTS_NUMBER; i++) {
 		msg = &self->felems[i].msg;
@@ -127,6 +132,8 @@ int init_elem(struct felem *elem, char *line)
 			field->decimal_value.mnt = strtol(start, &end, 10);
 			start = end + 1;
 			break;
+		case FAST_TYPE_SEQUENCE:
+			goto fail;
 		default:
 			goto fail;
 		}
@@ -142,116 +149,10 @@ int script_read(FILE *stream, struct fcontainer *self)
 {
 	char line[FAST_MAX_LINE_LENGTH];
 	int size = FAST_MAX_LINE_LENGTH;
-	char buf[FAST_MAX_LINE_LENGTH];
-	struct fast_field *fields;
-	struct fast_field *field;
-	unsigned long nr_fields;
-	unsigned long i;
-	char *start;
-	char *end;
 
 	line[size - 1] = 0;
 
-	if (!fgets(line, size, stream) || line[size - 1])
-		goto fail;
-
-	if (sscanf(line, "%ld", &nr_fields) != 1)
-		goto fail;
-
-	fields = calloc(nr_fields, sizeof(struct fast_field));
-	if (!fields)
-		goto fail;
-
-	for (i = 0; i < nr_fields; i++) {
-		field = fields + i;
-
-		if (!fgets(line, size, stream) || line[size - 1])
-			goto fail;
-
-		start = line;
-
-		if (sscanf(start, "%[^" DELIMS "]s", buf) != 1)
-			goto fail;
-
-		start += (strlen(buf) + 1);
-
-		if (!strncmp(buf, "int", 3))
-			field->type = FAST_TYPE_INT;
-		else if (!strncmp(buf, "uint", 4))
-			field->type = FAST_TYPE_UINT;
-		else if (!strncmp(buf, "string", 6))
-			field->type = FAST_TYPE_STRING;
-		else if (!strncmp(buf, "decimal", 7))
-			field->type = FAST_TYPE_DECIMAL;
-		else
-			goto fail;
-
-		if (sscanf(start, "%[^" DELIMS "]s", buf) != 1)
-			goto fail;
-
-		start += (strlen(buf) + 1);
-
-		if (!strncmp(buf, "optional", 8))
-			field->presence = FAST_PRESENCE_OPTIONAL;
-		else if (!strncmp(buf, "mandatory", 9))
-			field->presence = FAST_PRESENCE_MANDATORY;
-		else
-			goto fail;
-
-		if (sscanf(start, "%[^" DELIMS "]s", buf) != 1)
-			goto fail;
-
-		start += (strlen(buf) + 1);
-
-		if (!strncmp(buf, "none", 4))
-			field->op = FAST_OP_NONE;
-		else if (!strncmp(buf, "copy", 4))
-			field->op = FAST_OP_COPY;
-		else if (!strncmp(buf, "incr", 4))
-			field->op = FAST_OP_INCR;
-		else if (!strncmp(buf, "delta", 5))
-			field->op = FAST_OP_DELTA;
-		else if (!strncmp(buf, "const", 5))
-			field->op = FAST_OP_CONSTANT;
-		else
-			goto fail;
-
-		field->pmap_bit = strtoul(start, &end, 10);
-		start = end + 1;
-
-		if (!strncmp(start, "none", 4)) {
-			field->has_reset = false;
-			continue;
-		} else
-			field->has_reset = true;
-
-		switch (field->type) {
-		case FAST_TYPE_INT:
-			field->int_reset = strtol(start, NULL, 10);
-			break;
-		case FAST_TYPE_UINT:
-			field->uint_reset = strtoul(start, NULL, 10);
-			break;
-		case FAST_TYPE_STRING:
-			if (sscanf(start, "%[^" DELIMS "]s", field->string_reset) != 1)
-				goto fail;
-			break;
-		case FAST_TYPE_DECIMAL:
-			field->decimal_reset.exp = strtol(start, &end, 10);
-			start = end + 1;
-			field->decimal_reset.mnt = strtol(start, &end, 10);
-			break;
-		default:
-			goto fail;
-		}
-	}
-
-	fcontainer_init(self, fields, nr_fields);
-
-	fast_message_init(&add_elem(self)->msg);
-
-	free(fields);
-
+	add_elem(self);
 	while (fgets(line, size, stream)) {
 		if (line[size - 1])
 			goto fail;
@@ -317,6 +218,8 @@ int fmsgcmp(struct fast_message *expected, struct fast_message *actual)
 				goto exit;
 
 			break;
+		case FAST_TYPE_SEQUENCE:
+			break;
 		default:
 			break;
 		}
@@ -328,47 +231,92 @@ exit:
 	return ret;
 }
 
-void fprintmsg(FILE *stream, struct fast_message *msg)
+int snprintmsg(char *buf, size_t size, struct fast_message *msg)
 {
-	char buf[FAST_MAX_LINE_LENGTH];
 	struct fast_field *field;
-	int size = sizeof(buf);
 	char delim = '|';
 	int len = 0;
 	int i;
 
 	if (!msg)
-		return;
+		goto exit;
+
+	if (len < size)
+		len += snprintf(buf + len, size - len, "%c", delim);
 
 	for (i = 0; i < msg->nr_fields && len < size; i++) {
 		field = msg->fields + i;
 
 		if (field_state_empty(field)) {
-			len += snprintf(buf + len, size - len, "%cnone", delim);
+			len += snprintf(buf + len, size - len, "none%c", delim);
 			continue;
 		}
 
 		switch (field->type) {
 		case FAST_TYPE_INT:
-			len += snprintf(buf + len, size - len, "%c%" PRId64, delim, field->int_value);
+			len += snprintf(buf + len, size - len, "%" PRId64 "%c", field->int_value, delim);
 			break;
 		case FAST_TYPE_UINT:
-			len += snprintf(buf + len, size - len, "%c%" PRIu64, delim, field->uint_value);
+			len += snprintf(buf + len, size - len, "%" PRIu64 "%c", field->uint_value, delim);
 			break;
 		case FAST_TYPE_STRING:
-			len += snprintf(buf + len, size - len, "%c%s", delim, field->string_value);
+			len += snprintf(buf + len, size - len, "%s%c", field->string_value, delim);
 			break;
 		case FAST_TYPE_DECIMAL:
-			len += snprintf(buf + len, size - len, "%c%" PRId64, delim, field->decimal_value.exp);
-			len += snprintf(buf + len, size - len, "%c%" PRId64, delim, field->decimal_value.mnt);
+			len += snprintf(buf + len, size - len, "%" PRId64 "%c", field->decimal_value.exp, delim);
+			len += snprintf(buf + len, size - len, "%" PRId64 "%c", field->decimal_value.mnt, delim);
+			break;
+		case FAST_TYPE_SEQUENCE:
+			len += snprintseq(buf + len, size - len, field);
 			break;
 		default:
 			break;
 		}
 	}
 
+exit:
+	return len;
+}
+
+int snprintseq(char *buf, size_t size, struct fast_field *field)
+{
+	struct fast_sequence *seq;
+	struct fast_message *msg;
+	int len = 0;
+	int i;
+
+	if (!field || field->type != FAST_TYPE_SEQUENCE)
+		goto exit;
+
+	if (len < size)
+		len += snprintf(buf + len, size - len, "\n<sequence>\n");
+
+	seq = field->ptr_value;
+
+	for (i = 1; i <= seq->length.uint_value && len < size; i++) {
+		msg = seq->elements + i;
+
+		len += snprintmsg(buf + len, size - len, msg);
+		len += snprintf(buf + len, size - len, "\n");
+	}
+
+	if (len < size)
+		len += snprintf(buf + len, size - len, "</sequence>");
+
+exit:
+	return len;
+}
+
+void fprintmsg(FILE *stream, struct fast_message *msg)
+{
+	char buf[FAST_MAX_LINE_LENGTH];
+	int size = sizeof(buf);
+	int len = 0;
+
+	len += snprintmsg(buf, size, msg);
+
 	if (len < size)
 		buf[len++] = '\0';
 
-	fprintf(stream, "%s%c\n", buf, delim);
+	fprintf(stream, "%s\n", buf);
 }

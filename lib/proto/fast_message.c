@@ -7,12 +7,37 @@
 #include <string.h>
 #include <stdlib.h>
 
+static ssize_t data_read(struct buffer *buffer)
+{
+	ssize_t nr = 0;
+	size_t size;
+	int *fd;
+
+	fd = buffer_get_ptr(buffer);
+
+	size = buffer_remaining(buffer);
+	if (size <= FAST_MESSAGE_MAX_SIZE)
+		buffer_compact(buffer);
+
+	/*
+	 * If buffer's capacity is at least
+	 * 2 times FAST_MESSAGE_MAX_SIZE then,
+	 * remaining > FAST_MESSAGE_MAX_SIZE
+	 */
+	nr = buffer_nread(buffer, *fd, FAST_MESSAGE_MAX_SIZE);
+
+	return nr;
+}
+
 static int parse_uint(struct buffer *buffer, u64 *value)
 {
 	const int bytes = 9;
-	u64 result = 0;
+	u64 result;
 	int i;
 	u8 c;
+
+retry:
+	result = 0;
 
 	for (i = 0; i < bytes; i++) {
 		if (!buffer_size(buffer))
@@ -31,18 +56,28 @@ static int parse_uint(struct buffer *buffer, u64 *value)
 		result = (result << 7) | c;
 	}
 
+fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	return FAST_MSG_STATE_PARTIAL;
+	buffer_advance(buffer, -i);
+
+	if (data_read(buffer) > 0)
+		goto retry;
+	else
+		goto fail;
 }
 
 static int parse_int(struct buffer *buffer, i64 *value)
 {
 	const int bytes = 9;
-	i64 result = 0;
+	i64 result;
 	int i;
 	u8 c;
+
+retry:
+	result = 0;
+	i = 0;
 
 	if (!buffer_size(buffer))
 		goto partial;
@@ -67,10 +102,16 @@ static int parse_int(struct buffer *buffer, i64 *value)
 		result = (result << 7) | c;
 	}
 
+fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	return FAST_MSG_STATE_PARTIAL;
+	buffer_advance(buffer, -i);
+
+	if (data_read(buffer) > 0)
+		goto retry;
+	else
+		goto fail;
 }
 
 /*
@@ -82,8 +123,11 @@ partial:
  */
 static int parse_string(struct buffer *buffer, char *value)
 {
-	int len = 0;
+	int len;
 	u8 c;
+
+retry:
+	len = 0;
 
 	while (len < FAST_STRING_MAX_BYTES - 1) {
 		if (!buffer_size(buffer))
@@ -101,16 +145,23 @@ static int parse_string(struct buffer *buffer, char *value)
 			value[len++] = c;
 	}
 
+fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	return FAST_MSG_STATE_PARTIAL;
+	buffer_advance(buffer, -len);
+
+	if (data_read(buffer) > 0)
+		goto retry;
+	else
+		goto fail;
 }
 
 static int parse_pmap(struct buffer *buffer, struct fast_pmap *pmap)
 {
 	char c;
 
+retry:
 	pmap->nr_bytes = 0;
 
 	while (pmap->nr_bytes < FAST_PMAP_MAX_BYTES) {
@@ -126,10 +177,16 @@ static int parse_pmap(struct buffer *buffer, struct fast_pmap *pmap)
 			return 0;
 	}
 
+fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	return FAST_MSG_STATE_PARTIAL;
+	buffer_advance(buffer, -pmap->nr_bytes);
+
+	if (data_read(buffer) > 0)
+		goto retry;
+	else
+		goto fail;
 }
 
 static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
@@ -703,6 +760,98 @@ fail:
 	return ret;
 }
 
+static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	struct fast_sequence *seq;
+	unsigned long nr_fields;
+	struct fast_pmap spmap;
+	struct fast_field *cur;
+	int ret = 0;
+	int i, j;
+
+	seq = field->ptr_value;
+
+	ret = fast_decode_uint(buffer, pmap, &seq->length);
+
+	if (ret)
+		goto exit;
+
+	if (field_state_empty(&seq->length)) {
+		if (field_is_mandatory(field))
+			ret = FAST_MSG_STATE_GARBLED;
+
+		goto exit;
+	}
+
+	if (seq->length.uint_value >= FAST_SEQUENCE_ELEMENTS) {
+		ret = FAST_MSG_STATE_GARBLED;
+		goto exit;
+	}
+
+	for (i = 1; i <= seq->length.uint_value; i++) {
+		ret = parse_pmap(buffer, &spmap);
+
+		if (ret)
+			goto exit;
+
+		nr_fields = seq->elements->nr_fields;
+
+		for (j = 0; j < nr_fields; j++) {
+			cur = (seq->elements + i)->fields + j;
+			field = seq->elements->fields + j;
+
+			switch (field->type) {
+			case FAST_TYPE_INT:
+				ret = fast_decode_int(buffer, &spmap, field);
+				if (ret)
+					goto exit;
+
+				cur->int_value = field->int_value;
+				cur->state = field->state;
+				break;
+			case FAST_TYPE_UINT:
+				ret = fast_decode_uint(buffer, &spmap, field);
+				if (ret)
+					goto exit;
+
+				cur->uint_value = field->uint_value;
+				cur->state = field->state;
+				break;
+			case FAST_TYPE_STRING:
+				ret = fast_decode_string(buffer, &spmap, field);
+				if (ret)
+					goto exit;
+
+				strcpy(cur->string_value, field->string_value);
+				cur->state = field->state;
+				break;
+			case FAST_TYPE_DECIMAL:
+				ret = fast_decode_decimal(buffer, &spmap, field);
+				if (ret)
+					goto exit;
+
+				cur->decimal_value.exp = field->decimal_value.exp;
+				cur->decimal_value.mnt = field->decimal_value.mnt;
+				cur->state = field->state;
+				break;
+			case FAST_TYPE_SEQUENCE:
+				/* At the moment we do no support nested sequences */
+				ret = FAST_MSG_STATE_GARBLED;
+
+				if (ret)
+					goto exit;
+				break;
+			default:
+				ret = FAST_MSG_STATE_GARBLED;
+				goto exit;
+			}
+		}
+	}
+
+exit:
+	return ret;
+}
+
 static inline struct fast_message *fast_get_msg(struct fast_message *msgs, int tid)
 {
 	int i;
@@ -717,23 +866,12 @@ static inline struct fast_message *fast_get_msg(struct fast_message *msgs, int t
 
 struct fast_message *fast_message_decode(struct fast_message *msgs, struct buffer *buffer, u64 last_tid)
 {
-	int ret = FAST_MSG_STATE_PARTIAL;
 	struct fast_message *msg;
 	struct fast_field *field;
 	struct fast_pmap pmap;
-
-	unsigned long size;
-	const char *start;
 	unsigned long i;
-
+	int ret;
 	u64 tid;
-
-retry:
-	start	= buffer_start(buffer);
-	size	= buffer_size(buffer);
-
-	if (!size)
-		goto fail;
 
 	ret = parse_pmap(buffer, &pmap);
 	if (ret)
@@ -741,7 +879,6 @@ retry:
 
 	if (pmap_is_set(&pmap, 0)) {
 		ret = parse_uint(buffer, &tid);
-
 		if (ret)
 			goto fail;
 	} else
@@ -749,10 +886,8 @@ retry:
 
 	msg = fast_get_msg(msgs, tid);
 
-	if (!msg) {
-		ret = FAST_MSG_STATE_GARBLED;
+	if (!msg)
 		goto fail;
-	}
 
 	msg->pmap = &pmap;
 
@@ -780,6 +915,11 @@ retry:
 			if (ret)
 				goto fail;
 			break;
+		case FAST_TYPE_SEQUENCE:
+			ret = fast_decode_sequence(buffer, msg->pmap, field);
+			if (ret)
+				goto fail;
+			break;
 		default:
 			ret = FAST_MSG_STATE_GARBLED;
 			goto fail;
@@ -789,12 +929,6 @@ retry:
 	return msg;
 
 fail:
-	/* Should we stop FAST decoding? */
-	if (ret != FAST_MSG_STATE_PARTIAL)
-		goto retry;
-
-	buffer_advance(buffer, start - buffer_start(buffer));
-
 	return NULL;
 }
 
@@ -808,6 +942,31 @@ struct fast_message *fast_message_new(int nr_messages)
 	return self;
 }
 
+void fast_fields_free(struct fast_message *self)
+{
+	struct fast_sequence *seq;
+	struct fast_field *field;
+	int i, j;
+
+	if (!self)
+		return;
+
+	for (i = 0; i < self->nr_fields; i++) {
+		field = self->fields + i;
+
+		if (field->type == FAST_TYPE_SEQUENCE) {
+			seq = field->ptr_value;
+
+			for (j = 0; j < FAST_SEQUENCE_ELEMENTS; j++)
+				free((seq->elements + j)->fields);
+
+			free(field->ptr_value);
+		}
+	}
+
+	free(self->fields);
+}
+
 void fast_message_free(struct fast_message *self, int nr_messages)
 {
 	int i;
@@ -816,25 +975,21 @@ void fast_message_free(struct fast_message *self, int nr_messages)
 		return;
 
 	for (i = 0; i < nr_messages; i++)
-		free(self[i].fields);
+		fast_fields_free(self + i);
 
 	free(self);
 
 	return;
 }
 
-void fast_message_init(struct fast_message *self)
+void fast_message_reset(struct fast_message *msg)
 {
+	struct fast_sequence *seq;
 	struct fast_field *field;
 	int i;
 
-	if (!self)
-		goto exit;
-
-	for (i = 0; i < self->nr_fields; i++) {
-		field = self->fields + i;
-
-		field->state = FAST_STATE_UNDEFINED;
+	for (i = 0; i < msg->nr_fields; i++) {
+		field = msg->fields + i;
 
 		switch (field->type) {
 		case FAST_TYPE_INT:
@@ -881,28 +1036,17 @@ void fast_message_init(struct fast_message *self)
 			}
 
 			break;
+		case FAST_TYPE_SEQUENCE:
+			seq = field->ptr_value;
+
+			fast_message_reset(seq->elements);
+			break;
 		default:
 			break;
 		}
 	}
 
-exit:
 	return;
-}
-
-bool fast_message_copy(struct fast_message *dest, struct fast_message *src)
-{
-	dest->nr_fields = src->nr_fields;
-	dest->tid = src->tid;
-
-	dest->fields = calloc(src->nr_fields, sizeof(struct fast_field));
-	if (!dest->fields)
-		return false;
-
-	/* Copying is safe until there are pointers in the struct fast_field */
-	memcpy(dest->fields, src->fields, src->nr_fields * sizeof(struct fast_field));
-
-	return true;
 }
 
 static int transfer_int(struct buffer *buffer, i64 tmp)
@@ -1492,6 +1636,8 @@ int fast_message_encode(struct fast_message *msg)
 			if (fast_encode_decimal(msg->msg_buf, msg->pmap, field))
 				goto fail;
 			break;
+		case FAST_TYPE_SEQUENCE:
+			goto fail;
 		default:
 			goto fail;
 		};

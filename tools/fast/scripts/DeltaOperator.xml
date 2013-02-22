@@ -1,0 +1,16 @@
+<templates>
+   <template>
+      <int32>
+         <delta value="1" />
+      </int32>
+      <int32 presence="optional">
+         <delta value="-1" />
+      </int32>
+      <uInt32>
+         <delta value="1" />
+      </uInt32>
+      <uInt32 presence="optional">
+         <delta />
+      </uInt32>
+   </template>
+</templates>

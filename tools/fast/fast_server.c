@@ -19,7 +19,7 @@
 
 struct protocol_info {
 	const char		*name;
-	int			(*session_accept)(int incoming_fd, const char *script);
+	int			(*session_accept)(int incoming_fd, const char *xml, const char *script);
 };
 
 static void fast_send_prepare(struct fast_message *msg, struct felem *elem)
@@ -54,6 +54,8 @@ static void fast_send_prepare(struct fast_message *msg, struct felem *elem)
 			field->decimal_value.exp = elem_field->decimal_value.exp;
 			field->decimal_value.mnt = elem_field->decimal_value.mnt;
 			break;
+		case FAST_TYPE_SEQUENCE:
+			break;
 		default:
 			break;
 		}
@@ -63,7 +65,7 @@ exit:
 	return;
 }
 
-static int fast_session_accept(int incoming_fd, const char *script)
+static int fast_session_accept(int incoming_fd, const char *xml, const char *script)
 {
 	struct fcontainer *container = NULL;
 	struct fast_session *session = NULL;
@@ -89,6 +91,13 @@ static int fast_session_accept(int incoming_fd, const char *script)
 		fprintf(stderr, "Cannot allocate container\n");
 		goto exit;
 	}
+
+	if (fast_suite_template(session, xml)) {
+		fprintf(stderr, "Cannot read template xml file\n");
+		goto exit;
+	}
+
+	fcontainer_init(container, session->rx_messages);
 
 	if (script_read(stream, container)) {
 		fprintf(stderr, "Invalid script: %s\n", script);
@@ -138,7 +147,7 @@ static const struct protocol_info *lookup_protocol_info(const char *name)
 
 static void usage(void)
 {
-	printf("\n  usage: trade server -p [port] -c [protocol] -f [filename]\n\n");
+	printf("\n  usage: trade server -p [port] -c [protocol] -t [template] -f [filename]\n\n");
 }
 
 static int socket_setopt(int sockfd, int level, int optname, int optval)
@@ -151,6 +160,7 @@ int main(int argc, char *argv[])
 	const struct protocol_info *proto_info;
 	const char *filename = NULL;
 	const char *proto = NULL;
+	const char *xml = NULL;
 	struct sockaddr_in sa;
 	int incoming_fd;
 	int port = 0;
@@ -158,7 +168,7 @@ int main(int argc, char *argv[])
 	int opt;
 	int ret;
 
-	while ((opt = getopt(argc, argv, "p:c:f:")) != -1) {
+	while ((opt = getopt(argc, argv, "p:c:f:t:")) != -1) {
 		switch (opt) {
 		case 'p':
 			port = atoi(optarg);
@@ -169,13 +179,16 @@ int main(int argc, char *argv[])
 		case 'c':
 			proto = optarg;
 			break;
+		case 't':
+			xml = optarg;
+			break;
 		default: /* '?' */
 			usage();
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	if (!port || !proto || !filename) {
+	if (!port || !proto || !filename || !xml) {
 		usage();
 		exit(EXIT_FAILURE);
 	}
@@ -219,7 +232,7 @@ int main(int argc, char *argv[])
 	if (socket_setopt(incoming_fd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	ret = proto_info->session_accept(incoming_fd, filename);
+	ret = proto_info->session_accept(incoming_fd, xml, filename);
 
 	shutdown(incoming_fd, SHUT_RDWR);
 

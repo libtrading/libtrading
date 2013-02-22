@@ -54,10 +54,10 @@ endif
 export E Q
 
 # Project files
-PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-itch41 tools/fix/fix_client tools/fix/fix_server tools/fast/fast_client tools/fast/fast_server
+PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-itch41 tools/fix/fix_client tools/fix/fix_server tools/fast/fast_client tools/fast/fast_server tools/fast/fast_parser
 
 DEFINES =
-INCLUDES =
+INCLUDES = $(shell sh -c 'xml2-config --cflags')
 EXTRA_LIBS =
 
 ifeq ($(uname_S),Linux)
@@ -81,6 +81,9 @@ fast_client_EXTRA_DEPS += tools/fast/test.o
 fast_server_EXTRA_DEPS += lib/die.o
 fast_server_EXTRA_DEPS += tools/fast/test.o
 
+fast_parser_EXTRA_DEPS += lib/die.o
+fast_parser_EXTRA_DEPS += tools/fast/test.o
+
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
 
@@ -89,6 +92,7 @@ DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 LIB_FILE := libtrading.a
 
 LIBS := $(LIB_FILE)
+LIBS += -lxml2
 
 LIB_OBJS	+= lib/buffer.o
 LIB_OBJS	+= lib/mmap-buffer.o
@@ -98,6 +102,7 @@ LIB_OBJS	+= lib/proto/fix_message.o
 LIB_OBJS	+= lib/proto/fix_session.o
 LIB_OBJS	+= lib/proto/fast_message.o
 LIB_OBJS	+= lib/proto/fast_session.o
+LIB_OBJS	+= lib/proto/fast_template.o
 LIB_OBJS	+= lib/proto/itch40_message.o
 LIB_OBJS	+= lib/proto/itch41_message.o
 LIB_OBJS	+= lib/proto/mbt_quote_message.o

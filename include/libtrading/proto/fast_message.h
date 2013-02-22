@@ -11,10 +11,11 @@
 #define	FAST_STRING_MAX_BYTES		256
 #define	FAST_MESSAGE_MAX_SIZE		2048
 
-#define	FAST_TEMPLATE_MAX_NUMBER	1
+#define	FAST_TEMPLATE_MAX_NUMBER	128
 
-#define	FAST_MSG_STATE_PARTIAL	(-1)
-#define	FAST_MSG_STATE_GARBLED	(-2)
+#define	FAST_SEQUENCE_ELEMENTS		32
+
+#define	FAST_MSG_STATE_GARBLED	(-1)
 
 struct buffer;
 
@@ -23,6 +24,7 @@ enum fast_type {
 	FAST_TYPE_UINT,
 	FAST_TYPE_STRING,
 	FAST_TYPE_DECIMAL,
+	FAST_TYPE_SEQUENCE,
 };
 
 enum fast_op {
@@ -69,6 +71,7 @@ struct fast_field {
 	union {
 		i64			int_value;
 		u64			uint_value;
+		void			*ptr_value;
 		char			string_value[FAST_STRING_MAX_BYTES];
 		struct fast_decimal	decimal_value;
 	};
@@ -76,6 +79,7 @@ struct fast_field {
 	union {
 		i64			int_reset;
 		u64			uint_reset;
+		void			*ptr_reset;
 		char			string_reset[FAST_STRING_MAX_BYTES];
 		struct fast_decimal	decimal_reset;
 	};
@@ -83,6 +87,7 @@ struct fast_field {
 	union {
 		i64			int_previous;
 		u64			uint_previous;
+		void			*ptr_previous;
 		char			string_previous[FAST_STRING_MAX_BYTES];
 		struct fast_decimal	decimal_previous;
 	};
@@ -127,6 +132,11 @@ struct fast_message {
 	struct buffer		*msg_buf;
 };
 
+struct fast_sequence {
+	struct fast_field length;
+	struct fast_message elements[FAST_SEQUENCE_ELEMENTS];
+};
+
 static inline bool pmap_is_set(struct fast_pmap *pmap, unsigned long bit)
 {
 	if ((bit / 7) >= pmap->nr_bytes)
@@ -143,6 +153,29 @@ static inline bool pmap_set(struct fast_pmap *pmap, unsigned long bit)
 	pmap->bytes[bit / 7] |= (1 << (6 - bit % 7));
 
 	return true;
+}
+
+static inline int pmap_required(struct fast_field *field)
+{
+	int ret = 0;
+
+	switch (field->op) {
+	case FAST_OP_CONSTANT:
+		if (!field_is_mandatory(field))
+			ret = 1;
+		break;
+	case FAST_OP_COPY:
+	case FAST_OP_INCR:
+		ret = 1;
+		break;
+	case FAST_OP_NONE:
+	case FAST_OP_DELTA:
+		break;
+	default:
+		break;
+	}
+
+	return ret;
 }
 
 static inline int transfer_size_int(i64 data)
@@ -192,11 +225,11 @@ static inline int transfer_size_uint(u64 data)
 }
 
 struct fast_message *fast_message_new(int nr_messages);
+void fast_fields_free(struct fast_message *self);
 void fast_message_free(struct fast_message *self, int nr_messages);
-bool fast_message_copy(struct fast_message *dest, struct fast_message *src);
+void fast_message_reset(struct fast_message *msg);
 struct fast_message *fast_message_decode(struct fast_message *msgs, struct buffer *buffer, u64 last_tid);
 int fast_message_send(struct fast_message *self, int sockfd, int flags);
 int fast_message_encode(struct fast_message *msg);
-void fast_message_init(struct fast_message *self);
 
 #endif
