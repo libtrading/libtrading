@@ -313,18 +313,22 @@ static int fast_message_init(xmlNodePtr node, struct fast_message *msg)
 	if (xmlStrcmp(node->name, (const xmlChar *)"template"))
 		goto exit;
 
-	nr_fields = xmlChildElementCount(node);
-
 	prop = xmlGetProp(node, (const xmlChar *)"id");
-
-	msg->fields = calloc(nr_fields, sizeof(struct fast_field));
-	if (!msg->fields)
-		goto exit;
-
 	if (prop != NULL)
 		msg->tid = strtol((char *)prop, NULL, 10);
 	else
 		msg->tid = 0;
+	xmlFree(prop);
+
+	prop = xmlGetProp(node, (const xmlChar *)"reset");
+	if (prop != NULL && !xmlStrcmp(prop, (const xmlChar *)"T"))
+		fast_msg_add_flags(msg, FAST_MSG_FLAGS_RESET);
+	xmlFree(prop);
+
+	nr_fields = xmlChildElementCount(node);
+	msg->fields = calloc(nr_fields, sizeof(struct fast_field));
+	if (!msg->fields)
+		goto exit;
 
 	msg->nr_fields = 0;
 	pmap_bit = 1;
