@@ -209,6 +209,9 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 	if (fast_field_init(node, &seq->length))
 		goto exit;
 
+	if (!field_is_mandatory(field))
+		seq->length.presence = FAST_PRESENCE_OPTIONAL;
+
 	node = node->next;
 	orig = field;
 
