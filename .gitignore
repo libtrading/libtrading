@@ -5,6 +5,7 @@
 /test-trade
 /tools/fast/fast_client
 /tools/fast/fast_server
+/tools/fast/fast_parser
 /tools/fix/fix_client
 /tools/fix/fix_server
 /tools/test-fix-client
