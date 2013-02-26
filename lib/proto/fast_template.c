@@ -185,6 +185,7 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 {
 	struct fast_sequence *seq;
 	struct fast_message *msg;
+	struct fast_field *orig;
 	xmlNodePtr tmp;
 	int i, ret = 1;
 	int nr_fields;
@@ -209,6 +210,7 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 		goto exit;
 
 	node = node->next;
+	orig = field;
 
 	for (i = 0; i < FAST_SEQUENCE_ELEMENTS; i++) {
 		msg = seq->elements + i;
@@ -232,8 +234,10 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 			if (fast_field_init(tmp, field))
 				goto exit;
 
-			if (pmap_required(field))
+			if (pmap_required(field)) {
+				field_add_flags(orig, FAST_FIELD_FLAGS_PMAPREQ);
 				field->pmap_bit = pmap_bit++;
+			}
 
 			msg->nr_fields++;
 			tmp = tmp->next;

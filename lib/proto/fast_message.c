@@ -913,6 +913,7 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 	unsigned long nr_fields;
 	struct fast_pmap spmap;
 	struct fast_field *cur;
+	int pmap_req;
 	int ret = 0;
 	int i, j;
 
@@ -935,11 +936,15 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 		goto exit;
 	}
 
-	for (i = 1; i <= seq->length.uint_value; i++) {
-		ret = parse_pmap(buffer, &spmap);
+	pmap_req = field_has_flags(field, FAST_FIELD_FLAGS_PMAPREQ);
 
-		if (ret)
-			goto exit;
+	for (i = 1; i <= seq->length.uint_value; i++) {
+		if (pmap_req) {
+			ret = parse_pmap(buffer, &spmap);
+
+			if (ret)
+				goto exit;
+		}
 
 		nr_fields = seq->elements->nr_fields;
 
