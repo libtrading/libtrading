@@ -31,6 +31,23 @@ static int fast_presence_init(xmlNodePtr node, struct fast_field *field)
 	return ret;
 }
 
+static int fast_misc_init(xmlNodePtr node, struct fast_field *field)
+{
+	xmlChar *prop;
+
+	if (node == NULL)
+		return 1;
+
+	prop = xmlGetProp(node, (const xmlChar *)"charset");
+
+	if (prop != NULL && !xmlStrcmp(prop, (const xmlChar *)"unicode"))
+		field_add_flags(field, FAST_FIELD_FLAGS_UNICODE);
+
+	xmlFree(prop);
+
+	return 0;
+}
+
 static int fast_type_init(xmlNodePtr node, struct fast_field *field)
 {
 	int ret = 0;
@@ -240,6 +257,10 @@ static int fast_field_init(xmlNodePtr node, struct fast_field *field)
 		goto exit;
 
 	ret = fast_presence_init(node, field);
+	if (ret)
+		goto exit;
+
+	ret = fast_misc_init(node, field);
 	if (ret)
 		goto exit;
 

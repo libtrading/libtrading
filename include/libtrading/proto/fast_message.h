@@ -17,6 +17,7 @@
 
 #define	FAST_MSG_STATE_GARBLED	(-1)
 
+#define	FAST_FIELD_FLAGS_UNICODE		0x00000001
 struct buffer;
 
 enum fast_type {

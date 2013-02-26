@@ -157,6 +157,34 @@ partial:
 		goto fail;
 }
 
+static int parse_bytes(struct buffer *buffer, char *value, int len)
+{
+	int i;
+	u8 c;
+
+retry:
+	if (buffer_size(buffer) < len)
+		goto partial;
+
+	for (i = 0; i < len; i++) {
+		c = buffer_first_char(buffer);
+		buffer_advance(buffer, 1);
+
+		value[i] = c;
+	}
+
+	return 0;
+
+fail:
+	return FAST_MSG_STATE_GARBLED;
+
+partial:
+	if (data_read(buffer) > 0)
+		goto retry;
+	else
+		goto fail;
+}
+
 static int parse_pmap(struct buffer *buffer, struct fast_pmap *pmap)
 {
 	char c;
@@ -509,7 +537,118 @@ fail:
 	return ret;
 }
 
-static int fast_decode_string(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+static int fast_decode_unicode(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	int ret;
+	u64 len;
+
+	switch (field->op) {
+	case FAST_OP_NONE:
+		ret = parse_uint(buffer, &len);
+		if (ret)
+			goto fail;
+
+		field->state = FAST_STATE_ASSIGNED;
+
+		if (!field_is_mandatory(field)) {
+			if (!len) {
+				field->state = FAST_STATE_EMPTY;
+				break;
+			} else
+				len--;
+		}
+
+		ret = parse_bytes(buffer, field->string_value, len);
+		if (ret)
+			goto fail;
+
+		*(u64 *)(field->string_value + len) = 0;
+
+		break;
+	case FAST_OP_COPY:
+		if (!pmap_is_set(pmap, field->pmap_bit)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					memcpy(field->string_value, field->string_reset,
+								strlen(field->string_reset) + 1);
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			case FAST_STATE_ASSIGNED:
+				break;
+			case FAST_STATE_EMPTY:
+				if (field_is_mandatory(field)) {
+					ret = FAST_MSG_STATE_GARBLED;
+					goto fail;
+				}
+
+				break;
+			default:
+				break;
+			}
+		} else {
+			ret = parse_uint(buffer, &len);
+
+			if (ret)
+				goto fail;
+
+			field->state = FAST_STATE_ASSIGNED;
+
+			if (!field_is_mandatory(field)) {
+				if (!len) {
+					field->state = FAST_STATE_EMPTY;
+					break;
+				} else
+					len--;
+			}
+
+			ret = parse_bytes(buffer, field->string_value, len);
+			if (ret)
+				goto fail;
+
+			*(u64 *)(field->string_value + len) = 0;
+		}
+
+		break;
+	case FAST_OP_INCR:
+			ret = FAST_MSG_STATE_GARBLED;
+			goto fail;
+	case FAST_OP_DELTA:
+			ret = FAST_MSG_STATE_GARBLED;
+			goto fail;
+	case FAST_OP_CONSTANT:
+		if (field->state != FAST_STATE_ASSIGNED)
+			memcpy(field->string_value, field->string_reset,
+						strlen(field->string_reset) + 1);
+
+		field->state = FAST_STATE_ASSIGNED;
+
+		if (field_is_mandatory(field))
+			break;
+
+		if (!pmap_is_set(pmap, field->pmap_bit))
+			field->state = FAST_STATE_EMPTY;
+
+		break;
+	default:
+		return FAST_MSG_STATE_GARBLED;
+	}
+
+	return 0;
+
+fail:
+	return ret;
+}
+
+static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
 {
 	int ret;
 
@@ -602,6 +741,14 @@ static int fast_decode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 
 fail:
 	return ret;
+}
+
+static int fast_decode_string(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	if (field_has_flags(field, FAST_FIELD_FLAGS_UNICODE))
+		return fast_decode_unicode(buffer, pmap, field);
+	else
+		return fast_decode_ascii(buffer, pmap, field);
 }
 
 static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
