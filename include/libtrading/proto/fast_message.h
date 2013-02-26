@@ -67,6 +67,7 @@ struct fast_field {
 	enum fast_state		state_previous;
 
 	bool			has_reset;
+	int			flags;
 
 	union {
 		i64			int_value;
@@ -120,17 +121,70 @@ static inline bool field_has_reset_value(struct fast_field *field)
 	return field->has_reset;
 }
 
+static inline void field_set_flags(struct fast_field *field, int flags)
+{
+	field->flags = flags;
+
+	return;
+}
+
+static inline void field_add_flags(struct fast_field *field, int flags)
+{
+	field->flags |= flags;
+
+	return;
+}
+
+static inline void field_clear_flags(struct fast_field *field, int flags)
+{
+	field->flags &= ~flags;
+
+	return;
+}
+
+static inline int field_has_flags(struct fast_field *field, int flags)
+{
+	return field->flags & flags;
+}
+
 struct fast_message {
 	unsigned long		nr_fields;
 	struct fast_field	*fields;
 
 	struct fast_pmap	*pmap;
 
+	int			flags;
 	unsigned long		tid;
 
 	struct buffer		*pmap_buf;
 	struct buffer		*msg_buf;
 };
+
+static inline void fast_msg_set_flags(struct fast_message *msg, int flags)
+{
+	msg->flags = flags;
+
+	return;
+}
+
+static inline void fast_msg_add_flags(struct fast_message *msg, int flags)
+{
+	msg->flags |= flags;
+
+	return;
+}
+
+static inline void fast_msg_clear_flags(struct fast_message *msg, int flags)
+{
+	msg->flags &= ~flags;
+
+	return;
+}
+
+static inline int fast_msg_has_flags(struct fast_message *msg, int flags)
+{
+	return msg->flags & flags;
+}
 
 struct fast_sequence {
 	struct fast_field length;
