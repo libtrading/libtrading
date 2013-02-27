@@ -192,7 +192,7 @@ fail:
 
 int main(int argc, char *argv[])
 {
-	const struct protocol_info *proto_info;
+	const struct protocol_info *proto_info = NULL;
 	const char *output = NULL;
 	const char *input = NULL;
 	const char *proto = NULL;

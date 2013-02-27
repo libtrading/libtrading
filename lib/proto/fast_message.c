@@ -562,7 +562,7 @@ static int fast_decode_unicode(struct buffer *buffer, struct fast_pmap *pmap, st
 		if (ret)
 			goto fail;
 
-		*(u64 *)(field->string_value + len) = 0;
+		memset(field->string_value + len, 0, sizeof(u64));
 
 		break;
 	case FAST_OP_COPY:
@@ -614,7 +614,7 @@ static int fast_decode_unicode(struct buffer *buffer, struct fast_pmap *pmap, st
 			if (ret)
 				goto fail;
 
-			*(u64 *)(field->string_value + len) = 0;
+			memset(field->string_value + len, 0, sizeof(u64));
 		}
 
 		break;
