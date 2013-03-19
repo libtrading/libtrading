@@ -21,29 +21,19 @@
 
 struct protocol_info {
 	const char		*name;
-	int			(*session_initiate)(const struct protocol_info *, int, const char *);
+	int			(*session_initiate)(struct fix_session_cfg *, const char *);
 };
 
-static int fix_session_initiate(const struct protocol_info *proto, int sockfd, const char *script)
+static int fix_session_initiate(struct fix_session_cfg *cfg, const char *script)
 {
 	struct fcontainer *s_container = NULL;
 	struct fcontainer *c_container = NULL;
 	struct fix_session *session = NULL;
 	struct felem *expected_elem;
 	struct felem *tosend_elem;
-	enum fix_version version;
 	struct fix_message *msg;
 	FILE *stream;
 	int ret = 1;
-
-	version = FIX_4_4;
-
-	if (!strcmp(proto->name, "fix42"))
-		version = FIX_4_2;
-	else if (!strcmp(proto->name, "fix43"))
-		version = FIX_4_3;
-	else if (!strcmp(proto->name, "fix44"))
-		version = FIX_4_4;
 
 	stream = fopen(script, "r");
 	if (!stream) {
@@ -51,7 +41,7 @@ static int fix_session_initiate(const struct protocol_info *proto, int sockfd, c
 		goto exit;
 	}
 
-	session = fix_session_new(sockfd, version, "BUYSIDE", "SELLSIDE");
+	session = fix_session_new(cfg);
 	if (!session) {
 		fprintf(stderr, "FIX session cannot be created\n");
 		goto exit;
@@ -165,16 +155,28 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
+static enum fix_version strversion(const char *name)
+{
+	if (!strcmp(name, "fix42"))
+		return FIX_4_2;
+	else if (!strcmp(name, "fix43"))
+		return FIX_4_3;
+	else if (!strcmp(name, "fix44"))
+		return FIX_4_4;
+
+	return FIX_4_4;
+}
+
 int main(int argc, char *argv[])
 {
 	const struct protocol_info *proto_info;
 	const char *filename = NULL;
+	struct fix_session_cfg cfg;
 	const char *proto = NULL;
 	const char *host = NULL;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
 	struct hostent *he;
-	int sockfd = -1;
 	int port = 0;
 	int retval;
 	char **ap;
@@ -200,10 +202,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (!port || !proto || !filename || !host) {
+	if (!port || !proto || !filename || !host)
 		usage();
-		exit(EXIT_FAILURE);
-	}
+
+	cfg.version	= strversion(proto);
+	strncpy(cfg.sender_comp_id, "BUYSIDE", ARRAY_SIZE(cfg.sender_comp_id));
+	strncpy(cfg.target_comp_id, "SELLSIDE", ARRAY_SIZE(cfg.target_comp_id));
 
 	proto_info = lookup_protocol_info(proto);
 	if (!proto_info) {
@@ -216,8 +220,8 @@ int main(int argc, char *argv[])
 		error("Unable to look up %s (%s)", host, hstrerror(h_errno));
 
 	for (ap = he->h_addr_list; *ap; ap++) {
-		sockfd = socket(he->h_addrtype, SOCK_STREAM, IPPROTO_TCP);
-		if (sockfd < 0) {
+		cfg.sockfd = socket(he->h_addrtype, SOCK_STREAM, IPPROTO_TCP);
+		if (cfg.sockfd < 0) {
 			saved_errno = errno;
 			continue;
 		}
@@ -228,26 +232,26 @@ int main(int argc, char *argv[])
 		};
 		memcpy(&sa.sin_addr, *ap, he->h_length);
 
-		if (connect(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0) {
+		if (connect(cfg.sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0) {
 			saved_errno = errno;
-			close(sockfd);
-			sockfd = -1;
+			close(cfg.sockfd);
+			cfg.sockfd = -1;
 			continue;
 		}
 		break;
 	}
 
-	if (sockfd < 0)
+	if (cfg.sockfd < 0)
 		error("Unable to connect to a socket (%s)", strerror(saved_errno));
 
-	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
+	if (socket_setopt(cfg.sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	retval = proto_info->session_initiate(proto_info, sockfd, filename);
+	retval = proto_info->session_initiate(&cfg, filename);
 
-	shutdown(sockfd, SHUT_RDWR);
+	shutdown(cfg.sockfd, SHUT_RDWR);
 
-	if (close(sockfd) < 0)
+	if (close(cfg.sockfd) < 0)
 		die("close");
 
 	return retval;

@@ -131,26 +131,15 @@ static void fix_session_normal(struct fix_session *session)
 	return;
 }
 
-static int fix_session_initiate(int sockfd, const char *fix_version,
-				const char *sender_comp_id, const char *target_comp_id)
+static int fix_session_initiate(struct fix_session_cfg *cfg)
 {
 	struct fix_session *session;
-	enum fix_version version;
 	int retval;
-
-	version = FIX_4_4;
-
-	if (!strcmp(fix_version, "fix42"))
-		version = FIX_4_2;
-	else if (!strcmp(fix_version, "fix43"))
-		version = FIX_4_3;
-	else if (!strcmp(fix_version, "fix44"))
-		version = FIX_4_4;
 
 	if (signal(SIGINT, signal_handler) == SIG_ERR)
 		die("unable to register signal handler");
 
-	session	= fix_session_new(sockfd, version, sender_comp_id, target_comp_id);
+	session	= fix_session_new(cfg);
 	if (!session)
 		die("unable to allocate memory for session");
 
@@ -192,16 +181,25 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
+static enum fix_version strversion(const char *name)
+{
+	if (!strcmp(name, "fix42"))
+		return FIX_4_2;
+	else if (!strcmp(name, "fix43"))
+		return FIX_4_3;
+	else if (!strcmp(name, "fix44"))
+		return FIX_4_4;
+
+	return FIX_4_4;
+}
+
 int main(int argc, char *argv[])
 {
-	const char *sender_comp_id;
-	const char *target_comp_id;
+	struct fix_session_cfg cfg;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
-	const char *version;
 	struct hostent *he;
 	const char *host;
-	int sockfd = -1;
 	int retval;
 	char **ap;
 	int port;
@@ -228,17 +226,17 @@ int main(int argc, char *argv[])
 
 	host		= argv[optind];
 	port		= atoi(argv[optind + 1]);
-	version		= argv[optind + 2];
-	sender_comp_id	= argv[optind + 3];
-	target_comp_id	= argv[optind + 4];
+	cfg.version	= strversion(argv[optind + 2]);
+	strncpy(cfg.sender_comp_id, argv[optind + 3], ARRAY_SIZE(cfg.sender_comp_id));
+	strncpy(cfg.target_comp_id, argv[optind + 4], ARRAY_SIZE(cfg.target_comp_id));
 
 	he = gethostbyname(host);
 	if (!he)
 		error("Unable to look up %s (%s)", host, hstrerror(h_errno));
 
 	for (ap = he->h_addr_list; *ap; ap++) {
-		sockfd = socket(he->h_addrtype, SOCK_STREAM, IPPROTO_TCP);
-		if (sockfd < 0) {
+		cfg.sockfd = socket(he->h_addrtype, SOCK_STREAM, IPPROTO_TCP);
+		if (cfg.sockfd < 0) {
 			saved_errno = errno;
 			continue;
 		}
@@ -249,26 +247,26 @@ int main(int argc, char *argv[])
 		};
 		memcpy(&sa.sin_addr, *ap, he->h_length);
 
-		if (connect(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0) {
+		if (connect(cfg.sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0) {
 			saved_errno = errno;
-			close(sockfd);
-			sockfd = -1;
+			close(cfg.sockfd);
+			cfg.sockfd = -1;
 			continue;
 		}
 		break;
 	}
 
-	if (sockfd < 0)
+	if (cfg.sockfd < 0)
 		error("Unable to connect to a socket (%s)", strerror(saved_errno));
 
-	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
+	if (socket_setopt(cfg.sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	retval = fix_session_initiate(sockfd, version, sender_comp_id, target_comp_id);
+	retval = fix_session_initiate(&cfg);
 
-	shutdown(sockfd, SHUT_RDWR);
+	shutdown(cfg.sockfd, SHUT_RDWR);
 
-	if (close(sockfd) < 0)
+	if (close(cfg.sockfd) < 0)
 		die("close");
 
 	return retval;

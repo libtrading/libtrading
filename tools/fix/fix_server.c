@@ -19,7 +19,7 @@
 
 struct protocol_info {
 	const char		*name;
-	int			(*session_accept)(int incoming_fd, const char *script);
+	int			(*session_accept)(struct fix_session_cfg *cfg, const char *script);
 };
 
 static bool fix_server_logon(struct fix_session *session)
@@ -59,7 +59,7 @@ static bool fix_server_logout(struct fix_session *session)
 	return ret;
 }
 
-static int fix_session_accept(int incoming_fd, const char *script)
+static int fix_session_accept(struct fix_session_cfg *cfg, const char *script)
 {
 	struct fcontainer *s_container = NULL;
 	struct fcontainer *c_container = NULL;
@@ -75,7 +75,7 @@ static int fix_session_accept(int incoming_fd, const char *script)
 		goto exit;
 	}
 
-	session = fix_session_new(incoming_fd, FIX_4_4, "BUYSIDE", "SELLSIDE");
+	session = fix_session_new(cfg);
 	if (!session) {
 		fprintf(stderr, "FIX session cannot be created\n");
 		goto exit;
@@ -180,6 +180,7 @@ static const struct protocol_info *lookup_protocol_info(const char *name)
 static void usage(void)
 {
 	printf("\n  usage: trade server -p [port] -c [protocol] -f [filename]\n\n");
+	exit(EXIT_FAILURE);
 }
 
 static int socket_setopt(int sockfd, int level, int optname, int optval)
@@ -187,13 +188,25 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
+static enum fix_version strversion(const char *name)
+{
+	if (!strcmp(name, "fix42"))
+		return FIX_4_2;
+	else if (!strcmp(name, "fix43"))
+		return FIX_4_3;
+	else if (!strcmp(name, "fix44"))
+		return FIX_4_4;
+
+	return FIX_4_4;
+}
+
 int main(int argc, char *argv[])
 {
 	const struct protocol_info *proto_info;
 	const char *filename = NULL;
+	struct fix_session_cfg cfg;
 	const char *proto = NULL;
 	struct sockaddr_in sa;
-	int incoming_fd;
 	int port = 0;
 	int sockfd;
 	int opt;
@@ -216,10 +229,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (!port || !proto || !filename) {
+	if (!port || !proto || !filename)
 		usage();
-		exit(EXIT_FAILURE);
-	}
+
+	cfg.version	= strversion(proto);
+	strncpy(cfg.sender_comp_id, "BUYSIDE", ARRAY_SIZE(cfg.sender_comp_id));
+	strncpy(cfg.target_comp_id, "SELLSIDE", ARRAY_SIZE(cfg.target_comp_id));
 
 	proto_info = lookup_protocol_info(proto);
 	if (!proto_info) {
@@ -253,18 +268,18 @@ int main(int argc, char *argv[])
 	if (listen(sockfd, 10) < 0)
 		die("listen failed");
 
-	incoming_fd = accept(sockfd, NULL, NULL);
-	if (incoming_fd < 0)
+	cfg.sockfd = accept(sockfd, NULL, NULL);
+	if (cfg.sockfd < 0)
 		die("accept failed");
 
-	if (socket_setopt(incoming_fd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
+	if (socket_setopt(cfg.sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	ret = proto_info->session_accept(incoming_fd, filename);
+	ret = proto_info->session_accept(&cfg, filename);
 
-	shutdown(incoming_fd, SHUT_RDWR);
+	shutdown(cfg.sockfd, SHUT_RDWR);
 
-	close(incoming_fd);
+	close(cfg.sockfd);
 
 	close(sockfd);
 

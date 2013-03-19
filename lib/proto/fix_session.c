@@ -15,7 +15,7 @@ static const char *begin_strings[] = {
 	[FIX_4_0]	= "FIX.4.0",
 };
 
-struct fix_session *fix_session_new(int sockfd, enum fix_version fix_version, const char *sender_comp_id, const char *target_comp_id)
+struct fix_session *fix_session_new(struct fix_session_cfg *cfg)
 {
 	struct fix_session *self = calloc(1, sizeof *self);
 
@@ -46,10 +46,10 @@ struct fix_session *fix_session_new(int sockfd, enum fix_version fix_version, co
 		return NULL;
 	}
 
-	self->sockfd		= sockfd;
-	self->begin_string	= begin_strings[fix_version];
-	self->sender_comp_id	= sender_comp_id;
-	self->target_comp_id	= target_comp_id;
+	self->begin_string	= begin_strings[cfg->version];
+	self->sender_comp_id	= cfg->sender_comp_id;
+	self->target_comp_id	= cfg->target_comp_id;
+	self->sockfd		= cfg->sockfd;
 	self->in_msg_seq_num	= 0;
 	self->out_msg_seq_num	= 1;
 

@@ -22,6 +22,13 @@ enum fix_version {
 	FIX_4_0,
 };
 
+struct fix_session_cfg {
+	char			sender_comp_id[32];
+	char			target_comp_id[32];
+	enum fix_version	version;
+	int			sockfd;
+};
+
 struct fix_session {
 	int				sockfd;
 	const char			*begin_string;
@@ -43,7 +50,7 @@ static inline void fix_session_set_in_msg_seq_num(struct fix_session *session, u
 	session->in_msg_seq_num = new_msg_seq_num;
 }
 
-struct fix_session *fix_session_new(int sockfd, enum fix_version, const char *sender_comp_id, const char *target_comp_id);
+struct fix_session *fix_session_new(struct fix_session_cfg *cfg);
 void fix_session_free(struct fix_session *self);
 int fix_session_send(struct fix_session *self, struct fix_message *msg, int flags);
 struct fix_message *fix_session_recv(struct fix_session *self, int flags);

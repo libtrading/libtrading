@@ -16,10 +16,7 @@
 #include <stdio.h>
 #include <time.h>
 
-struct protocol_info {
-	const char		*name;
-	void			(*session_accept)(int incoming_fd);
-};
+static const char	*program;
 
 static unsigned long fix_execution_report_fields(struct fix_field *fields)
 {
@@ -47,7 +44,7 @@ static unsigned long fix_execution_report_fields(struct fix_field *fields)
 
 }
 
-static void fix_session_accept(int incoming_fd)
+static void fix_session_accept(struct fix_session_cfg *cfg)
 {
 	struct fix_message logon_msg;
 	struct fix_session *session;
@@ -55,7 +52,7 @@ static void fix_session_accept(int incoming_fd)
 	struct fix_message *msg;
 	unsigned long nr;
 
-	session		= fix_session_new(incoming_fd, FIX_4_4, "BUYSIDE", "SELLSIDE");
+	session = fix_session_new(cfg);
 
 	msg = fix_session_recv(session, 0);
 
@@ -96,26 +93,11 @@ static void fix_session_accept(int incoming_fd)
 	fix_session_free(session);
 }
 
-static const struct protocol_info protocols[] = {
-	{ "fix",		fix_session_accept },
-};
-
-static const struct protocol_info *lookup_protocol_info(const char *name)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(protocols); i++) {
-		const struct protocol_info *proto_info = &protocols[i];
-
-		if (!strcmp(proto_info->name, name))
-			return proto_info;
-	}
-	return NULL;
-}
-
 static void usage(void)
 {
-	printf("\n  usage: trade server -p [port] -c [protocol]\n\n");
+	printf("\n  usage: %s [port] [version] [sender-comp-id] [target-comp-id]\n\n", program);
+
+	exit(EXIT_FAILURE);
 }
 
 static int socket_setopt(int sockfd, int level, int optname, int optval)
@@ -123,39 +105,34 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
+static enum fix_version strversion(const char *name)
+{
+	if (!strcmp(name, "fix42"))
+		return FIX_4_2;
+	else if (!strcmp(name, "fix43"))
+		return FIX_4_3;
+	else if (!strcmp(name, "fix44"))
+		return FIX_4_4;
+
+	return FIX_4_4;
+}
+
 int main(int argc, char *argv[])
 {
-	const struct protocol_info *proto_info;
-	const char *proto = NULL;
+	struct fix_session_cfg cfg;
 	struct sockaddr_in sa;
-	int port = 0;
 	int sockfd;
-	int opt;
+	int port;
 
-	while ((opt = getopt(argc, argv, "p:c:")) != -1) {
-		switch (opt) {
-		case 'p':
-			port = atoi(optarg);
-			break;
-		case 'c':
-			proto = optarg;
-			break;
-		default: /* '?' */
-			usage();
-			exit(EXIT_FAILURE);
-		}
-	}
+	program = basename(argv[0]);
 
-	if (!port || !proto) {
+	if (argc < 5)
 		usage();
-		exit(EXIT_FAILURE);
-	}
 
-	proto_info = lookup_protocol_info(proto);
-	if (!proto_info) {
-		printf("Unsupported protocol '%s'\n", proto);
-		exit(EXIT_FAILURE);
-	}
+	port		= atoi(argv[optind]);
+	cfg.version	= strversion(argv[optind + 1]);
+	strncpy(cfg.sender_comp_id, argv[optind + 2], ARRAY_SIZE(cfg.sender_comp_id));
+	strncpy(cfg.target_comp_id, argv[optind + 3], ARRAY_SIZE(cfg.target_comp_id));
 
 	sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd < 0)
@@ -178,26 +155,24 @@ int main(int argc, char *argv[])
 	if (bind(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0)
 		die("bind failed");
 
-	printf("Server is listening to port %d using '%s' protocol...\n", port, proto);
+	printf("Server is listening to port %d...\n", port);
 
 	if (listen(sockfd, 10) < 0)
 		die("listen failed");
 
 	for (;;) {
-		int incoming_fd;
-
-		incoming_fd = accept(sockfd, NULL, NULL);
-		if (incoming_fd < 0)
+		cfg.sockfd = accept(sockfd, NULL, NULL);
+		if (cfg.sockfd < 0)
 			die("accept failed");
 
-		if (socket_setopt(incoming_fd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
+		if (socket_setopt(cfg.sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 			die("cannot set socket option TCP_NODELAY");
 
-		proto_info->session_accept(incoming_fd);
+		fix_session_accept(&cfg);
 
-		shutdown(incoming_fd, SHUT_RDWR);
+		shutdown(cfg.sockfd, SHUT_RDWR);
 
-		close(incoming_fd);
+		close(cfg.sockfd);
 	}
 
 	close(sockfd);
