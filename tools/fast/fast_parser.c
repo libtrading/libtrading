@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <getopt.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
@@ -15,6 +16,14 @@
 #include <stdio.h>
 
 #include "test.h"
+
+static bool	stop;
+
+static void signal_handler(int signum)
+{
+	if (signum == SIGINT)
+		stop = true;
+}
 
 struct protocol_info {
 	const char		*name;
@@ -55,7 +64,15 @@ static int fast_session_initiate(const struct protocol_info *proto, int fd, cons
 {
 	struct fast_session *session = NULL;
 	struct fast_message *msg;
+	struct sigaction sa;
 	int ret = 1;
+
+	sa.sa_handler = signal_handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+
+	if (sigaction(SIGINT, &sa, NULL) == -1)
+		die("unable to register signal handler");
 
 	session = fast_session_new(fd);
 	if (!session) {
@@ -68,12 +85,11 @@ static int fast_session_initiate(const struct protocol_info *proto, int fd, cons
 		goto exit;
 	}
 
-	while (true) {
+	while (!stop) {
 		msg = fast_session_recv(session, 0);
 
 		if (!msg) {
-			fprintf(stderr, "Parser: Nothing received\n");
-			goto exit;
+			continue;
 		} else if (fast_msg_has_flags(msg, FAST_MSG_FLAGS_RESET)) {
 			if (msg->nr_fields != 0) {
 				fprintf(stderr, "Parser: Reset msg must be empty\n");
