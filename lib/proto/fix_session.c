@@ -141,7 +141,10 @@ struct fix_message *fix_session_process(struct fix_session *session, struct fix_
 		fix_session_set_in_msg_seq_num(session, session->in_msg_seq_num - 1);
 
 		return NULL;
-	} else if (fix_message_type_is(msg, FIX_MSG_TYPE_TEST_REQUEST)) {
+	}
+
+	switch (msg->type) {
+	case FIX_MSG_TYPE_TEST_REQUEST: {
 		char id[128] = "TestReqID";
 
 		field = fix_get_field(msg, TestReqID);
@@ -152,7 +155,8 @@ struct fix_message *fix_session_process(struct fix_session *session, struct fix_
 		fix_session_heartbeat(session, id);
 
 		return NULL;
-	} else if (fix_message_type_is(msg, FIX_MSG_TYPE_RESEND_REQUEST)) {
+	}
+	case FIX_MSG_TYPE_RESEND_REQUEST: {
 		unsigned long begin_seq_num;
 		unsigned long end_seq_num;
 
@@ -171,6 +175,9 @@ struct fix_message *fix_session_process(struct fix_session *session, struct fix_
 		fix_session_sequence_reset(session, begin_seq_num, end_seq_num + 1, true);
 
 		return NULL;
+	}
+	default:
+		break;
 	}
 
 	return msg;
