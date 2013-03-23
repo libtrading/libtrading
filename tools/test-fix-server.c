@@ -20,15 +20,10 @@ static const char	*program;
 
 static unsigned long fix_execution_report_fields(struct fix_field *fields)
 {
-	char fmt[64], buf[64];
 	unsigned long nr = 0;
-	struct timeval tv;
-	struct tm *tm;
+	char buf[64];
 
-	gettimeofday(&tv, NULL);
-	tm = gmtime(&tv.tv_sec);
-	strftime(fmt, sizeof fmt, "%Y%m%d-%H:%M:%S", tm);
-	snprintf(buf, sizeof buf, "%s.%03ld", fmt, (long)tv.tv_usec / 1000);
+	fix_timestamp_now(buf, sizeof buf);
 
 	fields[nr++] = FIX_STRING_FIELD(OrderID, "OrderID");
 	fields[nr++] = FIX_STRING_FIELD(Symbol, "Symbol");

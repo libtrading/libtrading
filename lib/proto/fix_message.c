@@ -513,6 +513,26 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 	return false;
 }
 
+char *fix_timestamp_now(char *buf, size_t len)
+{
+	struct timeval tv;
+	struct tm *tm;
+	char fmt[64];
+
+	gettimeofday(&tv, NULL);
+
+	tm = gmtime(&tv.tv_sec);
+	if (!tm)
+		return NULL;
+
+	/* YYYYMMDD-HH:MM:SS.sss */
+	strftime(fmt, sizeof fmt, "%Y%m%d-%H:%M:%S", tm);
+
+	snprintf(buf, len, "%s.%03ld", fmt, (long)tv.tv_usec / 1000);
+
+	return buf;
+}
+
 static void fix_message_unparse(struct fix_message *self)
 {
 	struct fix_field sender_comp_id;
@@ -524,18 +544,10 @@ static void fix_message_unparse(struct fix_message *self)
 	struct fix_field check_sum;
 	struct fix_field msg_type;
 	unsigned long cksum;
-	char fmt[64], buf[64];
-	struct timeval tv;
-	struct tm *tm;
+	char buf[64];
 	int i;
 
-	gettimeofday(&tv, NULL);
-	tm = gmtime(&tv.tv_sec);
-	assert(tm != NULL);
-
-	/* YYYYMMDD-HH:MM:SS.sss */
-	strftime(fmt, sizeof fmt, "%Y%m%d-%H:%M:%S", tm);
-	snprintf(buf, sizeof buf, "%s.%03ld", fmt, (long)tv.tv_usec / 1000);
+	fix_timestamp_now(buf, sizeof buf);
 
 	/* standard header */
 	msg_type	= FIX_STRING_FIELD(MsgType, fix_msg_types[self->type]);

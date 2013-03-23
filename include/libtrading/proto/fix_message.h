@@ -2,6 +2,7 @@
 #define LIBTRADING_FIX_MESSAGE_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 struct buffer;
@@ -161,5 +162,7 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags);
 
 enum fix_msg_type fix_msg_type_parse(const char *s);
 bool fix_message_type_is(struct fix_message *self, enum fix_msg_type type);
+
+char *fix_timestamp_now(char *buf, size_t len);
 
 #endif
