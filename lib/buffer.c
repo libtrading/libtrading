@@ -88,7 +88,7 @@ char *buffer_find(struct buffer *buf, char c)
 	return buffer_start(buf);
 }
 
-ssize_t buffer_read(struct buffer *buf, int fd)
+ssize_t buffer_xread(struct buffer *buf, int fd)
 {
 	size_t count;
 	ssize_t len;
@@ -106,7 +106,7 @@ ssize_t buffer_read(struct buffer *buf, int fd)
 	return len;
 }
 
-ssize_t buffer_nread(struct buffer *buf, int fd, size_t size)
+ssize_t buffer_nxread(struct buffer *buf, int fd, size_t size)
 {
 	size_t count;
 	ssize_t len;
@@ -127,7 +127,7 @@ ssize_t buffer_nread(struct buffer *buf, int fd, size_t size)
 	return len;
 }
 
-ssize_t buffer_write(struct buffer *buf, int fd)
+ssize_t buffer_xwrite(struct buffer *buf, int fd)
 {
 	size_t count;
 	void *start;

@@ -58,7 +58,7 @@ int soupbin3_session_recv(struct soupbin3_session *session, struct soupbin3_pack
 
 	buffer_reset(session->rx_buffer);
 
-	nr = buffer_read(session->rx_buffer, session->sockfd);
+	nr = buffer_xread(session->rx_buffer, session->sockfd);
 	if (nr <= 0)
 		return -1;
 

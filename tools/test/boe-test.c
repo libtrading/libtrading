@@ -29,7 +29,7 @@ void test_boe_login_request(void)
 	fd = open(DATA_PATH "login-request-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
-	fail_if(buffer_read(buf, fd) < 0);
+	fail_if(buffer_xread(buf, fd) < 0);
 
 	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
@@ -84,7 +84,7 @@ void test_boe_login_response(void)
 	fd = open(DATA_PATH "login-response-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
-	fail_if(buffer_read(buf, fd) < 0);
+	fail_if(buffer_xread(buf, fd) < 0);
 
 	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
@@ -140,7 +140,7 @@ void test_boe_logout_request(void)
 	fd = open(DATA_PATH "logout-request-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
-	fail_if(buffer_read(buf, fd) < 0);
+	fail_if(buffer_xread(buf, fd) < 0);
 
 	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
@@ -166,7 +166,7 @@ void test_boe_client_heartbeat(void)
 	fd = open(DATA_PATH "client-heartbeat-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
-	fail_if(buffer_read(buf, fd) < 0);
+	fail_if(buffer_xread(buf, fd) < 0);
 
 	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
@@ -193,7 +193,7 @@ void test_boe_logout(void)
 	fd = open(DATA_PATH "logout-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
-	fail_if(buffer_read(buf, fd) < 0);
+	fail_if(buffer_xread(buf, fd) < 0);
 
 	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
@@ -236,7 +236,7 @@ void test_boe_server_heartbeat(void)
 	fd = open(DATA_PATH "server-heartbeat-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
-	fail_if(buffer_read(buf, fd) < 0);
+	fail_if(buffer_xread(buf, fd) < 0);
 
 	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 
@@ -262,7 +262,7 @@ void test_boe_replay_complete(void)
 	fd = open(DATA_PATH "replay-complete-message.bin", O_RDONLY);
 	fail_if(fd < 0);
 
-	fail_if(buffer_read(buf, fd) < 0);
+	fail_if(buffer_xread(buf, fd) < 0);
 
 	fail_if(boe_message_decode(buf, msg, BOE_MAX_MESSAGE_LEN) < 0);
 

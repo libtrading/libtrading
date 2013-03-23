@@ -100,7 +100,7 @@ retry_size:
 
 			buffer_compact(buffer);
 
-			nr = buffer_read(buffer, fd);
+			nr = buffer_xread(buffer, fd);
 			if (nr <= 0)
 				break;
 
@@ -118,7 +118,7 @@ retry_message:
 
 			buffer_compact(buffer);
 
-			nr = buffer_read(buffer, fd);
+			nr = buffer_xread(buffer, fd);
 			if (nr <= 0)
 				break;
 
