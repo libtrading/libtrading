@@ -24,7 +24,7 @@ static ssize_t data_read(struct buffer *buffer)
 	 * 2 times FAST_MESSAGE_MAX_SIZE then,
 	 * remaining > FAST_MESSAGE_MAX_SIZE
 	 */
-	nr = buffer_nxread(buffer, *fd, FAST_MESSAGE_MAX_SIZE);
+	nr = buffer_nread(buffer, *fd, FAST_MESSAGE_MAX_SIZE);
 
 	return nr;
 }
