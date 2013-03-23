@@ -45,6 +45,7 @@ enum fix_type {
 	FIX_TYPE_CHAR,
 	FIX_TYPE_STRING,
 	FIX_TYPE_CHECKSUM,
+	FIX_TYPE_MSGSEQNUM,
 };
 
 enum fix_tag {

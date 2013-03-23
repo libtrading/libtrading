@@ -147,120 +147,74 @@ fail:
 	return ret;
 }
 
-static inline bool fix_message_is_session(struct fix_message *self)
+static enum fix_type fix_tag_type(int tag)
 {
-	/*
-	 * TODO: For the sake of performance we should avoid
-	 * using tons of strncmp calls here. The possible solution
-	 * is to map FIX messages' types into integers (enum possibly)
-	 * and to use switch-case construction in this function and
-	 * everywhere outside where msg_type is exploited.
-	 */
-
-	if (fix_message_type_is(self, FIX_MSG_TYPE_EXECUTION_REPORT))
-		return false;
-	else if (fix_message_type_is(self, FIX_MSG_TYPE_NEW_ORDER_SINGLE))
-		return false;
-	else
-		return true;
-}
-
-static void rest_of_message_session(struct fix_message *self, struct buffer *buffer)
-{
-	int tag = 0;
-	const char *tag_ptr = NULL;
-	unsigned long nr_fields = 0;
-
-	self->nr_fields = 0;
-
-retry:
-	if (parse_field_promisc(buffer, &tag, &tag_ptr))
-		return;
-
 	switch (tag) {
-	case CheckSum:
-		break;
-	case BeginSeqNo:
-	case EndSeqNo:
-	case NewSeqNo:
-		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
-		goto retry;
-	case GapFillFlag:
-	case PossDupFlag:
-	case TestReqID:
-		self->fields[nr_fields++] = FIX_STRING_FIELD(tag, tag_ptr);
-		goto retry;
-	case MsgSeqNum:
-		self->msg_seq_num = strtol(tag_ptr, NULL, 10);
-		goto retry;
-	default:
-		goto retry;
-	};
+	case CheckSum:		return FIX_TYPE_CHECKSUM;
+	case BeginSeqNo:	return FIX_TYPE_INT;
+	case EndSeqNo:		return FIX_TYPE_INT;
+	case NewSeqNo:		return FIX_TYPE_INT;
+	case GapFillFlag:	return FIX_TYPE_STRING;
+	case PossDupFlag:	return FIX_TYPE_STRING;
+	case TestReqID:		return FIX_TYPE_STRING;
+	case MsgSeqNum:		return FIX_TYPE_MSGSEQNUM;
+	case LeavesQty:		return FIX_TYPE_FLOAT;
+	case OrderQty:		return FIX_TYPE_FLOAT;
+	case CumQty:		return FIX_TYPE_FLOAT;
+	case AvgPx:		return FIX_TYPE_FLOAT;
+	case Price:		return FIX_TYPE_FLOAT;
+	case TransactTime:	return FIX_TYPE_STRING;
+	case OrdStatus:		return FIX_TYPE_STRING;
+	case ExecType:		return FIX_TYPE_STRING;
+	case Account:		return FIX_TYPE_STRING;
+	case ClOrdID:		return FIX_TYPE_STRING;
+	case OrderID:		return FIX_TYPE_STRING;
+	case OrdType:		return FIX_TYPE_STRING;
+	case ExecID:		return FIX_TYPE_STRING;
+	case Symbol:		return FIX_TYPE_STRING;
+	case Side:		return FIX_TYPE_STRING;
 
-	self->nr_fields = nr_fields;
-}
-
-static void rest_of_message_application(struct fix_message *self, struct buffer *buffer)
-{
-	int tag = 0;
-	const char *tag_ptr = NULL;
-	unsigned long nr_fields = 0;
-
-	self->nr_fields = 0;
-
-retry:
-	if (parse_field_promisc(buffer, &tag, &tag_ptr))
-		return;
-
-	switch (tag) {
-	case CheckSum:
-		break;
-	case BeginSeqNo:
-	case EndSeqNo:
-	case NewSeqNo:
-		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
-		goto retry;
-	case LeavesQty:
-	case OrderQty:
-	case CumQty:
-	case AvgPx:
-	case Price:
-		self->fields[nr_fields++] = FIX_FLOAT_FIELD(tag, strtod(tag_ptr, NULL));
-		goto retry;
-	case TransactTime:
-	case GapFillFlag:
-	case PossDupFlag:
-	case OrdStatus:
-	case TestReqID:
-	case ExecType:
-	case Account:
-	case ClOrdID:
-	case OrderID:
-	case OrdType:
-	case ExecID:
-	case Symbol:
-	case Side:
-		self->fields[nr_fields++] = FIX_STRING_FIELD(tag, tag_ptr);
-		goto retry;
-	case MsgSeqNum:
-		self->msg_seq_num = strtol(tag_ptr, NULL, 10);
-		goto retry;
-	default:
-		goto retry;
-	};
-
-	self->nr_fields = nr_fields;
+	default:		return FIX_TYPE_STRING;	/* unrecognized tag */
+	}
 }
 
 static void rest_of_message(struct fix_message *self, struct buffer *buffer)
 {
-	if (fix_message_is_session(self)) {
-		rest_of_message_session(self, buffer);
-	} else {
-		rest_of_message_application(self, buffer);
+	int tag = 0;
+	const char *tag_ptr = NULL;
+	unsigned long nr_fields = 0;
+	enum fix_type type;
+
+	self->nr_fields = 0;
+
+retry:
+	if (parse_field_promisc(buffer, &tag, &tag_ptr))
+		return;
+
+	type = fix_tag_type(tag);
+
+	switch (type) {
+	case FIX_TYPE_INT:
+		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
+		goto retry;
+	case FIX_TYPE_FLOAT:
+		self->fields[nr_fields++] = FIX_FLOAT_FIELD(tag, strtod(tag_ptr, NULL));
+		goto retry;
+	case FIX_TYPE_CHAR:
+		goto retry;
+	case FIX_TYPE_STRING:
+		self->fields[nr_fields++] = FIX_STRING_FIELD(tag, tag_ptr);
+		goto retry;
+	case FIX_TYPE_CHECKSUM:
+		break;
+	case FIX_TYPE_MSGSEQNUM:
+		self->msg_seq_num = strtol(tag_ptr, NULL, 10);
+		goto retry;
+	default:
+		goto retry;
 	}
 
-	return;
+	self->nr_fields = nr_fields;
 }
 
 static bool verify_checksum(struct fix_message *self, struct buffer *buffer)
