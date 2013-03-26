@@ -57,7 +57,9 @@ PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-itch41 tools/
 
 DEFINES =
 INCLUDES = $(shell sh -c 'xml2-config --cflags')
-EXTRA_LIBS = -lrt
+
+EXTRA_LIBS += -lrt
+EXTRA_LIBS += $(shell sh -c 'xml2-config --libs')
 
 ifeq ($(uname_S),Linux)
 	DEFINES += -D_GNU_SOURCE
@@ -90,7 +92,6 @@ DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 LIB_FILE := libtrading.a
 
 LIBS := $(LIB_FILE)
-LIBS += -lxml2
 
 LIB_OBJS	+= lib/buffer.o
 LIB_OBJS	+= lib/mmap-buffer.o
