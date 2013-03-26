@@ -46,6 +46,8 @@ struct fix_session {
 	struct fix_message		*rx_message;
 
 	int				heartbtint;
+	struct timespec			rx_timestamp;
+	struct timespec			tx_timestamp;
 };
 
 static inline void fix_session_set_in_msg_seq_num(struct fix_session *session, unsigned long new_msg_seq_num)

@@ -92,6 +92,7 @@ LIB_FILE := libtrading.a
 
 LIBS := $(LIB_FILE)
 LIBS += -lxml2
+LIBS += -lrt
 
 LIB_OBJS	+= lib/buffer.o
 LIB_OBJS	+= lib/mmap-buffer.o

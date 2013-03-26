@@ -46,6 +46,16 @@ struct fix_session *fix_session_new(struct fix_session_cfg *cfg)
 		return NULL;
 	}
 
+	if (clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp)) {
+		fix_session_free(self);
+		return NULL;
+	}
+
+	if (clock_gettime(CLOCK_MONOTONIC, &self->tx_timestamp)) {
+		fix_session_free(self);
+		return NULL;
+	}
+
 	self->begin_string	= begin_strings[cfg->version];
 	self->sender_comp_id	= cfg->sender_comp_id;
 	self->target_comp_id	= cfg->target_comp_id;
@@ -83,6 +93,8 @@ int fix_session_send(struct fix_session *self, struct fix_message *msg, int flag
 	msg->body_buf = self->tx_body_buffer;
 	buffer_reset(msg->body_buf);
 
+	clock_gettime(CLOCK_MONOTONIC, &self->tx_timestamp);
+
 	return fix_message_send(msg, self->sockfd, flags);
 }
 
@@ -103,6 +115,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 	start_prev = buffer_start(buffer);
 
 	if (!fix_message_parse(msg, buffer)) {
+		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
 		self->in_msg_seq_num++;
 		return msg;
 	}
@@ -127,6 +140,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 		return NULL;
 
 	if (!fix_message_parse(msg, buffer)) {
+		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
 		self->in_msg_seq_num++;
 		return msg;
 	} else
