@@ -38,9 +38,6 @@ EXTRA_WARNINGS += -Werror
 # Compile flags
 CFLAGS		:= -I$(CURDIR)/include -Wall $(EXTRA_WARNINGS) -g -O3 -std=gnu99
 
-# Linker flags
-LDFLAGS	+= -lrt
-
 # Output to current directory by default
 O =
 
@@ -60,7 +57,7 @@ PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-itch41 tools/
 
 DEFINES =
 INCLUDES = $(shell sh -c 'xml2-config --cflags')
-EXTRA_LIBS =
+EXTRA_LIBS = -lrt
 
 ifeq ($(uname_S),Linux)
 	DEFINES += -D_GNU_SOURCE
@@ -161,7 +158,7 @@ endif
 $(foreach p,$(PROGRAMS),$(eval $(p): $($(notdir $p)_EXTRA_DEPS) $(LIBS)))
 $(PROGRAMS): % : %.o
 	$(E) "  LINK    " $@
-	$(Q) $(LD) $(LDFLAGS) -o $@ $^ $($(notdir $@)_EXTRA_LIBS)
+	$(Q) $(LD) $(LDFLAGS) -o $@ $^ $($(notdir $@)_EXTRA_LIBS) $(EXTRA_LIBS)
 
 $(LIB_FILE): $(LIB_DEPS) $(LIB_OBJS)
 	$(E) "  AR      " $@
