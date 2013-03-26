@@ -257,6 +257,8 @@ int main(int argc, char *argv[])
 	if (socket_setopt(cfg.sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
+	cfg.heartbtint = 15;
+
 	retval = fix_session_initiate(&cfg);
 
 	shutdown(cfg.sockfd, SHUT_RDWR);

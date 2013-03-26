@@ -25,6 +25,7 @@ enum fix_version {
 struct fix_session_cfg {
 	char			sender_comp_id[32];
 	char			target_comp_id[32];
+	int			heartbtint;
 	enum fix_version	version;
 	int			sockfd;
 };
@@ -43,6 +44,8 @@ struct fix_session {
 	struct buffer			*tx_body_buffer;
 
 	struct fix_message		*rx_message;
+
+	int				heartbtint;
 };
 
 static inline void fix_session_set_in_msg_seq_num(struct fix_session *session, unsigned long new_msg_seq_num)

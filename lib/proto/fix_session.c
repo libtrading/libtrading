@@ -49,6 +49,7 @@ struct fix_session *fix_session_new(struct fix_session_cfg *cfg)
 	self->begin_string	= begin_strings[cfg->version];
 	self->sender_comp_id	= cfg->sender_comp_id;
 	self->target_comp_id	= cfg->target_comp_id;
+	self->heartbtint	= cfg->heartbtint;
 	self->sockfd		= cfg->sockfd;
 	self->in_msg_seq_num	= 0;
 	self->out_msg_seq_num	= 1;
@@ -189,8 +190,8 @@ bool fix_session_logon(struct fix_session *session)
 	struct fix_message logon_msg;
 	struct fix_field fields[] = {
 		FIX_INT_FIELD(EncryptMethod, 0),
-		FIX_INT_FIELD(HeartBtInt, 15),
 		FIX_STRING_FIELD(ResetSeqNumFlag, "Y"),
+		FIX_INT_FIELD(HeartBtInt, session->heartbtint),
 	};
 	bool ret;
 
