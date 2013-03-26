@@ -33,14 +33,6 @@ static void signal_handler(int signum)
 		stop = true;
 }
 
-static bool fix_in_seq_num_process(struct fix_session *session, struct fix_message *msg)
-{
-	if (msg->msg_seq_num < session->in_msg_seq_num && !fix_get_field(msg, PossDupFlag))
-		return false;
-
-	return true;
-}
-
 static unsigned long fix_new_order_single_fields(struct fix_field *fields)
 {
 	unsigned long nr = 0;
@@ -105,21 +97,38 @@ retry:
 
 static void fix_session_normal(struct fix_session *session)
 {
+	struct timespec cur, prev;
 	struct fix_message *msg;
+	int diff;
+
+	clock_gettime(CLOCK_MONOTONIC, &prev);
 
 	while (!stop) {
+		clock_gettime(CLOCK_MONOTONIC, &cur);
+		diff = cur.tv_sec - prev.tv_sec;
+
+		if (diff > 0.1 * session->heartbtint) {
+			prev = cur;
+
+			if (fix_session_keepalive(session, &cur)) {
+				stop = true;
+				break;
+			}
+		}
+
 		msg = fix_session_recv(session, 0);
 		if (msg) {
-			msg = fix_session_process(session, msg);
-			if (!msg)
+			if (!fix_session_admin(session, msg))
 				continue;
 
-			if (!fix_in_seq_num_process(session, msg))
+			switch (msg->type) {
+			case FIX_MSG_TYPE_LOGOUT:
 				stop = true;
-			else if (fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT))
+				break;
+			default:
 				stop = true;
-			else if (fix_message_type_is(msg, FIX_MSG_TYPE_HEARTBEAT))
-				fix_session_heartbeat(session, NULL);
+				break;
+			}
 		}
 	}
 

@@ -2,9 +2,10 @@
 
 #include "libtrading/array.h"
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 static const char *begin_strings[] = {
 	[FIXT_1_1]	= "FIXT.1.1",
@@ -61,6 +62,7 @@ struct fix_session *fix_session_new(struct fix_session_cfg *cfg)
 	self->target_comp_id	= cfg->target_comp_id;
 	self->heartbtint	= cfg->heartbtint;
 	self->sockfd		= cfg->sockfd;
+	self->tr_pending	= 0;
 	self->in_msg_seq_num	= 0;
 	self->out_msg_seq_num	= 1;
 
@@ -147,7 +149,37 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 		return NULL;
 }
 
-struct fix_message *fix_session_process(struct fix_session *session, struct fix_message *msg)
+int fix_session_keepalive(struct fix_session *session, struct timespec *now)
+{
+	int diff;
+
+	if (!session->tr_pending) {
+		diff = now->tv_sec - session->rx_timestamp.tv_sec;
+
+		if (diff > 1.2 * session->heartbtint)
+			fix_session_test_request(session);
+	} else {
+		diff = now->tv_sec - session->tr_timestamp.tv_sec;
+
+		if (diff > 0.5 * session->heartbtint)
+			return 1;
+	}
+
+	diff = now->tv_sec - session->tx_timestamp.tv_sec;
+	if (diff > session->heartbtint)
+		fix_session_heartbeat(session, NULL);
+
+	return 0;
+}
+
+/*
+ * Return values:
+ * - 0 means that the function was able to handle a message, a user should
+ *	not process the message further
+ * - 1 means that the function wasn't able to handle a message, a user should
+ *	decide on what to do further
+ */
+int fix_session_admin(struct fix_session *session, struct fix_message *msg)
 {
 	struct fix_field *field;
 
@@ -155,10 +187,24 @@ struct fix_message *fix_session_process(struct fix_session *session, struct fix_
 		fix_session_resend_request(session, session->in_msg_seq_num, msg->msg_seq_num);
 		fix_session_set_in_msg_seq_num(session, session->in_msg_seq_num - 1);
 
-		return NULL;
+		goto done;
+	} else if (msg->msg_seq_num < session->in_msg_seq_num) {
+		if (fix_get_field(msg, PossDupFlag))
+			goto done;
+		else
+			goto fail;
 	}
 
 	switch (msg->type) {
+	case FIX_MSG_TYPE_HEARTBEAT: {
+		field = fix_get_field(msg, TestReqID);
+
+		if (field && !strncmp(field->string_value,
+				session->testreqid, strlen(session->testreqid)))
+			session->tr_pending = 0;
+
+		goto done;
+	}
 	case FIX_MSG_TYPE_TEST_REQUEST: {
 		char id[128] = "TestReqID";
 
@@ -169,7 +215,7 @@ struct fix_message *fix_session_process(struct fix_session *session, struct fix_
 
 		fix_session_heartbeat(session, id);
 
-		return NULL;
+		goto done;
 	}
 	case FIX_MSG_TYPE_RESEND_REQUEST: {
 		unsigned long begin_seq_num;
@@ -177,25 +223,29 @@ struct fix_message *fix_session_process(struct fix_session *session, struct fix_
 
 		field = fix_get_field(msg, BeginSeqNo);
 		if (!field)
-			return NULL;
+			goto fail;
 
 		begin_seq_num = field->int_value;
 
 		field = fix_get_field(msg, EndSeqNo);
 		if (!field)
-			return NULL;
+			goto fail;
 
 		end_seq_num = field->int_value;
 
 		fix_session_sequence_reset(session, begin_seq_num, end_seq_num + 1, true);
 
-		return NULL;
+		goto done;
 	}
 	default:
 		break;
 	}
 
-	return msg;
+fail:
+	return 1;
+
+done:
+	return 0;
 }
 
 bool fix_session_logon(struct fix_session *session)
@@ -244,7 +294,7 @@ retry:
 	if (!response)
 		return false;
 
-	if (!fix_session_process(session, response))
+	if (!fix_session_admin(session, response))
 		goto retry;
 
 	ret = fix_message_type_is(response, FIX_MSG_TYPE_LOGOUT);
@@ -275,9 +325,10 @@ bool fix_session_heartbeat(struct fix_session *session, const char *test_req_id)
 bool fix_session_test_request(struct fix_session *session)
 {
 	struct fix_message test_req_msg;
-	/* Any string can be used as the TestReqID */
 	struct fix_field fields[] = {
-		FIX_STRING_FIELD(TestReqID, "TestReqID"),
+		FIX_STRING_FIELD(TestReqID,
+			fix_timestamp_now(session->testreqid,
+					sizeof session->testreqid)),
 	};
 
 	test_req_msg	= (struct fix_message) {
@@ -285,6 +336,9 @@ bool fix_session_test_request(struct fix_session *session)
 		.nr_fields	= ARRAY_SIZE(fields),
 		.fields		= fields,
 	};
+
+	clock_gettime(CLOCK_MONOTONIC, &session->tr_timestamp);
+	session->tr_pending = 1;
 
 	fix_session_send(session, &test_req_msg, 0);
 

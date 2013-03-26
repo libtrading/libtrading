@@ -48,6 +48,10 @@ struct fix_session {
 	int				heartbtint;
 	struct timespec			rx_timestamp;
 	struct timespec			tx_timestamp;
+
+	char				testreqid[64];
+	struct timespec			tr_timestamp;
+	int				tr_pending;
 };
 
 static inline void fix_session_set_in_msg_seq_num(struct fix_session *session, unsigned long new_msg_seq_num)
@@ -59,7 +63,8 @@ struct fix_session *fix_session_new(struct fix_session_cfg *cfg);
 void fix_session_free(struct fix_session *self);
 int fix_session_send(struct fix_session *self, struct fix_message *msg, int flags);
 struct fix_message *fix_session_recv(struct fix_session *self, int flags);
-struct fix_message *fix_session_process(struct fix_session *session, struct fix_message *msg);
+int fix_session_keepalive(struct fix_session *session, struct timespec *now);
+int fix_session_admin(struct fix_session *session, struct fix_message *msg);
 bool fix_session_logon(struct fix_session *session);
 bool fix_session_logout(struct fix_session *session);
 bool fix_session_heartbeat(struct fix_session *session, const char *test_req_id);

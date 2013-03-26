@@ -38,6 +38,9 @@ EXTRA_WARNINGS += -Werror
 # Compile flags
 CFLAGS		:= -I$(CURDIR)/include -Wall $(EXTRA_WARNINGS) -g -O3 -std=gnu99
 
+# Linker flags
+LDFLAGS	+= -lrt
+
 # Output to current directory by default
 O =
 
@@ -65,7 +68,6 @@ endif
 
 test-fix-server_EXTRA_DEPS += lib/die.o
 
-test-fix-client_EXTRA_LIBS += -lrt
 test-fix-client_EXTRA_DEPS += lib/die.o
 
 fix_client_EXTRA_DEPS += lib/die.o
@@ -92,7 +94,6 @@ LIB_FILE := libtrading.a
 
 LIBS := $(LIB_FILE)
 LIBS += -lxml2
-LIBS += -lrt
 
 LIB_OBJS	+= lib/buffer.o
 LIB_OBJS	+= lib/mmap-buffer.o
