@@ -27,7 +27,11 @@ static bool fix_server_logon(struct fix_session *session)
 	struct fix_message logon_msg;
 	struct fix_message *msg;
 
+retry:
 	msg = fix_session_recv(session, 0);
+	if (!msg)
+		goto retry;
+
 	if (!fix_message_type_is(msg, FIX_MSG_TYPE_LOGON))
 		return false;
 
@@ -46,7 +50,11 @@ static bool fix_server_logout(struct fix_session *session)
 	struct fix_message *msg;
 	bool ret = true;
 
+retry:
 	msg = fix_session_recv(session, 0);
+	if (!msg)
+		goto retry;
+
 	if (!fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT))
 		ret = false;
 
@@ -110,13 +118,13 @@ static int fix_session_accept(struct fix_session_cfg *cfg, const char *script)
 	while (expected_elem) {
 		msg = fix_session_recv(session, 0);
 
+		if (!msg)
+			continue;
+
 		fprintf(stdout, "> ");
 		fprintmsg(stdout, msg);
 
-		if (!msg) {
-			fprintf(stderr, "Server: nothing received\n");
-			break;
-		} else if (fmsgcmp(&expected_elem->msg, msg)) {
+		if (fmsgcmp(&expected_elem->msg, msg)) {
 			fprintf(stderr, "Server: messages differ\n");
 			fprintmsg(stderr, &expected_elem->msg);
 			fprintmsg(stderr, msg);

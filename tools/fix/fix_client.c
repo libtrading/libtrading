@@ -83,15 +83,16 @@ static int fix_session_initiate(struct fix_session_cfg *cfg, const char *script)
 		if (!expected_elem)
 			goto next;
 
+retry:
 		msg = fix_session_recv(session, 0);
+
+		if (!msg)
+			goto retry;
 
 		fprintf(stdout, "< ");
 		fprintmsg(stdout, msg);
 
-		if (!msg) {
-			fprintf(stderr, "Client: nothing received\n");
-			break;
-		} else if (fmsgcmp(&expected_elem->msg, msg)) {
+		if (fmsgcmp(&expected_elem->msg, msg)) {
 			fprintf(stderr, "Client: messages differ\n");
 			fprintmsg(stderr, &expected_elem->msg);
 			fprintmsg(stderr, msg);

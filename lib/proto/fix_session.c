@@ -109,22 +109,13 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 {
 	struct fix_message *msg = self->rx_message;
 	struct buffer *buffer = self->rx_buffer;
-	const char *start_prev;
 	size_t size;
-	ssize_t nr;
-	long shift;
-
-	start_prev = buffer_start(buffer);
 
 	if (!fix_message_parse(msg, buffer)) {
 		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
 		self->in_msg_seq_num++;
 		return msg;
 	}
-
-	shift = start_prev - buffer_start(buffer);
-
-	buffer_advance(buffer, shift);
 
 	if (fix_session_buffer_full(self))
 		buffer_compact(buffer);
@@ -133,20 +124,10 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 	if (size > FIX_MAX_MESSAGE_SIZE) {
 		size -= FIX_MAX_MESSAGE_SIZE;
 
-		nr = buffer_nread(buffer, self->sockfd, size);
-		if (nr < 0)
-			return NULL;
+		buffer_nread(buffer, self->sockfd, size);
 	}
 
-	if (!buffer_size(buffer))
-		return NULL;
-
-	if (!fix_message_parse(msg, buffer)) {
-		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
-		self->in_msg_seq_num++;
-		return msg;
-	} else
-		return NULL;
+	return NULL;
 }
 
 int fix_session_keepalive(struct fix_session *session, struct timespec *now)
@@ -267,9 +248,10 @@ bool fix_session_logon(struct fix_session *session)
 
 	fix_session_send(session, &logon_msg, 0);
 
+retry:
 	response = fix_session_recv(session, 0);
 	if (!response)
-		return false;
+		goto retry;
 
 	ret = fix_message_type_is(response, FIX_MSG_TYPE_LOGON);
 
@@ -292,7 +274,7 @@ retry:
 
 	response = fix_session_recv(session, 0);
 	if (!response)
-		return false;
+		goto retry;
 
 	if (!fix_session_admin(session, response))
 		goto retry;
