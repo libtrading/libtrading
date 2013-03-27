@@ -69,13 +69,13 @@ static int fast_session_initiate(const struct protocol_info *proto, int sockfd,
 	while (expected_elem) {
 		msg = fast_session_recv(session, 0);
 
+		if (!msg)
+			continue;
+
 		fprintf(stdout, "< ");
 		fprintmsg(stdout, msg);
 
-		if (!msg) {
-			fprintf(stderr, "Client: nothing received\n");
-			goto exit;
-		} else if (fmsgcmp(&expected_elem->msg, msg)) {
+		if (fmsgcmp(&expected_elem->msg, msg)) {
 			fprintf(stderr, "Client: messages differ\n");
 			fprintmsg(stderr, &expected_elem->msg);
 			fprintmsg(stderr, msg);

@@ -174,6 +174,11 @@ static int msocket(const char *ip, const char *lip, int port)
 		goto fail;
 	}
 
+	if (fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL) | O_NONBLOCK) < 0) {
+		fprintf(stderr, "Parser: Unable to make a socket nonblocking (%s)\n", strerror(errno));
+		goto fail;
+	}
+
 	if (socket_setopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 1) < 0) {
 		fprintf(stderr, "Parser: Unable to set opt (%s)\n", strerror(errno));
 		goto fail;

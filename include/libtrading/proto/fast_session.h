@@ -19,7 +19,10 @@ struct fast_session {
 	struct buffer		*tx_message_buffer;
 
 	int			nr_messages;
+	struct fast_message	*rx_message;
 	struct fast_message	*rx_messages;
+
+	struct fast_pmap	pmap;
 };
 
 int fast_session_send(struct fast_session *self, struct fast_message *msg, int flags);

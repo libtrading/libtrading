@@ -1,33 +1,10 @@
-#include "libtrading/proto/fast_message.h"
+#include "libtrading/proto/fast_session.h"
 
 #include "libtrading/read-write.h"
-#include "libtrading/buffer.h"
 #include "libtrading/array.h"
 
 #include <string.h>
 #include <stdlib.h>
-
-static ssize_t data_read(struct buffer *buffer)
-{
-	ssize_t nr = 0;
-	size_t size;
-	int *fd;
-
-	fd = buffer_get_ptr(buffer);
-
-	size = buffer_remaining(buffer);
-	if (size <= FAST_MESSAGE_MAX_SIZE)
-		buffer_compact(buffer);
-
-	/*
-	 * If buffer's capacity is at least
-	 * 2 times FAST_MESSAGE_MAX_SIZE then,
-	 * remaining > FAST_MESSAGE_MAX_SIZE
-	 */
-	nr = buffer_nread(buffer, *fd, FAST_MESSAGE_MAX_SIZE);
-
-	return nr;
-}
 
 static int parse_uint(struct buffer *buffer, u64 *value)
 {
@@ -36,7 +13,6 @@ static int parse_uint(struct buffer *buffer, u64 *value)
 	int i;
 	u8 c;
 
-retry:
 	result = 0;
 
 	for (i = 0; i < bytes; i++) {
@@ -56,16 +32,10 @@ retry:
 		result = (result << 7) | c;
 	}
 
-fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	buffer_advance(buffer, -i);
-
-	if (data_read(buffer) > 0)
-		goto retry;
-	else
-		goto fail;
+	return FAST_MSG_STATE_PARTIAL;
 }
 
 static int parse_int(struct buffer *buffer, i64 *value)
@@ -75,7 +45,6 @@ static int parse_int(struct buffer *buffer, i64 *value)
 	int i;
 	u8 c;
 
-retry:
 	result = 0;
 	i = 0;
 
@@ -102,16 +71,10 @@ retry:
 		result = (result << 7) | c;
 	}
 
-fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	buffer_advance(buffer, -i);
-
-	if (data_read(buffer) > 0)
-		goto retry;
-	else
-		goto fail;
+	return FAST_MSG_STATE_PARTIAL;
 }
 
 /*
@@ -126,7 +89,6 @@ static int parse_string(struct buffer *buffer, char *value)
 	int len;
 	u8 c;
 
-retry:
 	len = 0;
 
 	while (len < FAST_STRING_MAX_BYTES - 1) {
@@ -145,16 +107,10 @@ retry:
 			value[len++] = c;
 	}
 
-fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	buffer_advance(buffer, -len);
-
-	if (data_read(buffer) > 0)
-		goto retry;
-	else
-		goto fail;
+	return FAST_MSG_STATE_PARTIAL;
 }
 
 static int parse_bytes(struct buffer *buffer, char *value, int len)
@@ -162,7 +118,6 @@ static int parse_bytes(struct buffer *buffer, char *value, int len)
 	int i;
 	u8 c;
 
-retry:
 	if (buffer_size(buffer) < len)
 		goto partial;
 
@@ -175,21 +130,14 @@ retry:
 
 	return 0;
 
-fail:
-	return FAST_MSG_STATE_GARBLED;
-
 partial:
-	if (data_read(buffer) > 0)
-		goto retry;
-	else
-		goto fail;
+	return FAST_MSG_STATE_PARTIAL;
 }
 
 static int parse_pmap(struct buffer *buffer, struct fast_pmap *pmap)
 {
 	char c;
 
-retry:
 	pmap->nr_bytes = 0;
 
 	while (pmap->nr_bytes < FAST_PMAP_MAX_BYTES) {
@@ -205,16 +153,10 @@ retry:
 			return 0;
 	}
 
-fail:
 	return FAST_MSG_STATE_GARBLED;
 
 partial:
-	buffer_advance(buffer, -pmap->nr_bytes);
-
-	if (data_read(buffer) > 0)
-		goto retry;
-	else
-		goto fail;
+	return FAST_MSG_STATE_PARTIAL;
 }
 
 static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
@@ -858,18 +800,17 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 			goto fail;
 
 		field->state = FAST_STATE_ASSIGNED;
-		field->decimal_value.exp += exp;
 
 		if (!field_is_mandatory(field)) {
 			if (!exp) {
 				field->state = FAST_STATE_EMPTY;
 				break;
 			} else if (exp > 0)
-				field->decimal_value.exp--;
+				exp--;
 		}
 
-		if (field->decimal_value.exp > 63 ||
-			field->decimal_value.exp < -63) {
+		if (field->decimal_value.exp + exp > 63 ||
+			field->decimal_value.exp + exp < -63) {
 			ret = FAST_MSG_STATE_GARBLED;
 			goto fail;
 		}
@@ -879,6 +820,7 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 		if (ret)
 			goto fail;
 
+		field->decimal_value.exp += exp;
 		field->decimal_value.mnt += mnt;
 
 		break;
@@ -910,51 +852,63 @@ fail:
 static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
 {
 	struct fast_sequence *seq;
-	unsigned long nr_fields;
-	struct fast_pmap spmap;
+	struct fast_message *msg;
+	struct fast_pmap *spmap;
 	struct fast_field *cur;
+	const char *start;
 	int pmap_req;
 	int ret = 0;
-	int i, j;
 
 	seq = field->ptr_value;
 
-	ret = fast_decode_uint(buffer, pmap, &seq->length);
+	if (!seq->decoded) {
+		start = buffer_start(buffer);
 
-	if (ret)
-		goto exit;
+		ret = fast_decode_uint(buffer, pmap, &seq->length);
 
-	if (field_state_empty(&seq->length)) {
-		if (field_is_mandatory(field))
+		if (ret)
+			goto exit;
+
+		if (field_state_empty(&seq->length)) {
+			if (field_is_mandatory(field))
+				ret = FAST_MSG_STATE_GARBLED;
+
+			goto exit;
+		}
+
+		if (seq->length.uint_value >= FAST_SEQUENCE_ELEMENTS) {
 			ret = FAST_MSG_STATE_GARBLED;
+			goto exit;
+		}
 
-		goto exit;
-	}
-
-	if (seq->length.uint_value >= FAST_SEQUENCE_ELEMENTS) {
-		ret = FAST_MSG_STATE_GARBLED;
-		goto exit;
+		seq->decoded = 1;
 	}
 
 	pmap_req = field_has_flags(field, FAST_FIELD_FLAGS_PMAPREQ);
+	spmap = &seq->pmap;
 
-	for (i = 1; i <= seq->length.uint_value; i++) {
-		if (pmap_req) {
-			ret = parse_pmap(buffer, &spmap);
+	for (; seq->decoded <= seq->length.uint_value; seq->decoded++) {
+		if (pmap_req && !spmap->is_valid) {
+			start = buffer_start(buffer);
+
+			ret = parse_pmap(buffer, spmap);
 
 			if (ret)
 				goto exit;
+
+			spmap->is_valid = true;
 		}
 
-		nr_fields = seq->elements->nr_fields;
+		msg = seq->elements;
 
-		for (j = 0; j < nr_fields; j++) {
-			cur = (seq->elements + i)->fields + j;
-			field = seq->elements->fields + j;
+		for (; msg->decoded < msg->nr_fields; msg->decoded++) {
+			cur = (msg + seq->decoded)->fields + msg->decoded;
+			field = msg->fields + msg->decoded;
+			start = buffer_start(buffer);
 
 			switch (field->type) {
 			case FAST_TYPE_INT:
-				ret = fast_decode_int(buffer, &spmap, field);
+				ret = fast_decode_int(buffer, spmap, field);
 				if (ret)
 					goto exit;
 
@@ -962,7 +916,7 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 				cur->state = field->state;
 				break;
 			case FAST_TYPE_UINT:
-				ret = fast_decode_uint(buffer, &spmap, field);
+				ret = fast_decode_uint(buffer, spmap, field);
 				if (ret)
 					goto exit;
 
@@ -970,7 +924,7 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 				cur->state = field->state;
 				break;
 			case FAST_TYPE_STRING:
-				ret = fast_decode_string(buffer, &spmap, field);
+				ret = fast_decode_string(buffer, spmap, field);
 				if (ret)
 					goto exit;
 
@@ -978,7 +932,7 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 				cur->state = field->state;
 				break;
 			case FAST_TYPE_DECIMAL:
-				ret = fast_decode_decimal(buffer, &spmap, field);
+				ret = fast_decode_decimal(buffer, spmap, field);
 				if (ret)
 					goto exit;
 
@@ -998,9 +952,17 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 				goto exit;
 			}
 		}
+
+		spmap->is_valid = false;
+		msg->decoded = 0;
 	}
 
+	seq->decoded = 0;
+
 exit:
+	if (ret == FAST_MSG_STATE_PARTIAL)
+		buffer_advance(buffer, start - buffer_start(buffer));
+
 	return ret;
 }
 
@@ -1016,61 +978,80 @@ static inline struct fast_message *fast_get_msg(struct fast_message *msgs, int t
 	return NULL;
 }
 
-struct fast_message *fast_message_decode(struct fast_message *msgs, struct buffer *buffer, u64 last_tid)
+struct fast_message *fast_message_decode(struct fast_session *session)
 {
 	struct fast_message *msg;
 	struct fast_field *field;
-	struct fast_pmap pmap;
-	unsigned long i;
-	int ret;
+	struct fast_pmap *pmap;
+	struct buffer *buffer;
+	const char *start;
 	u64 tid;
+	int ret;
 
-	ret = parse_pmap(buffer, &pmap);
-	if (ret)
-		goto fail;
+	buffer = session->rx_buffer;
+	pmap = &session->pmap;
 
-	if (pmap_is_set(&pmap, 0)) {
-		ret = parse_uint(buffer, &tid);
+	if (!pmap->is_valid) {
+		start = buffer_start(buffer);
+
+		ret = parse_pmap(buffer, pmap);
 		if (ret)
 			goto fail;
-	} else
-		tid = last_tid;
 
-	msg = fast_get_msg(msgs, tid);
+		pmap->is_valid = true;
+	}
 
-	if (!msg)
-		goto fail;
+	if (!session->rx_message) {
+		start = buffer_start(buffer);
 
-	msg->pmap = &pmap;
+		if (pmap_is_set(pmap, 0)) {
+			ret = parse_uint(buffer, &tid);
+			if (ret)
+				goto fail;
+		} else
+			tid = session->last_tid;
 
-	for (i = 0; i < msg->nr_fields; i++) {
-		field = msg->fields + i;
+		session->rx_message = fast_get_msg(session->rx_messages, tid);
+
+		if (!session->rx_message) {
+			ret = FAST_MSG_STATE_GARBLED;
+			goto fail;
+		}
+	}
+
+	msg = session->rx_message;
+
+	for (; msg->decoded < msg->nr_fields; msg->decoded++) {
+		field = msg->fields + msg->decoded;
+		start = buffer_start(buffer);
 
 		switch (field->type) {
 		case FAST_TYPE_INT:
-			ret = fast_decode_int(buffer, msg->pmap, field);
+			ret = fast_decode_int(buffer, pmap, field);
 			if (ret)
 				goto fail;
 			break;
 		case FAST_TYPE_UINT:
-			ret = fast_decode_uint(buffer, msg->pmap, field);
+			ret = fast_decode_uint(buffer, pmap, field);
 			if (ret)
 				goto fail;
 			break;
 		case FAST_TYPE_STRING:
-			ret = fast_decode_string(buffer, msg->pmap, field);
+			ret = fast_decode_string(buffer, pmap, field);
 			if (ret)
 				goto fail;
 			break;
 		case FAST_TYPE_DECIMAL:
-			ret = fast_decode_decimal(buffer, msg->pmap, field);
+			ret = fast_decode_decimal(buffer, pmap, field);
 			if (ret)
 				goto fail;
 			break;
 		case FAST_TYPE_SEQUENCE:
-			ret = fast_decode_sequence(buffer, msg->pmap, field);
-			if (ret)
+			ret = fast_decode_sequence(buffer, pmap, field);
+			if (ret) {
+				start = buffer_start(buffer);
 				goto fail;
+			}
 			break;
 		default:
 			ret = FAST_MSG_STATE_GARBLED;
@@ -1078,9 +1059,17 @@ struct fast_message *fast_message_decode(struct fast_message *msgs, struct buffe
 		}
 	}
 
+	session->last_tid = msg->tid;
+	session->rx_message = NULL;
+	pmap->is_valid = false;
+	msg->decoded = 0;
+
 	return msg;
 
 fail:
+	if (ret == FAST_MSG_STATE_PARTIAL)
+		buffer_advance(buffer, start - buffer_start(buffer));
+
 	return NULL;
 }
 

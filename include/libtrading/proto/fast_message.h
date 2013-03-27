@@ -15,7 +15,8 @@
 
 #define	FAST_SEQUENCE_ELEMENTS		32
 
-#define	FAST_MSG_STATE_GARBLED	(-1)
+#define	FAST_MSG_STATE_GARBLED		(-1)
+#define	FAST_MSG_STATE_PARTIAL		(-2)
 
 #define	FAST_MSG_FLAGS_RESET			0x00000001
 
@@ -23,6 +24,7 @@
 #define	FAST_FIELD_FLAGS_PMAPREQ		0x00000002
 
 struct buffer;
+struct fast_session;
 
 enum fast_type {
 	FAST_TYPE_INT,
@@ -52,6 +54,7 @@ enum fast_state {
 };
 
 struct fast_pmap {
+	bool		is_valid;
 	unsigned long	nr_bytes;
 	char	bytes[FAST_PMAP_MAX_BYTES];
 };
@@ -154,6 +157,7 @@ static inline int field_has_flags(struct fast_field *field, int flags)
 
 struct fast_message {
 	unsigned long		nr_fields;
+	unsigned long		decoded;
 	struct fast_field	*fields;
 
 	struct fast_pmap	*pmap;
@@ -192,6 +196,8 @@ static inline int fast_msg_has_flags(struct fast_message *msg, int flags)
 }
 
 struct fast_sequence {
+	struct fast_pmap pmap;
+	unsigned long decoded;
 	struct fast_field length;
 	struct fast_message elements[FAST_SEQUENCE_ELEMENTS];
 };
@@ -287,7 +293,7 @@ struct fast_message *fast_message_new(int nr_messages);
 void fast_fields_free(struct fast_message *self);
 void fast_message_free(struct fast_message *self, int nr_messages);
 void fast_message_reset(struct fast_message *msg);
-struct fast_message *fast_message_decode(struct fast_message *msgs, struct buffer *buffer, u64 last_tid);
+struct fast_message *fast_message_decode(struct fast_session *session);
 int fast_message_send(struct fast_message *self, int sockfd, int flags);
 int fast_message_encode(struct fast_message *msg);
 
