@@ -54,9 +54,9 @@ struct fix_session {
 	int				tr_pending;
 };
 
-static inline void fix_session_set_in_msg_seq_num(struct fix_session *session, unsigned long new_msg_seq_num)
+static inline bool fix_msg_expected(struct fix_session *session, struct fix_message *msg)
 {
-	session->in_msg_seq_num = new_msg_seq_num;
+	return msg->msg_seq_num == session->in_msg_seq_num;
 }
 
 struct fix_session *fix_session_new(struct fix_session_cfg *cfg);
@@ -66,7 +66,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags);
 int fix_session_keepalive(struct fix_session *session, struct timespec *now);
 int fix_session_admin(struct fix_session *session, struct fix_message *msg);
 bool fix_session_logon(struct fix_session *session);
-bool fix_session_logout(struct fix_session *session);
+bool fix_session_logout(struct fix_session *session, const char *text);
 bool fix_session_heartbeat(struct fix_session *session, const char *test_req_id);
 bool fix_session_test_request(struct fix_session *session);
 bool fix_session_resend_request(struct fix_session *session, unsigned long bgn, unsigned long end);

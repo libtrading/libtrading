@@ -107,7 +107,7 @@ next:
 	if (tosend_elem)
 		goto exit;
 
-	if (fix_session_logout(session))
+	if (fix_session_logout(session, NULL))
 		fprintf(stderr, "Client Logout OK\n");
 	else {
 		fprintf(stderr, "Client Logout FAILED\n");

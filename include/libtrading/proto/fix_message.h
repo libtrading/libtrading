@@ -74,6 +74,7 @@ enum fix_tag {
 	Side			= 54,
 	Symbol			= 55,
 	TargetCompID		= 56,
+	Text			= 58,
 	TransactTime		= 60,
 	EncryptMethod		= 98,
 	HeartBtInt		= 108,

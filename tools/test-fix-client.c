@@ -153,6 +153,7 @@ static int fix_session_initiate(struct fix_session_cfg *cfg)
 	} else {
 		printf("Logon FAILED\n");
 		retval = 1;
+		goto exit;
 	}
 
 	if (!test)
@@ -160,7 +161,7 @@ static int fix_session_initiate(struct fix_session_cfg *cfg)
 	else
 		fix_session_test(session);
 
-	if (fix_session_logout(session)) {
+	if (fix_session_logout(session, NULL)) {
 		printf("Logout OK\n");
 		retval = 0;
 	} else {
@@ -170,6 +171,7 @@ static int fix_session_initiate(struct fix_session_cfg *cfg)
 
 	fix_session_free(session);
 
+exit:
 	return retval;
 }
 

@@ -153,6 +153,20 @@ int fix_session_keepalive(struct fix_session *session, struct timespec *now)
 	return 0;
 }
 
+static int fix_do_unexpected(struct fix_session *session, struct fix_message *msg)
+{
+	if (msg->msg_seq_num > session->in_msg_seq_num) {
+		fix_session_resend_request(session,
+			session->in_msg_seq_num, msg->msg_seq_num);
+		session->in_msg_seq_num--;
+	} else if (msg->msg_seq_num < session->in_msg_seq_num) {
+		if (!fix_get_field(msg, PossDupFlag))
+			return 1;
+	}
+
+	return 0;
+}
+
 /*
  * Return values:
  * - 0 means that the function was able to handle a message, a user should
@@ -164,16 +178,11 @@ int fix_session_admin(struct fix_session *session, struct fix_message *msg)
 {
 	struct fix_field *field;
 
-	if (msg->msg_seq_num > session->in_msg_seq_num) {
-		fix_session_resend_request(session, session->in_msg_seq_num, msg->msg_seq_num);
-		fix_session_set_in_msg_seq_num(session, session->in_msg_seq_num - 1);
+	if (!fix_msg_expected(session, msg)) {
+		if (fix_do_unexpected(session, msg))
+			goto fail;
 
 		goto done;
-	} else if (msg->msg_seq_num < session->in_msg_seq_num) {
-		if (fix_get_field(msg, PossDupFlag))
-			goto done;
-		else
-			goto fail;
 	}
 
 	switch (msg->type) {
@@ -253,20 +262,40 @@ retry:
 	if (!response)
 		goto retry;
 
+	if (!fix_msg_expected(session, response)) {
+		if (fix_do_unexpected(session, response))
+			return false;
+
+		goto retry;
+	}
+
 	ret = fix_message_type_is(response, FIX_MSG_TYPE_LOGON);
+
+	if (!ret)
+		fix_session_logout(session, "First message not a logon");
 
 	return ret;
 }
 
-bool fix_session_logout(struct fix_session *session)
+bool fix_session_logout(struct fix_session *session, const char *text)
 {
-	struct fix_message *response;
+	struct fix_field fields[] = {
+		FIX_STRING_FIELD(Text, text),
+	};
+	long nr_fields = ARRAY_SIZE(fields);
 	struct fix_message logout_msg;
+	struct fix_message *response;
 	bool ret;
+
+	if (!text)
+		nr_fields--;
 
 	logout_msg	= (struct fix_message) {
 		.type		= FIX_MSG_TYPE_LOGOUT,
+		.nr_fields	= nr_fields,
+		.fields		= fields,
 	};
+
 	fix_session_send(session, &logout_msg, 0);
 
 retry:
