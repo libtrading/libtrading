@@ -384,6 +384,29 @@ bool fix_session_resend_request(struct fix_session *session,
 	return true;
 }
 
+bool fix_session_reject(struct fix_session *session, unsigned long refseqnum, char *text)
+{
+	struct fix_message reject_msg;
+	struct fix_field fields[] = {
+		FIX_INT_FIELD(RefSeqNum, refseqnum),
+		FIX_STRING_FIELD(Text, text),
+	};
+	long nr_fields = ARRAY_SIZE(fields);
+
+	if (!text)
+		nr_fields--;
+
+	reject_msg		= (struct fix_message) {
+		.type		= FIX_MSG_TYPE_REJECT,
+		.nr_fields	= nr_fields,
+		.fields		= fields,
+	};
+
+	fix_session_send(session, &reject_msg, 0);
+
+	return true;
+}
+
 bool fix_session_sequence_reset(struct fix_session *session, unsigned long msg_seq_num,
 							unsigned long new_seq_num, bool gap_fill)
 {

@@ -69,6 +69,7 @@ enum fix_tag {
 	OrdType			= 40,
 	PossDupFlag		= 43,
 	Price			= 44,
+	RefSeqNum		= 45,
 	SenderCompID		= 49,
 	SendingTime		= 52,
 	Side			= 54,

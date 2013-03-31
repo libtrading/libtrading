@@ -152,6 +152,7 @@ static enum fix_type fix_tag_type(int tag)
 	switch (tag) {
 	case CheckSum:		return FIX_TYPE_CHECKSUM;
 	case BeginSeqNo:	return FIX_TYPE_INT;
+	case RefSeqNum:		return FIX_TYPE_INT;
 	case EndSeqNo:		return FIX_TYPE_INT;
 	case NewSeqNo:		return FIX_TYPE_INT;
 	case GapFillFlag:	return FIX_TYPE_STRING;
@@ -173,6 +174,7 @@ static enum fix_type fix_tag_type(int tag)
 	case ExecID:		return FIX_TYPE_STRING;
 	case Symbol:		return FIX_TYPE_STRING;
 	case Side:		return FIX_TYPE_STRING;
+	case Text:		return FIX_TYPE_STRING;
 
 	default:		return FIX_TYPE_STRING;	/* unrecognized tag */
 	}
