@@ -160,8 +160,6 @@ struct fast_message {
 	unsigned long		decoded;
 	struct fast_field	*fields;
 
-	struct fast_pmap	*pmap;
-
 	int			flags;
 	unsigned long		tid;
 

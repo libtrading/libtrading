@@ -1752,8 +1752,6 @@ int fast_message_encode(struct fast_message *msg)
 	memset(pmap.bytes, 0, pmap.nr_bytes);
 	pmap_set(&pmap, 0);
 
-	msg->pmap = &pmap;
-
 	if (transfer_uint(msg->msg_buf, msg->tid))
 		goto fail;
 
@@ -1762,19 +1760,19 @@ int fast_message_encode(struct fast_message *msg)
 
 		switch (field->type) {
 		case FAST_TYPE_INT:
-			if (fast_encode_int(msg->msg_buf, msg->pmap, field))
+			if (fast_encode_int(msg->msg_buf, &pmap, field))
 				goto fail;
 			break;
 		case FAST_TYPE_UINT:
-			if (fast_encode_uint(msg->msg_buf, msg->pmap, field))
+			if (fast_encode_uint(msg->msg_buf, &pmap, field))
 				goto fail;
 			break;
 		case FAST_TYPE_STRING:
-			if (fast_encode_string(msg->msg_buf, msg->pmap, field))
+			if (fast_encode_string(msg->msg_buf, &pmap, field))
 				goto fail;
 			break;
 		case FAST_TYPE_DECIMAL:
-			if (fast_encode_decimal(msg->msg_buf, msg->pmap, field))
+			if (fast_encode_decimal(msg->msg_buf, &pmap, field))
 				goto fail;
 			break;
 		case FAST_TYPE_SEQUENCE:
