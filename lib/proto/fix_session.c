@@ -155,13 +155,24 @@ int fix_session_keepalive(struct fix_session *session, struct timespec *now)
 
 static int fix_do_unexpected(struct fix_session *session, struct fix_message *msg)
 {
+	char text[128];
+
 	if (msg->msg_seq_num > session->in_msg_seq_num) {
 		fix_session_resend_request(session,
 			session->in_msg_seq_num, msg->msg_seq_num);
+
 		session->in_msg_seq_num--;
 	} else if (msg->msg_seq_num < session->in_msg_seq_num) {
-		if (!fix_get_field(msg, PossDupFlag))
+		snprintf(text, sizeof(text),
+			"MsgSeqNum too low, expecting %lu received %lu",
+				session->in_msg_seq_num, msg->msg_seq_num);
+
+		session->in_msg_seq_num--;
+
+		if (!fix_get_field(msg, PossDupFlag)) {
+			fix_session_logout(session, text);
 			return 1;
+		}
 	}
 
 	return 0;
@@ -179,8 +190,7 @@ int fix_session_admin(struct fix_session *session, struct fix_message *msg)
 	struct fix_field *field;
 
 	if (!fix_msg_expected(session, msg)) {
-		if (fix_do_unexpected(session, msg))
-			goto fail;
+		fix_do_unexpected(session, msg);
 
 		goto done;
 	}
@@ -224,6 +234,75 @@ int fix_session_admin(struct fix_session *session, struct fix_message *msg)
 		end_seq_num = field->int_value;
 
 		fix_session_sequence_reset(session, begin_seq_num, end_seq_num + 1, true);
+
+		goto done;
+	}
+	case FIX_MSG_TYPE_SEQUENCE_RESET: {
+		unsigned long exp_seq_num;
+		unsigned long new_seq_num;
+		unsigned long msg_seq_num;
+		char text[128];
+
+		field = fix_get_field(msg, GapFillFlag);
+
+		if (field && !strncmp(field->string_value, "Y", 1)) {
+			field = fix_get_field(msg, NewSeqNo);
+
+			if (!field)
+				goto done;
+
+			exp_seq_num = session->in_msg_seq_num;
+			new_seq_num = field->int_value;
+			msg_seq_num = msg->msg_seq_num;
+
+			if (msg_seq_num > exp_seq_num) {
+				fix_session_resend_request(session,
+						exp_seq_num, msg_seq_num);
+
+				session->in_msg_seq_num--;
+
+				goto done;
+			} else if (msg_seq_num < exp_seq_num) {
+				snprintf(text, sizeof(text),
+					"MsgSeqNum too low, expecting %lu received %lu",
+								exp_seq_num, msg_seq_num);
+
+				session->in_msg_seq_num--;
+
+				if (!fix_get_field(msg, PossDupFlag))
+					fix_session_logout(session, text);
+
+				goto done;
+			}
+
+			if (new_seq_num > msg_seq_num) {
+				session->in_msg_seq_num = new_seq_num - 1;
+			} else {
+				snprintf(text, sizeof(text),
+					"Attempt to lower sequence number, invalid value NewSeqNum = %lu", new_seq_num);
+
+				fix_session_reject(session, msg_seq_num, text);
+			}
+		} else {
+			field = fix_get_field(msg, NewSeqNo);
+
+			if (!field)
+				goto done;
+
+			new_seq_num = field->int_value;
+			msg_seq_num = msg->msg_seq_num;
+
+			if (new_seq_num > msg_seq_num) {
+				session->in_msg_seq_num = new_seq_num - 1;
+			} else if (new_seq_num < msg_seq_num) {
+				snprintf(text, sizeof(text),
+					"Value is incorrect (too low) %lu", new_seq_num);
+
+				session->in_msg_seq_num--;
+
+				fix_session_reject(session, msg_seq_num, text);
+			}
+		}
 
 		goto done;
 	}

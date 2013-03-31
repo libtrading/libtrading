@@ -57,7 +57,7 @@ struct fix_session {
 
 static inline bool fix_msg_expected(struct fix_session *session, struct fix_message *msg)
 {
-	return msg->msg_seq_num == session->in_msg_seq_num;
+	return msg->msg_seq_num == session->in_msg_seq_num || fix_message_type_is(msg, FIX_MSG_TYPE_SEQUENCE_RESET);
 }
 
 struct fix_session *fix_session_new(struct fix_session_cfg *cfg);
