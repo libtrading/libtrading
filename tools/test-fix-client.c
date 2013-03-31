@@ -103,7 +103,7 @@ static void fix_session_normal(struct fix_session *session)
 
 	clock_gettime(CLOCK_MONOTONIC, &prev);
 
-	while (!stop) {
+	while (!stop && session->active) {
 		clock_gettime(CLOCK_MONOTONIC, &cur);
 		diff = cur.tv_sec - prev.tv_sec;
 
@@ -161,13 +161,16 @@ static int fix_session_initiate(struct fix_session_cfg *cfg)
 	else
 		fix_session_test(session);
 
-	if (fix_session_logout(session, NULL)) {
+	if (session->active) {
+		if (fix_session_logout(session, NULL)) {
+			printf("Logout OK\n");
+			retval = 0;
+		} else {
+			printf("Logout FAILED\n");
+			retval = 1;
+		}
+	} else
 		printf("Logout OK\n");
-		retval = 0;
-	} else {
-		printf("Logout FAILED\n");
-		retval = 1;
-	}
 
 	fix_session_free(session);
 
