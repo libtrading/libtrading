@@ -256,6 +256,7 @@ bool fix_session_logon(struct fix_session *session)
 	};
 
 	fix_session_send(session, &logon_msg, 0);
+	session->active = true;
 
 retry:
 	response = fix_session_recv(session, 0);
@@ -285,6 +286,7 @@ bool fix_session_logout(struct fix_session *session, const char *text)
 	long nr_fields = ARRAY_SIZE(fields);
 	struct fix_message logout_msg;
 	struct fix_message *response;
+	struct timespec start, end;
 	bool ret;
 
 	if (!text)
@@ -298,8 +300,14 @@ bool fix_session_logout(struct fix_session *session, const char *text)
 
 	fix_session_send(session, &logout_msg, 0);
 
+	clock_gettime(CLOCK_MONOTONIC, &start);
+	session->active = false;
+
 retry:
-	/* TODO: Logout should be forced after grace period elapsed */
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	/* Grace period 2 seconds */
+	if (end.tv_sec - start.tv_sec > 2)
+		return true;
 
 	response = fix_session_recv(session, 0);
 	if (!response)

@@ -32,6 +32,7 @@ struct fix_session_cfg {
 
 struct fix_session {
 	int				sockfd;
+	bool				active;
 	const char			*begin_string;
 	const char			*sender_comp_id;
 	const char			*target_comp_id;
