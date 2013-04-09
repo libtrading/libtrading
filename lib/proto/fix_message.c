@@ -150,33 +150,40 @@ fail:
 static enum fix_type fix_tag_type(int tag)
 {
 	switch (tag) {
-	case CheckSum:		return FIX_TYPE_CHECKSUM;
-	case BeginSeqNo:	return FIX_TYPE_INT;
-	case RefSeqNum:		return FIX_TYPE_INT;
-	case EndSeqNo:		return FIX_TYPE_INT;
-	case NewSeqNo:		return FIX_TYPE_INT;
-	case GapFillFlag:	return FIX_TYPE_STRING;
-	case PossDupFlag:	return FIX_TYPE_STRING;
-	case TestReqID:		return FIX_TYPE_STRING;
-	case MsgSeqNum:		return FIX_TYPE_MSGSEQNUM;
-	case LeavesQty:		return FIX_TYPE_FLOAT;
-	case OrderQty:		return FIX_TYPE_FLOAT;
-	case CumQty:		return FIX_TYPE_FLOAT;
-	case AvgPx:		return FIX_TYPE_FLOAT;
-	case Price:		return FIX_TYPE_FLOAT;
-	case TransactTime:	return FIX_TYPE_STRING;
-	case OrdStatus:		return FIX_TYPE_STRING;
-	case ExecType:		return FIX_TYPE_STRING;
-	case Account:		return FIX_TYPE_STRING;
-	case ClOrdID:		return FIX_TYPE_STRING;
-	case OrderID:		return FIX_TYPE_STRING;
-	case OrdType:		return FIX_TYPE_STRING;
-	case ExecID:		return FIX_TYPE_STRING;
-	case Symbol:		return FIX_TYPE_STRING;
-	case Side:		return FIX_TYPE_STRING;
-	case Text:		return FIX_TYPE_STRING;
+	case CheckSum:			return FIX_TYPE_CHECKSUM;
+	case LastMsgSeqNumProcessed:	return FIX_TYPE_INT;
+	case MDPriceLevel:		return FIX_TYPE_INT;
+	case BeginSeqNo:		return FIX_TYPE_INT;
+	case RefSeqNum:			return FIX_TYPE_INT;
+	case EndSeqNo:			return FIX_TYPE_INT;
+	case NewSeqNo:			return FIX_TYPE_INT;
+	case GapFillFlag:		return FIX_TYPE_STRING;
+	case PossDupFlag:		return FIX_TYPE_STRING;
+	case SecurityID:		return FIX_TYPE_STRING;
+	case TestReqID:			return FIX_TYPE_STRING;
+	case MsgSeqNum:			return FIX_TYPE_MSGSEQNUM;
+	case MDEntrySize:		return FIX_TYPE_FLOAT;
+	case LeavesQty:			return FIX_TYPE_FLOAT;
+	case MDEntryPx:			return FIX_TYPE_FLOAT;
+	case OrderQty:			return FIX_TYPE_FLOAT;
+	case CumQty:			return FIX_TYPE_FLOAT;
+	case AvgPx:			return FIX_TYPE_FLOAT;
+	case Price:			return FIX_TYPE_FLOAT;
+	case MDUpdateAction:		return FIX_TYPE_STRING;
+	case TransactTime:		return FIX_TYPE_STRING;
+	case MDEntryType:		return FIX_TYPE_STRING;
+	case OrdStatus:			return FIX_TYPE_STRING;
+	case ExecType:			return FIX_TYPE_STRING;
+	case Account:			return FIX_TYPE_STRING;
+	case ClOrdID:			return FIX_TYPE_STRING;
+	case OrderID:			return FIX_TYPE_STRING;
+	case OrdType:			return FIX_TYPE_STRING;
+	case ExecID:			return FIX_TYPE_STRING;
+	case Symbol:			return FIX_TYPE_STRING;
+	case Side:			return FIX_TYPE_STRING;
+	case Text:			return FIX_TYPE_STRING;
 
-	default:		return FIX_TYPE_STRING;	/* unrecognized tag */
+	default:			return FIX_TYPE_STRING;	/* unrecognized tag */
 	}
 }
 

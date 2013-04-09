@@ -70,6 +70,7 @@ enum fix_tag {
 	PossDupFlag		= 43,
 	Price			= 44,
 	RefSeqNum		= 45,
+	SecurityID		= 48,
 	SenderCompID		= 49,
 	SendingTime		= 52,
 	Side			= 54,
@@ -84,6 +85,12 @@ enum fix_tag {
 	ResetSeqNumFlag		= 141,
 	ExecType		= 150,
 	LeavesQty		= 151,
+	MDEntryType		= 269,
+	MDEntryPx		= 270,
+	MDEntrySize		= 271,
+	MDUpdateAction		= 279,
+	LastMsgSeqNumProcessed	= 369,
+	MDPriceLevel		= 1023,
 };
 
 struct fix_field {
