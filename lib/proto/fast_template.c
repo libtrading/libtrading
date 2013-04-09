@@ -45,6 +45,18 @@ static int fast_misc_init(xmlNodePtr node, struct fast_field *field)
 
 	xmlFree(prop);
 
+	prop = xmlGetProp(node, (const xmlChar *)"name");
+	if (prop != NULL)
+		strncpy(field->name, (const char *)prop, sizeof(field->name));
+
+	xmlFree(prop);
+
+	prop = xmlGetProp(node, (const xmlChar *)"id");
+	if (prop != NULL)
+		field->id = atoi((const char *)prop);
+
+	xmlFree(prop);
+
 	return 0;
 }
 

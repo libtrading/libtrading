@@ -1825,3 +1825,15 @@ exit:
 
 	return ret;
 }
+
+struct fast_field *fast_get_field(struct fast_message *msg, int id)
+{
+	unsigned long i;
+
+	for (i = 0; i < msg->nr_fields; i++) {
+		if (msg->fields[i].id == id)
+			return &msg->fields[i];
+	}
+
+	return NULL;
+}
