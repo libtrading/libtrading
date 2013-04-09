@@ -290,6 +290,7 @@ static inline int transfer_size_uint(u64 data)
 		return 9;
 }
 
+int fast_message_copy(struct fast_message *dst, struct fast_message *src);
 struct fast_message *fast_message_new(int nr_messages);
 void fast_fields_free(struct fast_message *self);
 void fast_message_free(struct fast_message *self, int nr_messages);

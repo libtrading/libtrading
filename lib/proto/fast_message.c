@@ -1123,6 +1123,71 @@ void fast_message_free(struct fast_message *self, int nr_messages)
 	return;
 }
 
+int fast_message_copy(struct fast_message *dst, struct fast_message *src)
+{
+	struct fast_sequence *dst_seq;
+	struct fast_sequence *src_seq;
+	struct fast_field *dst_field;
+	struct fast_field *src_field;
+	int i, j;
+
+	if (!dst)
+		goto fail;
+
+	memcpy(dst, src, sizeof(struct fast_message));
+
+	dst->fields = calloc(src->nr_fields, sizeof(struct fast_field));
+	if (!dst->fields)
+		goto fail;
+
+	for (i = 0; i < src->nr_fields; i++) {
+		dst_field = dst->fields + i;
+		src_field = src->fields + i;
+
+		switch (src_field->type) {
+		case FAST_TYPE_INT:
+		case FAST_TYPE_UINT:
+		case FAST_TYPE_STRING:
+		case FAST_TYPE_DECIMAL:
+			memcpy(dst_field, src_field, sizeof(struct fast_field));
+			break;
+		case FAST_TYPE_SEQUENCE:
+			memcpy(dst_field, src_field, sizeof(struct fast_field));
+			src_seq = src_field->ptr_value;
+
+			dst_field->ptr_value = calloc(1, sizeof(struct fast_sequence));
+			if (!dst_field->ptr_value)
+				goto fail;
+
+			dst_seq = dst_field->ptr_value;
+
+			memcpy(dst_seq, src_seq, sizeof(struct fast_sequence));
+
+			for (j = 0; j < FAST_SEQUENCE_ELEMENTS; j++) {
+				if (fast_message_copy(dst_seq->elements + j,
+								src_seq->elements + j)) {
+					while (j > 0)
+						free(dst_seq->elements[--j].fields);
+
+					free(dst_field->ptr_value);
+					goto fail;
+				}
+			}
+
+			break;
+		default:
+			goto fail;
+		}
+	}
+
+	return 0;
+
+fail:
+	free(dst->fields);
+
+	return 1;
+}
+
 void fast_message_reset(struct fast_message *msg)
 {
 	struct fast_sequence *seq;
