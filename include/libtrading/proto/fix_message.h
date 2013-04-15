@@ -21,6 +21,9 @@ enum fix_msg_type {
 	FIX_MSG_TYPE_EXECUTION_REPORT	= 6,
 	FIX_MSG_TYPE_LOGON		= 7,
 	FIX_MSG_TYPE_NEW_ORDER_SINGLE	= 8,
+	FIX_MSG_TYPE_SNAPSHOT_REFRESH	= 9,
+	FIX_MSG_TYPE_INCREMENT_REFRESH	= 10,
+	FIX_MSG_TYPE_SESSION_STATUS	= 11,
 
 	FIX_MSG_TYPE_MAX,		/* non-API */
 
@@ -78,6 +81,7 @@ enum fix_tag {
 	TargetCompID		= 56,
 	Text			= 58,
 	TransactTime		= 60,
+	RptSeq			= 83,
 	EncryptMethod		= 98,
 	HeartBtInt		= 108,
 	TestReqID		= 112,

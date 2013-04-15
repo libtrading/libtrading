@@ -25,6 +25,9 @@ static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
 	[FIX_MSG_TYPE_EXECUTION_REPORT]		= "8",
 	[FIX_MSG_TYPE_LOGON]			= "A",
 	[FIX_MSG_TYPE_NEW_ORDER_SINGLE]		= "D",
+	[FIX_MSG_TYPE_SNAPSHOT_REFRESH]		= "W",
+	[FIX_MSG_TYPE_INCREMENT_REFRESH]	= "X",
+	[FIX_MSG_TYPE_SESSION_STATUS]		= "h",
 };
 
 enum fix_msg_type fix_msg_type_parse(const char *s)
@@ -44,6 +47,9 @@ enum fix_msg_type fix_msg_type_parse(const char *s)
 		case '8': return FIX_MSG_TYPE_EXECUTION_REPORT;
 		case 'A': return FIX_MSG_TYPE_LOGON;
 		case 'D': return FIX_MSG_TYPE_NEW_ORDER_SINGLE;
+		case 'W': return FIX_MSG_TYPE_SNAPSHOT_REFRESH;
+		case 'X': return FIX_MSG_TYPE_INCREMENT_REFRESH;
+		case 'h': return FIX_MSG_TYPE_SESSION_STATUS;
 		default : return FIX_MSG_TYPE_UNKNOWN;
 		}
 	}
@@ -157,6 +163,7 @@ static enum fix_type fix_tag_type(int tag)
 	case RefSeqNum:			return FIX_TYPE_INT;
 	case EndSeqNo:			return FIX_TYPE_INT;
 	case NewSeqNo:			return FIX_TYPE_INT;
+	case RptSeq:			return FIX_TYPE_INT;
 	case GapFillFlag:		return FIX_TYPE_STRING;
 	case PossDupFlag:		return FIX_TYPE_STRING;
 	case SecurityID:		return FIX_TYPE_STRING;
