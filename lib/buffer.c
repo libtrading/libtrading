@@ -73,13 +73,13 @@ bool buffer_printf(struct buffer *buf, const char *format, ...)
 	return true;
 }
 
-char *buffer_find(struct buffer *buf, char c)
+char *buffer_find(struct buffer *buf, uint8_t c)
 {
 	while (true) {
 		if (!buffer_size(buf))
 			return NULL;
 
-		if (buffer_first_char(buf) == c)
+		if (buffer_peek_8(buf) == c)
 			break;
 
 		buffer_advance(buf, 1);

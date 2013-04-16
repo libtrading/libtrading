@@ -41,7 +41,7 @@ static char *mbt_quote_decode_field(struct buffer *buf)
 	for (;;) {
 		char ch;
 
-		ch = buffer_first_char(buf);
+		ch = buffer_peek_8(buf);
 		if (ch == MBT_QUOTE_FIELD_DELIM || ch == MBT_QUOTE_MESSAGE_END)
 			break;
 
