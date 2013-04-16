@@ -30,31 +30,28 @@ static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
 	[FIX_MSG_TYPE_SESSION_STATUS]		= "h",
 };
 
-enum fix_msg_type fix_msg_type_parse(const char *s)
+enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 {
-	switch (s[1]) {
-	case 0x01: {
-		/*
-		 * Single-character message type:
-		 */
-		switch (s[0]) {
-		case '0': return FIX_MSG_TYPE_HEARTBEAT;
-		case '1': return FIX_MSG_TYPE_TEST_REQUEST;
-		case '2': return FIX_MSG_TYPE_RESEND_REQUEST;
-		case '3': return FIX_MSG_TYPE_REJECT;
-		case '4': return FIX_MSG_TYPE_SEQUENCE_RESET;
-		case '5': return FIX_MSG_TYPE_LOGOUT;
-		case '8': return FIX_MSG_TYPE_EXECUTION_REPORT;
-		case 'A': return FIX_MSG_TYPE_LOGON;
-		case 'D': return FIX_MSG_TYPE_NEW_ORDER_SINGLE;
-		case 'W': return FIX_MSG_TYPE_SNAPSHOT_REFRESH;
-		case 'X': return FIX_MSG_TYPE_INCREMENT_REFRESH;
-		case 'h': return FIX_MSG_TYPE_SESSION_STATUS;
-		default : return FIX_MSG_TYPE_UNKNOWN;
-		}
-	}
-	default:
+	if (s[1] != delim)
 		return FIX_MSG_TYPE_UNKNOWN;
+
+	/*
+	 * Single-character message type:
+	 */
+	switch (s[0]) {
+	case '0': return FIX_MSG_TYPE_HEARTBEAT;
+	case '1': return FIX_MSG_TYPE_TEST_REQUEST;
+	case '2': return FIX_MSG_TYPE_RESEND_REQUEST;
+	case '3': return FIX_MSG_TYPE_REJECT;
+	case '4': return FIX_MSG_TYPE_SEQUENCE_RESET;
+	case '5': return FIX_MSG_TYPE_LOGOUT;
+	case '8': return FIX_MSG_TYPE_EXECUTION_REPORT;
+	case 'A': return FIX_MSG_TYPE_LOGON;
+	case 'D': return FIX_MSG_TYPE_NEW_ORDER_SINGLE;
+	case 'W': return FIX_MSG_TYPE_SNAPSHOT_REFRESH;
+	case 'X': return FIX_MSG_TYPE_INCREMENT_REFRESH;
+	case 'h': return FIX_MSG_TYPE_SESSION_STATUS;
+	default : return FIX_MSG_TYPE_UNKNOWN;
 	}
 }
 
@@ -298,7 +295,7 @@ static int parse_msg_type(struct fix_message *self)
 	if (ret)
 		goto exit;
 
-	self->type = fix_msg_type_parse(self->msg_type);
+	self->type = fix_msg_type_parse(self->msg_type, 0x01);
 
 	// if third field is not MsgType -> garbled
 

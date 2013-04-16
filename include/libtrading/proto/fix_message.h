@@ -175,7 +175,7 @@ const char *fix_get_string(struct fix_field *field, char *buffer, unsigned long 
 void fix_message_validate(struct fix_message *self);
 int fix_message_send(struct fix_message *self, int sockfd, int flags);
 
-enum fix_msg_type fix_msg_type_parse(const char *s);
+enum fix_msg_type fix_msg_type_parse(const char *s, const char delim);
 bool fix_message_type_is(struct fix_message *self, enum fix_msg_type type);
 
 char *fix_timestamp_now(char *buf, size_t len);
