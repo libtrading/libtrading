@@ -19,8 +19,7 @@ static int parse_uint(struct buffer *buffer, u64 *value)
 		if (!buffer_size(buffer))
 			goto partial;
 
-		c = buffer_peek_8(buffer);
-		buffer_advance(buffer, 1);
+		c = buffer_get_8(buffer);
 
 		if (c & 0x80) {
 			result = (result << 7) | (c & 0x7F);
@@ -58,8 +57,7 @@ static int parse_int(struct buffer *buffer, i64 *value)
 		if (!buffer_size(buffer))
 			goto partial;
 
-		c = buffer_peek_8(buffer);
-		buffer_advance(buffer, 1);
+		c = buffer_get_8(buffer);
 
 		if (c & 0x80) {
 			result = (result << 7) | (c & 0x7F);
@@ -95,8 +93,7 @@ static int parse_string(struct buffer *buffer, char *value)
 		if (!buffer_size(buffer))
 			goto partial;
 
-		c = buffer_peek_8(buffer);
-		buffer_advance(buffer, 1);
+		c = buffer_get_8(buffer);
 
 		if (c & 0x80) {
 			value[len++] = c & 0x7F;
@@ -122,8 +119,7 @@ static int parse_bytes(struct buffer *buffer, char *value, int len)
 		goto partial;
 
 	for (i = 0; i < len; i++) {
-		c = buffer_peek_8(buffer);
-		buffer_advance(buffer, 1);
+		c = buffer_get_8(buffer);
 
 		value[i] = c;
 	}
@@ -144,8 +140,7 @@ static int parse_pmap(struct buffer *buffer, struct fast_pmap *pmap)
 		if (!buffer_size(buffer))
 			goto partial;
 
-		c = buffer_peek_8(buffer);
-		buffer_advance(buffer, 1);
+		c = buffer_get_8(buffer);
 
 		pmap->bytes[pmap->nr_bytes++] = c;
 
