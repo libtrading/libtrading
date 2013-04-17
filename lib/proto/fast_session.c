@@ -74,7 +74,7 @@ struct fast_message *fast_session_recv(struct fast_session *self, int flags)
 	*/
 	buffer_nread(buffer, self->sockfd, FAST_MESSAGE_MAX_SIZE);
 
-	return NULL;
+	return fast_message_decode(self);
 }
 
 int fast_session_send(struct fast_session *self, struct fast_message *msg, int flags)

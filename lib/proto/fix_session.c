@@ -127,7 +127,12 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 		buffer_nread(buffer, self->sockfd, size);
 	}
 
-	return NULL;
+	if (!fix_message_parse(msg, buffer)) {
+		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
+		self->in_msg_seq_num++;
+		return msg;
+	} else
+		return NULL;
 }
 
 int fix_session_keepalive(struct fix_session *session, struct timespec *now)
