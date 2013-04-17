@@ -32,16 +32,16 @@ void soupbin3_session_delete(struct soupbin3_session *session)
 	free(session);
 }
 
-static int soupbin3_packet_decode(struct buffer *buf, uint16_t len, struct soupbin3_packet *packet)
+static int soupbin3_packet_decode(struct buffer *buf, u16 len, struct soupbin3_packet *packet)
 {
 	size_t size;
 	void *start;
 
 	start = buffer_start(buf);
 
-	size = sizeof(uint16_t) + len;
+	size = sizeof(u16) + len;
 
-	memcpy(packet, start - sizeof(uint16_t), size);
+	memcpy(packet, start - sizeof(u16), size);
 
 	buffer_advance(buf, len);
 
@@ -50,7 +50,7 @@ static int soupbin3_packet_decode(struct buffer *buf, uint16_t len, struct soupb
 
 int soupbin3_session_recv(struct soupbin3_session *session, struct soupbin3_packet *packet)
 {
-	uint16_t len;
+	u16 len;
 	ssize_t nr;
 
 	if (buffer_size(session->rx_buffer) > 0)

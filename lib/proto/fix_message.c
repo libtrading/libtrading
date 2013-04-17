@@ -232,7 +232,7 @@ retry:
 
 static bool verify_checksum(struct fix_message *self, struct buffer *buffer)
 {
-	uint8_t cksum, actual;
+	u8 cksum, actual;
 
 	cksum	= strtol(self->check_sum, NULL, 10);
 

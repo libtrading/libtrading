@@ -29,7 +29,7 @@ void buffer_delete(struct buffer *buf)
 	free(buf);
 }
 
-uint8_t buffer_sum_range(struct buffer *buf, const char *start, const char *end)
+u8 buffer_sum_range(struct buffer *buf, const char *start, const char *end)
 {
 	unsigned long sum = 0;
 	const char *ptr;
@@ -40,7 +40,7 @@ uint8_t buffer_sum_range(struct buffer *buf, const char *start, const char *end)
 	return sum;
 }
 
-uint8_t buffer_sum(struct buffer *buf)
+u8 buffer_sum(struct buffer *buf)
 {
 	unsigned long sum = 0;
 	int i;
@@ -73,7 +73,7 @@ bool buffer_printf(struct buffer *buf, const char *format, ...)
 	return true;
 }
 
-char *buffer_find(struct buffer *buf, uint8_t c)
+char *buffer_find(struct buffer *buf, u8 c)
 {
 	while (true) {
 		if (!buffer_size(buf))

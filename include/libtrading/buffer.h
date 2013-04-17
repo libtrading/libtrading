@@ -1,6 +1,8 @@
 #ifndef LIBTRADING_BUFFER_H
 #define LIBTRADING_BUFFER_H
 
+#include <libtrading/types.h>
+
 #include <sys/uio.h>	/* for struct iovec */
 #include <stdbool.h>
 #include <stdarg.h>
@@ -17,9 +19,9 @@ struct buffer {
 struct buffer *buffer_new(unsigned long capacity);
 void buffer_delete(struct buffer *self);
 bool buffer_printf(struct buffer *self, const char *format, ...);
-char *buffer_find(struct buffer *self, uint8_t c);
-uint8_t buffer_sum_range(struct buffer *buf, const char *start, const char *end);
-uint8_t buffer_sum(struct buffer *self);
+char *buffer_find(struct buffer *self, u8 c);
+u8 buffer_sum_range(struct buffer *buf, const char *start, const char *end);
+u8 buffer_sum(struct buffer *self);
 
 ssize_t buffer_xread(struct buffer *self, int fd);
 ssize_t buffer_nxread(struct buffer *buf, int fd, size_t size);
@@ -28,17 +30,17 @@ ssize_t buffer_read(struct buffer *self, int fd);
 ssize_t buffer_nread(struct buffer *buf, int fd, size_t size);
 ssize_t buffer_write(struct buffer *self, int fd);
 
-static inline uint8_t buffer_peek_8(struct buffer *self)
+static inline u8 buffer_peek_8(struct buffer *self)
 {
 	return self->data[self->start];
 }
 
-static inline uint8_t buffer_peek_le16(struct buffer *self)
+static inline u8 buffer_peek_le16(struct buffer *self)
 {
 	return (self->data[self->start + 1] << 8) | (self->data[self->start]);
 }
 
-static inline uint8_t buffer_get_8(struct buffer *self)
+static inline u8 buffer_get_8(struct buffer *self)
 {
 	return self->data[self->start++];
 }
@@ -47,12 +49,12 @@ static inline char buffer_get_char(struct buffer *self)
 {
 	return buffer_get_8(self);
 }
-static inline uint16_t buffer_get_le16(struct buffer *self)
+static inline u16 buffer_get_le16(struct buffer *self)
 {
 	return buffer_get_8(self) | buffer_get_8(self) << 8;
 }
 
-static inline uint32_t buffer_get_le32(struct buffer *self)
+static inline u32 buffer_get_le32(struct buffer *self)
 {
 	return buffer_get_8(self)
 		| buffer_get_8(self) << 8
@@ -72,7 +74,7 @@ static inline uint64_t buffer_get_le64(struct buffer *self)
 		| (uint64_t) buffer_get_8(self) << 56;
 }
 
-static inline uint16_t buffer_get_be16(struct buffer *self)
+static inline u16 buffer_get_be16(struct buffer *self)
 {
 	return buffer_get_8(self) << 8 | buffer_get_8(self);
 }

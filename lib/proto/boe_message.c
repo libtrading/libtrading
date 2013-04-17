@@ -4,12 +4,12 @@
 
 #include <string.h>
 
-#define BOE_MAGIC_LEN		sizeof(uint16_t)
-#define BOE_MSG_LENGTH_LEN	sizeof(uint16_t)
+#define BOE_MAGIC_LEN		sizeof(u16)
+#define BOE_MSG_LENGTH_LEN	sizeof(u16)
 
 int boe_message_decode(struct buffer *buf, struct boe_message *msg, size_t size)
 {
-	uint16_t magic, len;
+	u16 magic, len;
 	void *start;
 	size_t count;
 
