@@ -5,6 +5,8 @@
 
 #include <libtrading/buffer.h>
 
+#include <string.h>
+
 #define	FAST_RECV_BUFFER_SIZE	(2 * FAST_MESSAGE_MAX_SIZE)
 #define	FAST_TX_BUFFER_SIZE	(2 * FAST_MESSAGE_MAX_SIZE)
 
@@ -24,6 +26,21 @@ struct fast_session {
 
 	struct fast_pmap	pmap;
 };
+
+static inline struct fast_message *fast_msg_by_name(struct fast_session *session, const char *name)
+{
+	struct fast_message *msg;
+	int i;
+
+	for (i = 0; i < FAST_TEMPLATE_MAX_NUMBER; i++) {
+		msg = session->rx_messages + i;
+
+		if (!strcmp(msg->name, name))
+			return msg;
+	}
+
+	return NULL;
+}
 
 int fast_session_send(struct fast_session *self, struct fast_message *msg, int flags);
 struct fast_message *fast_session_recv(struct fast_session *self, int flags);

@@ -163,6 +163,7 @@ struct fast_message {
 	unsigned long		decoded;
 	struct fast_field	*fields;
 
+	char			name[32];
 	int			flags;
 	unsigned long		tid;
 

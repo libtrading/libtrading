@@ -332,6 +332,13 @@ static int fast_message_init(xmlNodePtr node, struct fast_message *msg)
 		msg->tid = 0;
 	xmlFree(prop);
 
+	prop = xmlGetProp(node, (const xmlChar *)"name");
+	if (prop != NULL)
+		strncpy(msg->name, (const char *)prop, sizeof(msg->name));
+	else
+		strncpy(msg->name, (const char *)"", sizeof(msg->name));
+	xmlFree(prop);
+
 	prop = xmlGetProp(node, (const xmlChar *)"reset");
 	if (prop != NULL && !xmlStrcmp(prop, (const xmlChar *)"T"))
 		fast_msg_add_flags(msg, FAST_MSG_FLAGS_RESET);
