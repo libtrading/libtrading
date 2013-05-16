@@ -135,7 +135,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 		return NULL;
 }
 
-int fix_session_keepalive(struct fix_session *session, struct timespec *now)
+bool fix_session_keepalive(struct fix_session *session, struct timespec *now)
 {
 	int diff;
 
@@ -148,14 +148,14 @@ int fix_session_keepalive(struct fix_session *session, struct timespec *now)
 		diff = now->tv_sec - session->tr_timestamp.tv_sec;
 
 		if (diff > 0.5 * session->heartbtint)
-			return 1;
+			return false;
 	}
 
 	diff = now->tv_sec - session->tx_timestamp.tv_sec;
 	if (diff > session->heartbtint)
 		fix_session_heartbeat(session, NULL);
 
-	return 0;
+	return true;
 }
 
 static int fix_do_unexpected(struct fix_session *session, struct fix_message *msg)

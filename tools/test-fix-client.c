@@ -108,7 +108,7 @@ static void fix_session_normal(struct fix_session *session)
 		if (diff > 0.1 * session->heartbtint) {
 			prev = cur;
 
-			if (fix_session_keepalive(session, &cur)) {
+			if (!fix_session_keepalive(session, &cur)) {
 				stop = true;
 				break;
 			}
