@@ -64,7 +64,7 @@ static void release_stream(z_stream *stream)
 static size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream, const char *filename)
 {
 	unsigned char in[INFLATE_SIZE];
-	size_t nr;
+	ssize_t nr;
 	int ret;
 
 	nr = xread(fd, in, INFLATE_SIZE);
