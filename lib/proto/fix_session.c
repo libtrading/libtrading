@@ -322,7 +322,7 @@ done:
 	return 0;
 }
 
-bool fix_session_logon(struct fix_session *session)
+int fix_session_logon(struct fix_session *session)
 {
 	struct fix_message *response;
 	struct fix_message logon_msg;
@@ -331,7 +331,6 @@ bool fix_session_logon(struct fix_session *session)
 		FIX_STRING_FIELD(ResetSeqNumFlag, "Y"),
 		FIX_INT_FIELD(HeartBtInt, session->heartbtint),
 	};
-	bool ret;
 
 	logon_msg	= (struct fix_message) {
 		.type		= FIX_MSG_TYPE_LOGON,
@@ -349,20 +348,21 @@ retry:
 
 	if (!fix_msg_expected(session, response)) {
 		if (fix_do_unexpected(session, response))
-			return false;
+			return -1;
 
 		goto retry;
 	}
 
-	ret = fix_message_type_is(response, FIX_MSG_TYPE_LOGON);
-
-	if (!ret)
+	if (!fix_message_type_is(response, FIX_MSG_TYPE_LOGON)) {
 		fix_session_logout(session, "First message not a logon");
 
-	return ret;
+		return -1;
+	}
+
+	return 0;
 }
 
-bool fix_session_logout(struct fix_session *session, const char *text)
+int fix_session_logout(struct fix_session *session, const char *text)
 {
 	struct fix_field fields[] = {
 		FIX_STRING_FIELD(Text, text),
@@ -371,7 +371,6 @@ bool fix_session_logout(struct fix_session *session, const char *text)
 	struct fix_message logout_msg;
 	struct fix_message *response;
 	struct timespec start, end;
-	bool ret;
 
 	if (!text)
 		nr_fields--;
@@ -391,7 +390,7 @@ retry:
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	/* Grace period 2 seconds */
 	if (end.tv_sec - start.tv_sec > 2)
-		return true;
+		return 0;
 
 	response = fix_session_recv(session, 0);
 	if (!response)
@@ -400,12 +399,13 @@ retry:
 	if (!fix_session_admin(session, response))
 		goto retry;
 
-	ret = fix_message_type_is(response, FIX_MSG_TYPE_LOGOUT);
+	if (fix_message_type_is(response, FIX_MSG_TYPE_LOGOUT))
+		return 0;
 
-	return ret;
+	return -1;
 }
 
-bool fix_session_heartbeat(struct fix_session *session, const char *test_req_id)
+int fix_session_heartbeat(struct fix_session *session, const char *test_req_id)
 {
 	struct fix_message heartbeat_msg;
 	struct fix_field fields[1];
@@ -420,12 +420,10 @@ bool fix_session_heartbeat(struct fix_session *session, const char *test_req_id)
 		.fields		= fields,
 	};
 
-	fix_session_send(session, &heartbeat_msg, 0);
-
-	return true;
+	return fix_session_send(session, &heartbeat_msg, 0);
 }
 
-bool fix_session_test_request(struct fix_session *session)
+int fix_session_test_request(struct fix_session *session)
 {
 	struct fix_message test_req_msg;
 	struct fix_field fields[] = {
@@ -443,12 +441,10 @@ bool fix_session_test_request(struct fix_session *session)
 	clock_gettime(CLOCK_MONOTONIC, &session->tr_timestamp);
 	session->tr_pending = 1;
 
-	fix_session_send(session, &test_req_msg, 0);
-
-	return true;
+	return fix_session_send(session, &test_req_msg, 0);
 }
 
-bool fix_session_resend_request(struct fix_session *session,
+int fix_session_resend_request(struct fix_session *session,
 					unsigned long bgn, unsigned long end)
 {
 	struct fix_message resend_request_msg;
@@ -463,12 +459,10 @@ bool fix_session_resend_request(struct fix_session *session,
 		.fields		= fields,
 	};
 
-	fix_session_send(session, &resend_request_msg, 0);
-
-	return true;
+	return fix_session_send(session, &resend_request_msg, 0);
 }
 
-bool fix_session_reject(struct fix_session *session, unsigned long refseqnum, char *text)
+int fix_session_reject(struct fix_session *session, unsigned long refseqnum, char *text)
 {
 	struct fix_message reject_msg;
 	struct fix_field fields[] = {
@@ -486,12 +480,10 @@ bool fix_session_reject(struct fix_session *session, unsigned long refseqnum, ch
 		.fields		= fields,
 	};
 
-	fix_session_send(session, &reject_msg, 0);
-
-	return true;
+	return fix_session_send(session, &reject_msg, 0);
 }
 
-bool fix_session_sequence_reset(struct fix_session *session, unsigned long msg_seq_num,
+int fix_session_sequence_reset(struct fix_session *session, unsigned long msg_seq_num,
 							unsigned long new_seq_num, bool gap_fill)
 {
 	struct fix_message sequence_reset_msg;
@@ -511,11 +503,10 @@ bool fix_session_sequence_reset(struct fix_session *session, unsigned long msg_s
 		.fields		= fields,
 	};
 
-	fix_session_send(session, &sequence_reset_msg, FIX_FLAG_PRESERVE_MSG_NUM);
-	return true;
+	return fix_session_send(session, &sequence_reset_msg, FIX_FLAG_PRESERVE_MSG_NUM);
 }
 
-bool fix_session_new_order_single(struct fix_session *session,
+int fix_session_new_order_single(struct fix_session *session,
 					struct fix_field *fields, long nr_fields)
 {
 	struct fix_message new_order_single_msg;
@@ -526,12 +517,10 @@ bool fix_session_new_order_single(struct fix_session *session,
 		.fields		= fields,
 	};
 
-	fix_session_send(session, &new_order_single_msg, 0);
-
-	return true;
+	return fix_session_send(session, &new_order_single_msg, 0);
 }
 
-bool fix_session_execution_report(struct fix_session *session,
+int fix_session_execution_report(struct fix_session *session,
 					struct fix_field *fields, long nr_fields)
 {
 	struct fix_message new_order_single_msg;
@@ -542,7 +531,5 @@ bool fix_session_execution_report(struct fix_session *session,
 		.fields		= fields,
 	};
 
-	fix_session_send(session, &new_order_single_msg, 0);
-
-	return true;
+	return fix_session_send(session, &new_order_single_msg, 0);
 }

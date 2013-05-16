@@ -33,7 +33,7 @@ static int fix_session_initiate(struct fix_session_cfg *cfg, const char *script)
 	struct felem *tosend_elem;
 	struct fix_message *msg;
 	FILE *stream;
-	int ret = 1;
+	int ret = -1;
 
 	stream = fopen(script, "r");
 	if (!stream) {
@@ -64,12 +64,13 @@ static int fix_session_initiate(struct fix_session_cfg *cfg, const char *script)
 		goto exit;
 	}
 
-	if (fix_session_logon(session))
-		fprintf(stderr, "Client Logon OK\n");
-	else {
+	ret = fix_session_logon(session);
+	if (ret) {
 		fprintf(stderr, "Client Logon FAILED\n");
 		goto exit;
 	}
+
+	fprintf(stderr, "Client Logon OK\n");
 
 	expected_elem = cur_elem(s_container);
 	tosend_elem = cur_elem(c_container);
@@ -107,14 +108,13 @@ next:
 	if (tosend_elem)
 		goto exit;
 
-	if (fix_session_logout(session, NULL))
-		fprintf(stderr, "Client Logout OK\n");
-	else {
+	ret = fix_session_logout(session, NULL);
+	if (ret) {
 		fprintf(stderr, "Client Logout FAILED\n");
 		goto exit;
 	}
 
-	ret = 0;
+	fprintf(stderr, "Client Logout OK\n");
 
 exit:
 	fcontainer_free(c_container);

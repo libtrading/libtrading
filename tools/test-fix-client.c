@@ -143,12 +143,11 @@ static int fix_session_initiate(struct fix_session_cfg *cfg)
 	if (!session)
 		die("unable to allocate memory for session");
 
-	if (fix_session_logon(session)) {
+	retval = fix_session_logon(session);
+	if (!retval) {
 		printf("Logon OK\n");
-		retval = 0;
 	} else {
 		printf("Logon FAILED\n");
-		retval = 1;
 		goto exit;
 	}
 
@@ -158,12 +157,11 @@ static int fix_session_initiate(struct fix_session_cfg *cfg)
 		fix_session_test(session);
 
 	if (session->active) {
-		if (fix_session_logout(session, NULL)) {
+		retval = fix_session_logout(session, NULL);
+		if (!retval) {
 			printf("Logout OK\n");
-			retval = 0;
 		} else {
 			printf("Logout FAILED\n");
-			retval = 1;
 		}
 	} else
 		printf("Logout OK\n");
