@@ -67,13 +67,14 @@ static size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream, co
 	size_t nr;
 	int ret;
 
-	stream->avail_in = xread(fd, in, INFLATE_SIZE);
-	if (stream->avail_in < 0)
+	nr = xread(fd, in, INFLATE_SIZE);
+	if (nr < 0)
 		return -1;
 
-	if (!stream->avail_in)
+	if (!nr)
 		return 0;
 
+	stream->avail_in	= nr;
 	stream->next_in		= in;
 	stream->avail_out	= buffer_remaining(buffer);
 	stream->next_out	= (void *) buffer_end(buffer);
