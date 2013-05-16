@@ -91,8 +91,6 @@ retry:
 	printf("Messages sent: %d, average latency: %.1lf\n", test, average_time / test);
 
 	free(fields);
-
-	return;
 }
 
 static void fix_session_normal(struct fix_session *session)
@@ -131,8 +129,6 @@ static void fix_session_normal(struct fix_session *session)
 			}
 		}
 	}
-
-	return;
 }
 
 static int fix_session_initiate(struct fix_session_cfg *cfg)

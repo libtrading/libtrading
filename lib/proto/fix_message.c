@@ -110,8 +110,6 @@ static void next_tag(struct buffer *self)
 		return;
 
 	buffer_advance(self, 1);
-
-	return;
 }
 
 static int parse_field(struct buffer *self, int tag, const char **value)

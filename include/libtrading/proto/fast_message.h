@@ -118,8 +118,6 @@ static inline bool field_state_empty_previous(struct fast_field *field)
 static inline void field_set_empty(struct fast_field *field)
 {
 	field->state = FAST_STATE_EMPTY;
-
-	return;
 }
 
 static inline bool field_is_mandatory(struct fast_field *field)
@@ -135,22 +133,16 @@ static inline bool field_has_reset_value(struct fast_field *field)
 static inline void field_set_flags(struct fast_field *field, int flags)
 {
 	field->flags = flags;
-
-	return;
 }
 
 static inline void field_add_flags(struct fast_field *field, int flags)
 {
 	field->flags |= flags;
-
-	return;
 }
 
 static inline void field_clear_flags(struct fast_field *field, int flags)
 {
 	field->flags &= ~flags;
-
-	return;
 }
 
 static inline int field_has_flags(struct fast_field *field, int flags)
@@ -174,22 +166,16 @@ struct fast_message {
 static inline void fast_msg_set_flags(struct fast_message *msg, int flags)
 {
 	msg->flags = flags;
-
-	return;
 }
 
 static inline void fast_msg_add_flags(struct fast_message *msg, int flags)
 {
 	msg->flags |= flags;
-
-	return;
 }
 
 static inline void fast_msg_clear_flags(struct fast_message *msg, int flags)
 {
 	msg->flags &= ~flags;
-
-	return;
 }
 
 static inline int fast_msg_has_flags(struct fast_message *msg, int flags)

@@ -1114,8 +1114,6 @@ void fast_message_free(struct fast_message *self, int nr_messages)
 		fast_fields_free(self + i);
 
 	free(self);
-
-	return;
 }
 
 int fast_message_copy(struct fast_message *dst, struct fast_message *src)
@@ -1246,8 +1244,6 @@ void fast_message_reset(struct fast_message *msg)
 			break;
 		}
 	}
-
-	return;
 }
 
 static int transfer_int(struct buffer *buffer, i64 tmp)

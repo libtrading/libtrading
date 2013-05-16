@@ -61,8 +61,6 @@ void fcontainer_init(struct fcontainer *self, struct fast_message *init_msg)
 
 		memcpy(msg->fields, fields, nr_fields * sizeof(struct fast_field));
 	}
-
-	return;
 }
 
 struct felem *cur_elem(struct fcontainer *self)
