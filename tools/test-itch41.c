@@ -1,5 +1,6 @@
 #include "libtrading/proto/itch41_message.h"
 
+#include "libtrading/read-write.h"
 #include "libtrading/buffer.h"
 
 #include <sys/types.h>
@@ -12,6 +13,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <zlib.h>
 
 static char *program;
 
@@ -33,7 +35,8 @@ static void usage(void)
 	exit(EXIT_FAILURE);
 }
 
-#define BUFFER_SIZE (1ULL << 20) /* 1 MB */
+#define BUFFER_SIZE	(1ULL << 20) /* 1 MB */
+#define INFLATE_SIZE	(1ULL << 18) /* 256 KB */
 
 static void print_progress(int fd, struct stat *st)
 {
@@ -45,11 +48,61 @@ static void print_progress(int fd, struct stat *st)
 	fflush(stderr);
 }
 
+static void init_stream(z_stream *stream)
+{
+	memset(stream, 0, sizeof(*stream));
+
+	if (inflateInit2(stream, 15 + 32) != Z_OK)
+		die("%s: unable to initialize zlib\n", program);
+}
+
+static void release_stream(z_stream *stream)
+{
+	inflateEnd(stream);
+}
+
+static size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream, const char *filename)
+{
+	unsigned char in[INFLATE_SIZE];
+	size_t nr;
+	int ret;
+
+	stream->avail_in = xread(fd, in, INFLATE_SIZE);
+	if (stream->avail_in < 0)
+		return -1;
+
+	if (!stream->avail_in)
+		return 0;
+
+	stream->next_in		= in;
+	stream->avail_out	= buffer_remaining(buffer);
+	stream->next_out	= (void *) buffer_end(buffer);
+
+	ret = inflate(stream, Z_NO_FLUSH);
+	switch (ret) {
+	case Z_STREAM_ERROR:
+	case Z_DATA_ERROR:
+	case Z_BUF_ERROR:
+	case Z_MEM_ERROR:
+	case Z_NEED_DICT:
+		die("%s: %s: zlib error: %s\n", program, filename, stream->msg);
+	default:
+		break;
+	}
+
+	nr = buffer_remaining(buffer) - stream->avail_out;
+
+	buffer->end += nr;
+
+	return nr;
+}
+
 int main(int argc, char *argv[])
 {
 	struct buffer *buffer;
 	const char *filename;
 	bool show_progress;
+	z_stream stream;
 	struct stat st;
 	bool verbose;
 	int opt;
@@ -74,6 +127,8 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+
+	init_stream(&stream);
 
 	filename = argv[optind];
 
@@ -100,7 +155,7 @@ retry_size:
 
 			buffer_compact(buffer);
 
-			nr = buffer_xread(buffer, fd);
+			nr = buffer_inflate(buffer, fd, &stream, filename);
 			if (nr <= 0)
 				break;
 
@@ -118,7 +173,7 @@ retry_message:
 
 			buffer_compact(buffer);
 
-			nr = buffer_xread(buffer, fd);
+			nr = buffer_inflate(buffer, fd, &stream, filename);
 			if (nr <= 0)
 				break;
 
@@ -136,6 +191,8 @@ retry_message:
 
 	if (close(fd) < 0)
 		die("%s: %s: %s\n", program, filename, strerror(errno));
+
+	release_stream(&stream);
 
 	return 0;
 }
