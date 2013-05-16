@@ -84,6 +84,8 @@ fast_server_EXTRA_DEPS += tools/fast/test.o
 fast_parser_EXTRA_DEPS += lib/die.o
 fast_parser_EXTRA_DEPS += tools/fast/test.o
 
+test-itch41_EXTRA_LIBS += -lz
+
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
 
