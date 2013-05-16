@@ -116,7 +116,7 @@ static void fix_session_normal(struct fix_session *session)
 
 		msg = fix_session_recv(session, 0);
 		if (msg) {
-			if (!fix_session_admin(session, msg))
+			if (fix_session_admin(session, msg))
 				continue;
 
 			switch (msg->type) {

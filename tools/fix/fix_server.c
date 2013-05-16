@@ -131,7 +131,7 @@ static int fix_session_accept(struct fix_session_cfg *cfg, const char *script)
 			break;
 		}
 
-		if (!fix_session_admin(session, msg))
+		if (fix_session_admin(session, msg))
 			goto next;
 
 		if (fix_message_type_is(msg, FIX_MSG_TYPE_LOGON)) {

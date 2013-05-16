@@ -185,12 +185,12 @@ static int fix_do_unexpected(struct fix_session *session, struct fix_message *ms
 
 /*
  * Return values:
- * - 0 means that the function was able to handle a message, a user should
+ * - true means that the function was able to handle a message, a user should
  *	not process the message further
- * - 1 means that the function wasn't able to handle a message, a user should
- *	decide on what to do further
+ * - false means that the function wasn't able to handle a message, a user
+ *	should decide on what to do further
  */
-int fix_session_admin(struct fix_session *session, struct fix_message *msg)
+bool fix_session_admin(struct fix_session *session, struct fix_message *msg)
 {
 	struct fix_field *field;
 
@@ -316,10 +316,10 @@ int fix_session_admin(struct fix_session *session, struct fix_message *msg)
 	}
 
 fail:
-	return 1;
+	return false;
 
 done:
-	return 0;
+	return true;
 }
 
 int fix_session_logon(struct fix_session *session)
@@ -396,7 +396,7 @@ retry:
 	if (!response)
 		goto retry;
 
-	if (!fix_session_admin(session, response))
+	if (fix_session_admin(session, response))
 		goto retry;
 
 	if (fix_message_type_is(response, FIX_MSG_TYPE_LOGOUT))
