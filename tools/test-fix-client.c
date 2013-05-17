@@ -3,6 +3,7 @@
 #include "libtrading/proto/fix_message.h"
 #include "libtrading/proto/fix_session.h"
 
+#include "libtrading/compat.h"
 #include "libtrading/array.h"
 #include "libtrading/die.h"
 
