@@ -58,11 +58,17 @@ PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-itch41 tools/
 DEFINES =
 INCLUDES = $(shell sh -c 'xml2-config --cflags')
 
-EXTRA_LIBS += -lrt
 EXTRA_LIBS += $(shell sh -c 'xml2-config --libs')
 
 ifeq ($(uname_S),Linux)
 	DEFINES += -D_GNU_SOURCE
+
+	EXTRA_LIBS += -lrt
+endif
+
+ifeq ($(uname_S),Darwin)
+	CONFIG_OPTS += -DCONFIG_NEED_CLOCK_GETTIME=1
+	COMPAT_OBJS += lib/compat/clock_gettime.o
 endif
 
 test-fix-server_EXTRA_DEPS += lib/die.o
@@ -88,6 +94,7 @@ test-itch41_EXTRA_LIBS += -lz
 
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
+CFLAGS += $(CONFIG_OPTS)
 
 DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 
@@ -112,6 +119,8 @@ LIB_OBJS	+= lib/proto/pitch_message.o
 LIB_OBJS	+= lib/proto/soupbin3_session.o
 LIB_OBJS	+= lib/proto/xdp_message.o
 LIB_OBJS	+= lib/proto/lse_itch_message.o
+
+LIB_OBJS	+= $(COMPAT_OBJS)
 
 LIB_DEPS	:= $(patsubst %.o,%.d,$(LIB_OBJS))
 

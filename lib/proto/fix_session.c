@@ -1,5 +1,6 @@
 #include "libtrading/proto/fix_session.h"
 
+#include "libtrading/compat.h"
 #include "libtrading/array.h"
 
 #include <assert.h>
