@@ -146,9 +146,6 @@ int main(int argc, char *argv[])
 
 	for (;;) {
 		struct itch41_message *msg;
-		char tmp[128];
-
-		msg = (void *) tmp;
 
 retry_size:
 		if (buffer_size(buffer) < sizeof(u16)) {
@@ -169,7 +166,8 @@ retry_size:
 		buffer_advance(buffer, sizeof(u16));
 
 retry_message:
-		if (itch41_message_decode(buffer, msg) < 0) {
+		msg = itch41_message_decode(buffer);
+		if (!msg) {
 			ssize_t nr;
 
 			buffer_compact(buffer);

@@ -216,6 +216,6 @@ struct itch41_msg_noii {
 	char			PriceVariationIndicator;
 } packed;
 
-int itch41_message_decode(struct buffer *buf, struct itch41_message *msg);
+struct itch41_message *itch41_message_decode(struct buffer *buf);
 
 #endif
