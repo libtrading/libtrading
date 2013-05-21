@@ -103,6 +103,7 @@ LIB_FILE := libtrading.a
 LIBS := $(LIB_FILE)
 
 LIB_OBJS	+= lib/buffer.o
+LIB_OBJS	+= lib/order_book.o
 LIB_OBJS	+= lib/mmap-buffer.o
 LIB_OBJS	+= lib/read-write.o
 LIB_OBJS	+= lib/proto/boe_message.o
