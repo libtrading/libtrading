@@ -1,0 +1,23 @@
+<config>
+	<feeds>
+		<feed type="increment">
+			<ip value="0.0.0.0" />
+			<lip value="0.0.0.0" />
+			<port value="0" />
+		</feed>
+		<feed type="snapshot">
+			<ip value="0.0.0.0" />
+			<lip value="0.0.0.0" />
+			<port value="0" />
+		</feed>
+	</feeds>
+
+	<books>
+		<book symbol="">
+			<depth value="5" />
+			<tick_exp value="0" />
+			<tick_mnt value="0" />
+			<id value="0" />
+		</book>
+	</books>
+</config>

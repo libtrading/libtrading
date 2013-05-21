@@ -53,7 +53,7 @@ endif
 export E Q
 
 # Project files
-PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-nasdaq-itch41 tools/fix/fix_client tools/fix/fix_server tools/fast/fast_client tools/fast/fast_server tools/fast/fast_parser
+PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-nasdaq-itch41 tools/fix/fix_client tools/fix/fix_server tools/fast/fast_client tools/fast/fast_server tools/fast/fast_parser tools/fast/fast_orderbook
 
 DEFINES =
 INCLUDES = $(shell sh -c 'xml2-config --cflags')
@@ -64,6 +64,7 @@ ifeq ($(uname_S),Linux)
 	DEFINES += -D_GNU_SOURCE
 
 	EXTRA_LIBS += -lrt
+	EXTRA_LIBS += -lncurses
 endif
 
 ifeq ($(uname_S),Darwin)
