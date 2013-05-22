@@ -53,7 +53,15 @@ endif
 export E Q
 
 # Project files
-PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-nasdaq-itch41 tools/fix/fix_client tools/fix/fix_server tools/fast/fast_client tools/fast/fast_server tools/fast/fast_parser tools/fast/fast_orderbook
+PROGRAMS += tools/fast/fast_client
+PROGRAMS += tools/fast/fast_orderbook
+PROGRAMS += tools/fast/fast_parser
+PROGRAMS += tools/fast/fast_server
+PROGRAMS += tools/fix/fix_client
+PROGRAMS += tools/fix/fix_server
+PROGRAMS += tools/test-fix-client
+PROGRAMS += tools/test-fix-server
+PROGRAMS += tools/test-nasdaq-itch41
 
 DEFINES =
 INCLUDES = $(shell sh -c 'xml2-config --cflags')
