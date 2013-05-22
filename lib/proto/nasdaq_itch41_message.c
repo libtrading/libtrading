@@ -1,4 +1,4 @@
-#include "libtrading/proto/itch41_message.h"
+#include "libtrading/proto/nasdaq_itch41_message.h"
 
 #include "libtrading/buffer.h"
 

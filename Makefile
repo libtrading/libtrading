@@ -53,7 +53,7 @@ endif
 export E Q
 
 # Project files
-PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-itch41 tools/fix/fix_client tools/fix/fix_server tools/fast/fast_client tools/fast/fast_server tools/fast/fast_parser
+PROGRAMS := tools/test-fix-client tools/test-fix-server tools/test-nasdaq-itch41 tools/fix/fix_client tools/fix/fix_server tools/fast/fast_client tools/fast/fast_server tools/fast/fast_parser
 
 DEFINES =
 INCLUDES = $(shell sh -c 'xml2-config --cflags')
@@ -90,7 +90,7 @@ fast_server_EXTRA_DEPS += tools/fast/test.o
 fast_parser_EXTRA_DEPS += lib/die.o
 fast_parser_EXTRA_DEPS += tools/fast/test.o
 
-test-itch41_EXTRA_LIBS += -lz
+test-nasdaq-itch41_EXTRA_LIBS += -lz
 
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
@@ -111,9 +111,9 @@ LIB_OBJS	+= lib/proto/fix_session.o
 LIB_OBJS	+= lib/proto/fast_message.o
 LIB_OBJS	+= lib/proto/fast_session.o
 LIB_OBJS	+= lib/proto/fast_template.o
-LIB_OBJS	+= lib/proto/itch40_message.o
-LIB_OBJS	+= lib/proto/itch41_message.o
 LIB_OBJS	+= lib/proto/mbt_quote_message.o
+LIB_OBJS	+= lib/proto/nasdaq_itch40_message.o
+LIB_OBJS	+= lib/proto/nasdaq_itch41_message.o
 LIB_OBJS	+= lib/proto/ouch42_message.o
 LIB_OBJS	+= lib/proto/pitch_message.o
 LIB_OBJS	+= lib/proto/soupbin3_session.o

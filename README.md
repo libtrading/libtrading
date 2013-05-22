@@ -23,9 +23,9 @@ is crucial in trading today's markets, reliability is also a top priority.
 
  * [MBT Quote API][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/mbt_quote_message.h))
 
- * [NASDAQ ITCH 4.0][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/itch40_message.h))
+ * [NASDAQ ITCH 4.0][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/nasdaq_itch40_message.h))
 
- * [NASDAQ ITCH 4.1][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/itch41_message.h))
+ * [NASDAQ ITCH 4.1][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/nasdaq_itch41_message.h))
 
  * [NASDAQ OUCH 4.2][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/ouch42_message.h))
 
