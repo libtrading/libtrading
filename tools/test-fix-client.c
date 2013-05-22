@@ -1,5 +1,3 @@
-#include "libtrading/proto/soupbin3_session.h"
-#include "libtrading/proto/itch41_message.h"
 #include "libtrading/proto/fix_message.h"
 #include "libtrading/proto/fix_session.h"
 
