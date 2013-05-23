@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <unistd.h>	/* for ssize_t */
+#include <zlib.h>	/* for z_stream */
 
 struct buffer {
 	unsigned long		start;
@@ -133,5 +134,7 @@ void buffer_compact(struct buffer *buf);
 
 struct buffer *buffer_mmap(int fd, size_t len);
 void buffer_munmap(struct buffer *buf);
+
+size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream);
 
 #endif

@@ -201,3 +201,42 @@ void buffer_compact(struct buffer *buf)
 	buf->start	= 0;
 	buf->end	= count;
 }
+
+#define INFLATE_SIZE	(1ULL << 18) /* 256 KB */
+
+size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream)
+{
+	unsigned char in[INFLATE_SIZE];
+	ssize_t nr;
+	int ret;
+
+	nr = xread(fd, in, INFLATE_SIZE);
+	if (nr < 0)
+		return -1;
+
+	if (!nr)
+		return 0;
+
+	stream->avail_in	= nr;
+	stream->next_in		= in;
+	stream->avail_out	= buffer_remaining(buffer);
+	stream->next_out	= (void *) buffer_end(buffer);
+
+	ret = inflate(stream, Z_NO_FLUSH);
+	switch (ret) {
+	case Z_STREAM_ERROR:
+	case Z_DATA_ERROR:
+	case Z_BUF_ERROR:
+	case Z_MEM_ERROR:
+	case Z_NEED_DICT:
+		return -1;
+	default:
+		break;
+	}
+
+	nr = buffer_remaining(buffer) - stream->avail_out;
+
+	buffer->end += nr;
+
+	return nr;
+}

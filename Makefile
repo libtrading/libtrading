@@ -75,6 +75,8 @@ INCLUDES = $(shell sh -c 'xml2-config --cflags')
 
 EXTRA_LIBS += $(shell sh -c 'xml2-config --libs')
 
+EXTRA_LIBS += -lz
+
 ifeq ($(uname_S),Linux)
 	DEFINES += -D_GNU_SOURCE
 
@@ -106,8 +108,6 @@ fast_server_EXTRA_DEPS += tools/fast/test.o
 fast_parser_EXTRA_DEPS += lib/die.o
 fast_parser_EXTRA_DEPS += tools/fast/test.o
 
-test-nasdaq-itch41_EXTRA_LIBS += -lz
-
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
 CFLAGS += $(CONFIG_OPTS)
@@ -116,7 +116,7 @@ DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 
 LIB_FILE := libtrading.a
 
-LIBS := $(LIB_FILE)
+LIBS := $(LIB_FILE) -lz
 
 LIB_H += array.h
 LIB_H += buffer.h
