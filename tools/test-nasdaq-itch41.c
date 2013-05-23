@@ -95,7 +95,7 @@ static void release_stream(z_stream *stream)
 	inflateEnd(stream);
 }
 
-static size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream, const char *filename)
+static size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream)
 {
 	unsigned char in[INFLATE_SIZE];
 	ssize_t nr;
@@ -120,7 +120,7 @@ static size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream, co
 	case Z_BUF_ERROR:
 	case Z_MEM_ERROR:
 	case Z_NEED_DICT:
-		die("%s: %s: zlib error: %s\n", program, filename, stream->msg);
+		return -1;
 	default:
 		break;
 	}
@@ -189,7 +189,7 @@ retry_size:
 
 			buffer_compact(buffer);
 
-			nr = buffer_inflate(buffer, fd, &stream, filename);
+			nr = buffer_inflate(buffer, fd, &stream);
 			if (nr <= 0)
 				break;
 
@@ -208,7 +208,7 @@ retry_message:
 
 			buffer_compact(buffer);
 
-			nr = buffer_inflate(buffer, fd, &stream, filename);
+			nr = buffer_inflate(buffer, fd, &stream);
 			if (nr <= 0)
 				break;
 
