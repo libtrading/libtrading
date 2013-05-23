@@ -186,7 +186,7 @@ retry_message:
 		stats[msg->MessageType - 'A']++;
 	}
 
-	printf("\r");
+	printf("\n");
 
 	buffer_delete(buffer);
 
