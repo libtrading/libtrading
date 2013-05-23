@@ -1,6 +1,13 @@
 uname_S	:= $(shell sh -c 'uname -s 2>/dev/null || echo not')
 uname_R	:= $(shell sh -c 'uname -r 2>/dev/null || echo not')
 
+PREFIX ?= $(HOME)
+
+DESTDIR=
+BINDIR=$(PREFIX)/bin
+LIBDIR=$(PREFIX)/lib
+INCLUDEDIR=$(PREFIX)/include
+
 # External programs
 CC	?= gcc
 LD	:= $(CC)
@@ -111,6 +118,28 @@ LIB_FILE := libtrading.a
 
 LIBS := $(LIB_FILE)
 
+LIB_H += array.h
+LIB_H += buffer.h
+LIB_H += compat.h
+LIB_H += order_book.h
+LIB_H += proto/boe_message.h
+LIB_H += proto/fast_book.h
+LIB_H += proto/fast_feed.h
+LIB_H += proto/fast_message.h
+LIB_H += proto/fast_session.h
+LIB_H += proto/fix_message.h
+LIB_H += proto/fix_message.h
+LIB_H += proto/lse_itch_message.h
+LIB_H += proto/mbt_quote_message.h
+LIB_H += proto/nasdaq_itch40_message.h
+LIB_H += proto/nasdaq_itch41_message.h
+LIB_H += proto/ouch42_message.h
+LIB_H += proto/pitch_message.h
+LIB_H += proto/soupbin3_session.h
+LIB_H += proto/xdp_message.h
+LIB_H += read-write.h
+LIB_H += types.h
+
 LIB_OBJS	+= lib/buffer.o
 LIB_OBJS	+= lib/order_book.o
 LIB_OBJS	+= lib/mmap-buffer.o
@@ -151,6 +180,20 @@ TEST_DEPS	:= $(patsubst %.o,%.d,$(TEST_OBJS))
 
 TEST_LIBS := $(LIBS)
 
+INST_PROGRAMS += libtrading-config
+
+define INSTALL_EXEC
+	install -v $1 $(DESTDIR)$2/$1 || exit 1;
+endef
+
+define INSTALL_FILE
+	install -v -m 644 $1 $(DESTDIR)$2/$1 || exit 1;
+endef
+
+define INSTALL_HEADER
+	install -v -m 644 include/libtrading/$1 $(DESTDIR)$2/$1 || exit 1;
+endef
+
 # Targets
 all: sub-make
 .DEFAULT: all
@@ -171,6 +214,25 @@ ifneq ($(O),)
 	$(E) "  MKDIR   " $@
 	$(Q) mkdir -p $(O)
 endif
+
+libtrading-config.o: libtrading-config.c
+	$(E) "  CC      " $@
+	$(Q) $(CC) -DPREFIX=\"$(PREFIX)\" -c $(CFLAGS) $< -o $@
+.PHONY: libtrading-config.o
+
+libtrading-config: libtrading-config.o
+	$(E) "  LINK    " $@
+	$(Q) $(LD) $(LDFLAGS) -o $@ $^ $($(notdir $@)_EXTRA_LIBS) $(EXTRA_LIBS)
+
+install: all libtrading-config
+	$(E) "  INSTALL "
+	$(Q) install -d $(DESTDIR)$(BINDIR)
+	$(Q) install -d $(DESTDIR)$(LIBDIR)
+	$(Q) install -d $(DESTDIR)$(INCLUDEDIR)/libtrading/proto
+	$(Q) $(foreach f,$(INST_PROGRAMS),$(call INSTALL_EXEC,$f,$(BINDIR)))
+	$(Q) $(foreach f,$(LIBS),$(call INSTALL_FILE,$f,$(LIBDIR)))
+	$(Q) $(foreach f,$(LIB_H),$(call INSTALL_HEADER,$f,$(INCLUDEDIR)/libtrading))
+.PHONY: install
 
 %.d: %.c
 	$(Q) $(CC) -M -MT $(patsubst %.d,%.o,$@) $(CFLAGS) $< -o $@
@@ -233,7 +295,7 @@ clean:
 	$(E) "  CLEAN"
 	$(Q) find . -name "*.o" | xargs rm -f
 	$(Q) rm -f $(LIB_FILE) $(LIB_OBJS) $(LIB_DEPS)
-	$(Q) rm -f $(PROGRAMS) $(OBJS) $(DEPS) $(TEST_PROGRAM) $(TEST_SUITE_H) $(TEST_OBJS) $(TEST_DEPS) $(TEST_RUNNER_C) $(TEST_RUNNER_OBJ)
+	$(Q) rm -f $(PROGRAMS) $(INST_PROGRAMS) $(OBJS) $(DEPS) $(TEST_PROGRAM) $(TEST_SUITE_H) $(TEST_OBJS) $(TEST_DEPS) $(TEST_RUNNER_C) $(TEST_RUNNER_OBJ)
 	$(Q) rm -f $(BOE_TEST_DATA)
 .PHONY: clean
 

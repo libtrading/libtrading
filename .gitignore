@@ -1,5 +1,6 @@
 *.d
 *.o
+/libtrading-config
 /libtrading.a
 /tags
 /test-trade
