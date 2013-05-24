@@ -116,7 +116,7 @@ DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 
 LIB_FILE := libtrading.a
 
-LIBS := $(LIB_FILE) -lz
+LIBS := $(LIB_FILE)
 
 LIB_H += array.h
 LIB_H += buffer.h
@@ -283,7 +283,7 @@ $(TEST_RUNNER_OBJ): $(TEST_RUNNER_C)
 $(TEST_PROGRAM): $(TEST_SUITE_H) $(TEST_DEPS) $(TEST_RUNNER_OBJ) $(TEST_OBJS) $(LIB_FILE) $(BOE_TEST_DATA)
 	$(E) "  LINK    " $@
 	$(E) "  LINK    " $<
-	$(Q) $(CC) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(TEST_LIBS) -o $(TEST_PROGRAM)
+	$(Q) $(CC) $(TEST_OBJS) $(TEST_RUNNER_OBJ) $(TEST_LIBS) $(EXTRA_LIBS) -o $(TEST_PROGRAM)
 
 check: $(TEST_PROGRAM) $(PROGRAMS)
 	$(E) "  CHECK"
