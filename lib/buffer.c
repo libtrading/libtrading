@@ -226,7 +226,6 @@ size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream)
 	switch (ret) {
 	case Z_STREAM_ERROR:
 	case Z_DATA_ERROR:
-	case Z_BUF_ERROR:
 	case Z_MEM_ERROR:
 	case Z_NEED_DICT:
 		return -1;
