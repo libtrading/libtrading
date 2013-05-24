@@ -105,7 +105,8 @@ next:
 		tosend_elem = next_elem(c_container);
 	}
 
-	if (tosend_elem)
+	ret = tosend_elem ? -1 : 0;
+	if (ret)
 		goto exit;
 
 	ret = fix_session_logout(session, NULL);
