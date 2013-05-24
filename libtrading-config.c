@@ -1,7 +1,8 @@
 #include <stdbool.h>
-#include <string.h>
+#include <getopt.h>
 #include <libgen.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 static const char *program;
@@ -22,33 +23,51 @@ static void usage(void)
 	exit(1);
 }
 
+static const struct option options[] = {
+	{ "version",	no_argument, NULL, 'v' },
+	{ "ldflags",	no_argument, NULL, 'd' },
+	{ "cflags",	no_argument, NULL, 'c' },
+	{ "libs",	no_argument, NULL, 'l' },
+};
+
+static bool version;
+static bool ldflags;
+static bool cflags;
+static bool libs;
+
+static void parse_args(int argc, char *argv[])
+{
+	int opt;
+
+	while ((opt = getopt_long(argc, argv, "cdlv", options, NULL)) != -1) {
+		switch (opt) {
+		case 'v':
+			version	= true;
+			break;
+		case 'd':
+			ldflags	= true;
+			break;
+		case 'c':
+			cflags	= true;
+			break;
+		case 'l':
+			libs	= true;
+			break;
+		default:
+			usage();
+			break;
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
-	bool version = false;
-	bool ldflags = false;
-	bool cflags = false;
-	bool libs = false;
-	int i;
-
 	program = basename(argv[0]);
 
 	if (argc == 1)
 		usage();
 
-	for (i = 1; i < argc; i++) {
-		const char *opt = argv[i];
-
-		if (!strcmp(opt, "--version"))
-			version = true;
-		else if (!strcmp(opt, "--cflags"))
-			cflags = true;
-		else if (!strcmp(opt, "--ldflags"))
-			ldflags = true;
-		else if (!strcmp(opt, "--libs"))
-			libs = true;
-		else
-			usage();
-	}
+	parse_args(argc, argv);
 
 	if (version) {
 		printf("%s\n", LIBTRADING_VERSION);
