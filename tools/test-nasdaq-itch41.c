@@ -34,7 +34,7 @@ static void die(const char *fmt, ...)
 
 static void usage(void)
 {
-	printf("usage: %s [-v] <itch-file>\n", basename(program));
+	printf("usage: %s [-v] <itch-file>\n", program);
 
 	exit(EXIT_FAILURE);
 }
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 
 	setlocale(LC_ALL, "");
 
-	program = argv[0];
+	program = basename(argv[0]);
 
 	if (argc < 2)
 		usage();
