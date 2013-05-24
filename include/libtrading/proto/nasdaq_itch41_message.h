@@ -26,6 +26,7 @@ enum itch41_msg_type {
 	ITCH41_MSG_CROSS_TRADE			= 'Q',	/* Section 4.6.2. */
 	ITCH41_MSG_BROKEN_TRADE			= 'B',	/* Section 4.6.3. */
 	ITCH41_MSG_NOII				= 'I',	/* Section 4.7. */
+	ITCH41_MSG_RPII				= 'N',	/* Section 4.8. */
 };
 
 /*
@@ -214,6 +215,14 @@ struct itch41_msg_noii {
 	be32			CurrentReferencePrice;
 	char			CrossType;
 	char			PriceVariationIndicator;
+} packed;
+
+/* ITCH41_MSG_RPII */
+struct itch41_msg_rpii {
+	u8			MessageType;
+	be32			TimestampNanoseconds;
+	char			Stock[8];
+	char			InterestFlag;
 } packed;
 
 struct itch41_message *itch41_message_decode(struct buffer *buf);

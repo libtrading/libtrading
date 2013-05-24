@@ -42,6 +42,8 @@ static unsigned long itch41_message_size(u8 type)
 		return sizeof(struct itch41_msg_broken_trade);
         case ITCH41_MSG_NOII:
 		return sizeof(struct itch41_msg_noii);
+	case ITCH41_MSG_RPII:
+		return sizeof(struct itch41_msg_rpii);
 	default:
 		break;
 	};

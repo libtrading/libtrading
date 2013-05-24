@@ -67,6 +67,7 @@ static void print_stats(const char *filename)
         print_stat("Cross Trade", ITCH41_MSG_CROSS_TRADE);
         print_stat("Broken Trade", ITCH41_MSG_BROKEN_TRADE);
         print_stat("NOII", ITCH41_MSG_NOII);
+        print_stat("RPII", ITCH41_MSG_RPII);
 
 	printf("\n");
 }
