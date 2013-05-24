@@ -1,0 +1,5 @@
+#!/bin/sh
+
+version=$(git describe --tags --long)
+
+echo "#define LIBTRADING_VERSION \"$version\"" > LIBTRADING-VERSION-FILE

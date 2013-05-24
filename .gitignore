@@ -16,3 +16,4 @@
 /tools/test/protocol/boe/*.bin
 /tools/test/test-runner.c
 /tools/test/test-suite.h
+/LIBTRADING-VERSION-FILE

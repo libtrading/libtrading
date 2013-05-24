@@ -1,3 +1,9 @@
+# The default target of this Makefile:
+all:
+
+LIBTRADING-VERSION-FILE: .FORCE-LIBTRADING-VERSION-FILE
+	sh tools/gen-version-file
+
 uname_S	:= $(shell sh -c 'uname -s 2>/dev/null || echo not')
 uname_R	:= $(shell sh -c 'uname -r 2>/dev/null || echo not')
 
@@ -215,9 +221,9 @@ ifneq ($(O),)
 	$(Q) mkdir -p $(O)
 endif
 
-libtrading-config.o: libtrading-config.c
+libtrading-config.o: libtrading-config.c LIBTRADING-VERSION-FILE
 	$(E) "  CC      " $@
-	$(Q) $(CC) -DPREFIX=\"$(PREFIX)\" -c $(CFLAGS) $< -o $@
+	$(Q) $(CC) -DPREFIX=\"$(PREFIX)\" -include LIBTRADING-VERSION-FILE -c $(CFLAGS) $< -o $@
 .PHONY: libtrading-config.o
 
 libtrading-config: libtrading-config.o
@@ -308,6 +314,8 @@ tags: FORCE
 PHONY += FORCE
 
 FORCE:
+
+.PHONY: .FORCE-LIBTRADING-VERSION-FILE
 
 # Deps
 -include $(DEPS)

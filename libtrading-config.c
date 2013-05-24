@@ -10,6 +10,8 @@ static const char *usage_fmt =
 "Usage: %s <option>\n"
 "\n"
 "Options:\n"
+"  --version  Print libtrading version.\n"
+"  --cflags   C compiler flags for files that include libtrading headers.\n"
 "  --cflags   C compiler flags for files that include libtrading headers.\n"
 "  --ldflags  Linker flags.\n"
 "  --libs     Libraries needed to link against libtrading.\n";
@@ -22,6 +24,7 @@ static void usage(void)
 
 int main(int argc, char *argv[])
 {
+	bool version = false;
 	bool ldflags = false;
 	bool cflags = false;
 	bool libs = false;
@@ -35,7 +38,9 @@ int main(int argc, char *argv[])
 	for (i = 1; i < argc; i++) {
 		const char *opt = argv[i];
 
-		if (!strcmp(opt, "--cflags"))
+		if (!strcmp(opt, "--version"))
+			version = true;
+		else if (!strcmp(opt, "--cflags"))
 			cflags = true;
 		else if (!strcmp(opt, "--ldflags"))
 			ldflags = true;
@@ -43,6 +48,11 @@ int main(int argc, char *argv[])
 			libs = true;
 		else
 			usage();
+	}
+
+	if (version) {
+		printf("%s\n", LIBTRADING_VERSION);
+		return 0;
 	}
 
 	if (cflags)
