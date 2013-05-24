@@ -152,7 +152,10 @@ retry_size:
 			buffer_compact(buffer);
 
 			nr = buffer_inflate(buffer, fd, &stream);
-			if (nr <= 0)
+			if (nr < 0)
+				die("%s: zlib error\n", program);
+
+			if (!nr)
 				break;
 
 			if (show_progress)
@@ -171,7 +174,10 @@ retry_message:
 			buffer_compact(buffer);
 
 			nr = buffer_inflate(buffer, fd, &stream);
-			if (nr <= 0)
+			if (nr < 0)
+				die("%s: zlib error\n", program);
+
+			if (!nr)
 				break;
 
 			if (show_progress)
