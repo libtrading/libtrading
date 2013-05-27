@@ -123,6 +123,6 @@ struct pitch_msg_auction_summary {
 	char			Shares[10];
 } packed;
 
-int pitch_message_decode(struct buffer *buf, struct pitch_message *msg);
+struct pitch_message *pitch_message_decode(struct buffer *buf);
 
 #endif
