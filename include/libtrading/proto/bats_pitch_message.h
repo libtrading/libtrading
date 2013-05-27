@@ -24,18 +24,18 @@ enum pitch_msg_type {
 
 struct pitch_message {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 } packed;
 
 struct pitch_msg_symbol_clear {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			StockSymbol[8];
 };
 
 struct pitch_msg_add_order_short {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			OrderID[12];
 	char			SideIndicator;
 	char			Shares[6];
@@ -46,7 +46,7 @@ struct pitch_msg_add_order_short {
 
 struct pitch_msg_add_order_long {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			OrderID[12];
 	char			SideIndicator;
 	char			Shares[6];
@@ -58,7 +58,7 @@ struct pitch_msg_add_order_long {
 
 struct pitch_msg_order_executed {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			OrderID[12];
 	char			ExecutedShares[6];
 	char			ExecutionID[12];
@@ -66,14 +66,14 @@ struct pitch_msg_order_executed {
 
 struct pitch_msg_order_cancel {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			OrderID[12];
 	char			CanceledShares[6];
 } packed;
 
 struct pitch_msg_trade_short {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			OrderID[12];
 	char			SideIndicator;
 	char			Shares[6];
@@ -84,7 +84,7 @@ struct pitch_msg_trade_short {
 
 struct pitch_msg_trade_long {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			OrderID[12];
 	char			SideIndicator;
 	char			Shares[6];
@@ -95,13 +95,13 @@ struct pitch_msg_trade_long {
 
 struct pitch_msg_trade_break {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			ExecutionID[12];
 } packed;
 
 struct pitch_msg_trading_status {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			StockSymbol[8];
 	char			HaltStatus;
 	char			RegSHOAction;
@@ -111,7 +111,7 @@ struct pitch_msg_trading_status {
 
 struct pitch_msg_auction_update {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			StockSymbol[8];
 	char			AuctionType;
 	char			ReferencePrice[10];
@@ -123,7 +123,7 @@ struct pitch_msg_auction_update {
 
 struct pitch_msg_auction_summary {
 	char			Timestamp[8];
-	char			MessageType;
+	u8			MessageType;
 	char			StockSymbol[8];
 	char			AuctionType;
 	char			Price[10];
