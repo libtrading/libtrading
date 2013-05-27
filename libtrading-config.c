@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 		printf("-L" PREFIX "/lib ");
 
 	if (libs)
-		printf("-ltrading ");
+		printf("-ltrading -lz ");
 
 	printf("\n");
 
