@@ -1,4 +1,4 @@
-#include "libtrading/proto/pitch_message.h"
+#include "libtrading/proto/bats_pitch_message.h"
 
 #include "libtrading/buffer.h"
 
