@@ -83,11 +83,12 @@ EXTRA_LIBS += $(shell sh -c 'xml2-config --libs')
 
 EXTRA_LIBS += -lz
 
+EXTRA_LIBS += -lncurses
+
 ifeq ($(uname_S),Linux)
 	DEFINES += -D_GNU_SOURCE
 
 	EXTRA_LIBS += -lrt
-	EXTRA_LIBS += -lncurses
 endif
 
 ifeq ($(uname_S),Darwin)
