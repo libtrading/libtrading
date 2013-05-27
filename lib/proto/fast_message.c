@@ -293,6 +293,45 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 			field->uint_value--;
 
 		break;
+	case FAST_OP_DEFAULT:
+		if (!pmap_is_set(pmap, field->pmap_bit)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+			case FAST_STATE_ASSIGNED:
+			case FAST_STATE_EMPTY:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					field->uint_value = field->uint_reset;
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			default:
+				break;
+			}
+		} else {
+			ret = parse_uint(buffer, &field->uint_value);
+
+			if (ret)
+				goto fail;
+
+			field->state = FAST_STATE_ASSIGNED;
+
+			if (field_is_mandatory(field))
+				break;
+
+			if (!field->uint_value)
+				field->state = FAST_STATE_EMPTY;
+			else
+				field->uint_value--;
+		}
+
+		break;
 	case FAST_OP_CONSTANT:
 		if (field->state != FAST_STATE_ASSIGNED)
 			field->uint_value = field->uint_reset;
@@ -451,6 +490,45 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 			field->int_value--;
 
 		break;
+	case FAST_OP_DEFAULT:
+		if (!pmap_is_set(pmap, field->pmap_bit)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+			case FAST_STATE_ASSIGNED:
+			case FAST_STATE_EMPTY:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					field->int_value = field->int_reset;
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			default:
+				break;
+			}
+		} else {
+			ret = parse_int(buffer, &field->int_value);
+
+			if (ret)
+				goto fail;
+
+			field->state = FAST_STATE_ASSIGNED;
+
+			if (field_is_mandatory(field))
+				break;
+
+			if (!field->int_value)
+				field->state = FAST_STATE_EMPTY;
+			else if (field->int_value > 0)
+				field->int_value--;
+		}
+
+		break;
 	case FAST_OP_CONSTANT:
 		if (field->state != FAST_STATE_ASSIGNED)
 			field->int_value = field->int_reset;
@@ -561,6 +639,52 @@ static int fast_decode_unicode(struct buffer *buffer, struct fast_pmap *pmap, st
 	case FAST_OP_DELTA:
 			ret = FAST_MSG_STATE_GARBLED;
 			goto fail;
+	case FAST_OP_DEFAULT:
+		if (!pmap_is_set(pmap, field->pmap_bit)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+			case FAST_STATE_ASSIGNED:
+			case FAST_STATE_EMPTY:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					memcpy(field->string_value, field->string_reset,
+								strlen(field->string_reset) + 1);
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			default:
+				break;
+			}
+		} else {
+			ret = parse_uint(buffer, &len);
+
+			if (ret)
+				goto fail;
+
+			field->state = FAST_STATE_ASSIGNED;
+
+			if (!field_is_mandatory(field)) {
+				if (!len) {
+					field->state = FAST_STATE_EMPTY;
+					break;
+				} else
+					len--;
+			}
+
+			ret = parse_bytes(buffer, field->string_value, len);
+			if (ret)
+				goto fail;
+
+			memset(field->string_value + len, 0, sizeof(u64));
+		}
+
+		break;
 	case FAST_OP_CONSTANT:
 		if (field->state != FAST_STATE_ASSIGNED)
 			memcpy(field->string_value, field->string_reset,
@@ -656,6 +780,44 @@ static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, stru
 	case FAST_OP_DELTA:
 			ret = FAST_MSG_STATE_GARBLED;
 			goto fail;
+	case FAST_OP_DEFAULT:
+		if (!pmap_is_set(pmap, field->pmap_bit)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+			case FAST_STATE_ASSIGNED:
+			case FAST_STATE_EMPTY:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					memcpy(field->string_value, field->string_reset,
+								strlen(field->string_reset) + 1);
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			default:
+				break;
+			}
+		} else {
+			ret = parse_string(buffer, field->string_value);
+
+			if (ret < 0)
+				goto fail;
+
+			field->state = FAST_STATE_ASSIGNED;
+
+			if (field_is_mandatory(field))
+				break;
+
+			if (ret == 1)
+				field->state = FAST_STATE_EMPTY;
+		}
+
+		break;
 	case FAST_OP_CONSTANT:
 		if (field->state != FAST_STATE_ASSIGNED)
 			memcpy(field->string_value, field->string_reset,
@@ -817,6 +979,59 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 
 		field->decimal_value.exp += exp;
 		field->decimal_value.mnt += mnt;
+
+		break;
+	case FAST_OP_DEFAULT:
+		if (!pmap_is_set(pmap, field->pmap_bit)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+			case FAST_STATE_ASSIGNED:
+			case FAST_STATE_EMPTY:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					field->decimal_value.exp = field->decimal_reset.exp;
+					field->decimal_value.mnt = field->decimal_reset.mnt;
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			default:
+				break;
+			}
+		} else {
+			ret = parse_int(buffer, &exp);
+
+			if (ret)
+				goto fail;
+
+			field->state = FAST_STATE_ASSIGNED;
+
+			if (!field_is_mandatory(field)) {
+				if (!exp) {
+					field->state = FAST_STATE_EMPTY;
+					break;
+				} else if (exp > 0)
+					exp--;
+			}
+
+			if (exp > 63 || exp < -63) {
+				ret = FAST_MSG_STATE_GARBLED;
+				goto fail;
+			}
+
+			ret = parse_int(buffer, &mnt);
+
+			if (ret)
+				goto fail;
+
+			field->decimal_value.exp = exp;
+			field->decimal_value.mnt = mnt;
+		}
 
 		break;
 	case FAST_OP_CONSTANT:
@@ -1369,6 +1584,26 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		field->state = FAST_STATE_ASSIGNED;
 
 		goto transfer;
+	case FAST_OP_DEFAULT:
+		if (!field_is_mandatory(field)) {
+			tmp = tmp >= 0 ? tmp + 1 : tmp;
+
+			if (field_state_empty(field))
+				goto empty;
+		}
+
+		switch (field->state) {
+		case FAST_STATE_UNDEFINED:
+		case FAST_STATE_ASSIGNED:
+			field->state = FAST_STATE_ASSIGNED;
+			goto transfer;
+		case FAST_STATE_EMPTY:
+			goto fail;
+		default:
+			goto fail;
+		}
+
+		break;
 	case FAST_OP_CONSTANT:
 		if (!field_is_mandatory(field)) {
 			if (!field_state_empty(field))
@@ -1531,6 +1766,26 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		tmp = delta;
 
 		goto transfer;
+	case FAST_OP_DEFAULT:
+		if (!field_is_mandatory(field)) {
+			tmp += 1;
+
+			if (field_state_empty(field))
+				goto empty;
+		}
+
+		switch (field->state) {
+		case FAST_STATE_UNDEFINED:
+		case FAST_STATE_ASSIGNED:
+			field->state = FAST_STATE_ASSIGNED;
+			goto transfer;
+		case FAST_STATE_EMPTY:
+			goto fail;
+		default:
+			goto fail;
+		}
+
+		break;
 	case FAST_OP_CONSTANT:
 		if (!field_is_mandatory(field)) {
 			if (!field_state_empty(field))
@@ -1650,6 +1905,24 @@ static int fast_encode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 		goto fail;
 	case FAST_OP_DELTA:
 		goto fail;
+	case FAST_OP_DEFAULT:
+		if (!field_is_mandatory(field)) {
+			if (field_state_empty(field))
+				goto empty;
+		}
+
+		switch (field->state) {
+		case FAST_STATE_UNDEFINED:
+		case FAST_STATE_ASSIGNED:
+			field->state = FAST_STATE_ASSIGNED;
+			goto transfer;
+		case FAST_STATE_EMPTY:
+			goto fail;
+		default:
+			goto fail;
+		}
+
+		break;
 	case FAST_OP_CONSTANT:
 		if (!field_is_mandatory(field)) {
 			if (!field_state_empty(field))
@@ -1755,6 +2028,26 @@ static int fast_encode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 		field->state = FAST_STATE_ASSIGNED;
 
 		goto transfer;
+	case FAST_OP_DEFAULT:
+		if (!field_is_mandatory(field)) {
+			exp = exp >= 0 ? exp + 1 : exp;
+
+			if (field_state_empty(field))
+				goto empty;
+		}
+
+		switch (field->state) {
+		case FAST_STATE_UNDEFINED:
+		case FAST_STATE_ASSIGNED:
+			field->state = FAST_STATE_ASSIGNED;
+			goto transfer;
+		case FAST_STATE_EMPTY:
+			goto fail;
+		default:
+			goto fail;
+		}
+
+		break;
 	case FAST_OP_CONSTANT:
 		if (!field_is_mandatory(field)) {
 			if (!field_state_empty(field))

@@ -100,6 +100,8 @@ static int fast_op_init(xmlNodePtr node, struct fast_field *field)
 		field->op = FAST_OP_COPY;
 	else if (!xmlStrcmp(node->name, (const xmlChar *)"delta"))
 		field->op = FAST_OP_DELTA;
+	else if (!xmlStrcmp(node->name, (const xmlChar *)"default"))
+		field->op = FAST_OP_DEFAULT;
 	else if (!xmlStrcmp(node->name, (const xmlChar *)"constant"))
 		field->op = FAST_OP_CONSTANT;
 	else if (!xmlStrcmp(node->name, (const xmlChar *)"increment"))

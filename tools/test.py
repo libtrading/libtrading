@@ -110,6 +110,7 @@ if result != 0:
 fast_tests = [
   "IncrementOperator",
   "ConstantOperator",
+  "DefaultOperator",
   "DeltaOperator",
   "CopyOperator",
   "NoneOperator",

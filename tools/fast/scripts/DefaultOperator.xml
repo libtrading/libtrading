@@ -1,0 +1,22 @@
+<templates>
+   <template>
+      <int32>
+         <default value="-1" />
+      </int32>
+      <int32 presence="optional">
+         <default />
+      </int32>
+      <uInt32>
+         <default value="1" />
+      </uInt32>
+      <uInt32 presence="optional">
+         <default />
+      </uInt32>
+      <string>
+         <default value="Test" />
+      </string>
+      <string presence="optional">
+         <default />
+      </string>
+   </template>
+</templates>
