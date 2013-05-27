@@ -13,7 +13,6 @@ static const char *usage_fmt =
 "Options:\n"
 "  --version  Print libtrading version.\n"
 "  --cflags   C compiler flags for files that include libtrading headers.\n"
-"  --cflags   C compiler flags for files that include libtrading headers.\n"
 "  --ldflags  Linker flags.\n"
 "  --libs     Libraries needed to link against libtrading.\n";
 
