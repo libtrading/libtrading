@@ -9,6 +9,7 @@ struct buffer;
  * Message types:
  */
 enum pitch_msg_type {
+	PITCH_MSG_SYMBOL_CLEAR			= 's',
 	PITCH_MSG_ADD_ORDER_SHORT		= 'A',
 	PITCH_MSG_ADD_ORDER_LONG		= 'd',
 	PITCH_MSG_ORDER_EXECUTED		= 'E',
@@ -25,6 +26,12 @@ struct pitch_message {
 	char			Timestamp[8];
 	char			MessageType;
 } packed;
+
+struct pitch_msg_symbol_clear {
+	char			Timestamp[8];
+	char			MessageType;
+	char			StockSymbol[8];
+};
 
 struct pitch_msg_add_order_short {
 	char			Timestamp[8];

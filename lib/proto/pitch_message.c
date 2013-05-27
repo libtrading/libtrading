@@ -8,6 +8,8 @@
 static unsigned long pitch_message_size(u8 type)
 {
 	switch (type) {
+	case PITCH_MSG_SYMBOL_CLEAR:
+		return sizeof(struct pitch_msg_symbol_clear);
 	case PITCH_MSG_ADD_ORDER_SHORT:
 		return sizeof(struct pitch_msg_add_order_short);
 	case PITCH_MSG_ADD_ORDER_LONG:
