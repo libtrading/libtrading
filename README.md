@@ -27,6 +27,8 @@ is crucial in trading today's markets, reliability is also a top priority.
 
  * [NASDAQ ITCH 4.1][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/nasdaq_itch41_message.h))
 
+ * [NASDAQ Nordic Equity TotalView-ITCH 1.86][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/omx_itch186_message.h))
+
  * [NASDAQ OUCH 4.2][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/ouch42_message.h))
 
  * [NASDAQ SoupBinTCP][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/soupbin3_session.h))
@@ -39,6 +41,7 @@ is crucial in trading today's markets, reliability is also a top priority.
 [FAST]:              http://fixprotocol.org/fastspec/
 [LSE ITCH]:          http://www.londonstockexchange.com/products-and-services/millennium-exchange/millennium-exchange-migration/mit303-issue93final.pdf
 [MBT Quote API]:     http://www.mbtrading.com/developersMain.aspx?page=api
+[NASDAQ Nordic Equity TotalView-ITCH 1.86]: http://nordic.nasdaqomxtrader.com/digitalAssets/82/82004_nordicequitytotalview-itch1.86.pdf
 [NASDAQ ITCH 4.0]:   http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/tvitch-v4.pdf
 [NASDAQ ITCH 4.1]:   http://nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/NQTV-ITCH-V4_1.pdf
 [NASDAQ OUCH 4.2]:   http://www.nasdaqtrader.com/content/technicalsupport/specifications/TradingProducts/OUCH4.2.pdf
