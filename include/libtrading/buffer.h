@@ -135,6 +135,6 @@ void buffer_compact(struct buffer *buf);
 struct buffer *buffer_mmap(int fd, size_t len);
 void buffer_munmap(struct buffer *buf);
 
-size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream);
+ssize_t buffer_inflate(struct buffer *comp_buf, struct buffer *uncomp_buf, z_stream *stream);
 
 #endif

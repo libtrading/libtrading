@@ -72,13 +72,10 @@ static void print_stats(const char *filename)
 	printf("\n");
 }
 
-static void print_progress(int fd, struct stat *st)
+static void print_progress(struct buffer *comp_buf, unsigned long size)
 {
-	off_t offset;
+	fprintf(stderr, "Processing messages: %3u%%\r", (unsigned int)(comp_buf->start * 100 / size));
 
-	offset = lseek(fd, 0, SEEK_CUR);
-
-	fprintf(stderr, "Processing messages: %3u%%\r", (unsigned int)(offset * 100 / st->st_size));
 	fflush(stderr);
 }
 
@@ -97,7 +94,7 @@ static void release_stream(z_stream *stream)
 
 int main(int argc, char *argv[])
 {
-	struct buffer *buffer;
+	struct buffer *comp_buf, *uncomp_buf;
 	const char *filename;
 	bool show_progress;
 	z_stream stream;
@@ -139,20 +136,26 @@ int main(int argc, char *argv[])
 	if (fstat(fd, &st) < 0)
 		die("%s: %s: %s\n", program, filename, strerror(errno));
 
-	buffer = buffer_new(BUFFER_SIZE);
-	if (!buffer)
+	comp_buf = buffer_mmap(fd, st.st_size);
+	if (!comp_buf)
+		die("%s: %s\n", program, strerror(errno));
+
+	stream.next_in = (void *) buffer_start(comp_buf);
+
+	uncomp_buf = buffer_new(BUFFER_SIZE);
+	if (!uncomp_buf)
 		die("%s: %s\n", program, strerror(errno));
 
 	for (;;) {
 		struct itch41_message *msg;
 
 retry_size:
-		if (buffer_size(buffer) < sizeof(u16)) {
+		if (buffer_size(uncomp_buf) < sizeof(u16)) {
 			ssize_t nr;
 
-			buffer_compact(buffer);
+			buffer_compact(uncomp_buf);
 
-			nr = buffer_inflate(buffer, fd, &stream);
+			nr = buffer_inflate(comp_buf, uncomp_buf, &stream);
 			if (nr < 0)
 				die("%s: zlib error\n", program);
 
@@ -160,21 +163,21 @@ retry_size:
 				break;
 
 			if (show_progress)
-				print_progress(fd, &st);
+				print_progress(comp_buf, st.st_size);
 
 			goto retry_size;
 		}
 
-		buffer_advance(buffer, sizeof(u16));
+		buffer_advance(uncomp_buf, sizeof(u16));
 
 retry_message:
-		msg = itch41_message_decode(buffer);
+		msg = itch41_message_decode(uncomp_buf);
 		if (!msg) {
 			ssize_t nr;
 
-			buffer_compact(buffer);
+			buffer_compact(uncomp_buf);
 
-			nr = buffer_inflate(buffer, fd, &stream);
+			nr = buffer_inflate(comp_buf, uncomp_buf, &stream);
 			if (nr < 0)
 				die("%s: zlib error\n", program);
 
@@ -182,7 +185,7 @@ retry_message:
 				break;
 
 			if (show_progress)
-				print_progress(fd, &st);
+				print_progress(comp_buf, st.st_size);
 
 			goto retry_message;
 		}
@@ -195,7 +198,9 @@ retry_message:
 
 	printf("\n");
 
-	buffer_delete(buffer);
+	buffer_munmap(comp_buf);
+
+	buffer_delete(uncomp_buf);
 
 	if (close(fd) < 0)
 		die("%s: %s: %s\n", program, filename, strerror(errno));

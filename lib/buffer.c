@@ -204,38 +204,43 @@ void buffer_compact(struct buffer *buf)
 
 #define INFLATE_SIZE	(1ULL << 18) /* 256 KB */
 
-size_t buffer_inflate(struct buffer *buffer, int fd, z_stream *stream)
+ssize_t buffer_inflate(struct buffer *comp_buf, struct buffer *uncomp_buf, z_stream *stream)
 {
-	unsigned char in[INFLATE_SIZE];
-	ssize_t nr;
-	int ret;
+	unsigned long nr;
+	ssize_t ret;
+	int err;
 
-	nr = xread(fd, in, INFLATE_SIZE);
-	if (nr < 0)
-		return -1;
-
+	nr = buffer_size(comp_buf);
 	if (!nr)
 		return 0;
 
-	stream->avail_in	= nr;
-	stream->next_in		= in;
-	stream->avail_out	= buffer_remaining(buffer);
-	stream->next_out	= (void *) buffer_end(buffer);
+	if (nr > INFLATE_SIZE)
+		nr = INFLATE_SIZE;
 
-	ret = inflate(stream, Z_NO_FLUSH);
-	switch (ret) {
-	case Z_STREAM_ERROR:
-	case Z_DATA_ERROR:
-	case Z_MEM_ERROR:
-	case Z_NEED_DICT:
-		return -1;
-	default:
+	stream->avail_in	= nr;
+	stream->avail_out	= buffer_remaining(uncomp_buf);
+	stream->next_out	= (void *) buffer_end(uncomp_buf);
+
+retry:
+	err = inflate(stream, Z_NO_FLUSH);
+	switch (err) {
+	case Z_STREAM_END:
+	case Z_BUF_ERROR:
+	case Z_OK:
+		/* OK to continue */
 		break;
+	default:
+		return -1;
 	}
 
-	nr = buffer_remaining(buffer) - stream->avail_out;
+	if (!err && !stream->avail_out)
+		goto retry;
 
-	buffer->end += nr;
+	buffer_advance(comp_buf, nr - stream->avail_in);
 
-	return nr;
+	ret = buffer_remaining(uncomp_buf) - stream->avail_out;
+
+	uncomp_buf->end += ret;
+
+	return ret;
 }
