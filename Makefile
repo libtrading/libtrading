@@ -74,7 +74,7 @@ PROGRAMS += tools/fix/fix_client
 PROGRAMS += tools/fix/fix_server
 PROGRAMS += tools/test-fix-client
 PROGRAMS += tools/test-fix-server
-PROGRAMS += tools/test-nasdaq-itch41
+PROGRAMS += tools/tape/tape
 
 DEFINES =
 INCLUDES = $(shell sh -c 'xml2-config --cflags')

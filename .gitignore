@@ -10,9 +10,9 @@
 /tools/fast/fast_parser
 /tools/fix/fix_client
 /tools/fix/fix_server
+/tools/tape/tape
 /tools/test-fix-client
 /tools/test-fix-server
-/tools/test-nasdaq-itch41
 /tools/test/protocol/boe/*.bin
 /tools/test/test-runner.c
 /tools/test/test-suite.h
