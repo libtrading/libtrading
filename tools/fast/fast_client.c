@@ -52,7 +52,7 @@ static int fast_session_initiate(const struct protocol_info *proto, int sockfd,
 		goto exit;
 	}
 
-	if (fast_suite_template(session, xml)) {
+	if (fast_parse_template(session, xml)) {
 		fprintf(stderr, "Cannot read template xml file\n");
 		goto exit;
 	}

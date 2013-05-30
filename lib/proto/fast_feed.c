@@ -65,7 +65,7 @@ int fast_feed_open(struct fast_feed *feed)
 	if (!feed->session)
 		goto fail;
 
-	if (fast_micex_template(feed->session, feed->xml))
+	if (fast_parse_template(feed->session, feed->xml))
 		goto fail;
 
 	feed->active = true;

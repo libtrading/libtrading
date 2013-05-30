@@ -92,7 +92,7 @@ static int fast_session_accept(int incoming_fd, const char *xml, const char *scr
 		goto exit;
 	}
 
-	if (fast_suite_template(session, xml)) {
+	if (fast_parse_template(session, xml)) {
 		fprintf(stderr, "Cannot read template xml file\n");
 		goto exit;
 	}

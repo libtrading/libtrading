@@ -80,7 +80,7 @@ static int fast_session_initiate(const struct protocol_info *proto, int fd, cons
 		goto exit;
 	}
 
-	if (fast_micex_template(session, xml)) {
+	if (fast_parse_template(session, xml)) {
 		fprintf(stderr, "Parser: Cannot read template xml file\n");
 		goto exit;
 	}

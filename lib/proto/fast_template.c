@@ -448,52 +448,7 @@ exit:
 	return ret;
 }
 
-int fast_suite_template(struct fast_session *self, const char *xml)
-{
-	struct fast_message *msg;
-	xmlNodePtr node;
-	xmlDocPtr doc;
-	int ret = 1;
-
-	doc = xmlParseFile(xml);
-	if (doc == NULL)
-		goto exit;
-
-	node = xmlDocGetRootElement(doc);
-	if (node == NULL)
-		goto exit;
-
-	if (xmlStrcmp(node->name, (const xmlChar *)"templates"))
-		goto free;
-
-	if (xmlChildElementCount(node) > FAST_TEMPLATE_MAX_NUMBER)
-		goto free;
-
-	node = node->xmlChildrenNode;
-	while (node != NULL) {
-		if (node->type != XML_ELEMENT_NODE) {
-			node = node->next;
-			continue;
-		}
-
-		msg = self->rx_messages + self->nr_messages;
-		if (fast_message_init(node, msg))
-			goto free;
-
-		self->nr_messages++;
-		node = node->next;
-	}
-
-	ret = 0;
-
-free:
-	xmlFreeDoc(doc);
-
-exit:
-	return ret;
-}
-
-int fast_micex_template(struct fast_session *self, const char *xml)
+int fast_parse_template(struct fast_session *self, const char *xml)
 {
 	struct fast_message *msg;
 	xmlNodePtr node;
