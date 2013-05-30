@@ -53,23 +53,23 @@ static void print_stats(const char *filename)
 	printf(" Message type stats for '%s':\n\n", filename);
 
 	print_stat("Timestamp - Seconds", ITCH41_MSG_TIMESTAMP_SECONDS);
-        print_stat("System Event", ITCH41_MSG_SYSTEM_EVENT);
-        print_stat("Stock Directory", ITCH41_MSG_STOCK_DIRECTORY);
-        print_stat("Stock Trading Action", ITCH41_MSG_STOCK_TRADING_ACTION);
-        print_stat("REG SHO Restriction", ITCH41_MSG_REG_SHO_RESTRICTION);
-        print_stat("Market Participant Position", ITCH41_MSG_MARKET_PARTICIPANT_POS);
-        print_stat("Add Order", ITCH41_MSG_ADD_ORDER);
-        print_stat("Add Order - MPID Attribution", ITCH41_MSG_ADD_ORDER_MPID);
-        print_stat("Order Executed", ITCH41_MSG_ORDER_EXECUTED);
-        print_stat("Order Executed With Price", ITCH41_MSG_ORDER_EXECUTED_WITH_PRICE);
-        print_stat("Order Cancel", ITCH41_MSG_ORDER_CANCEL);
-        print_stat("Order Delete", ITCH41_MSG_ORDER_DELETE);
-        print_stat("Order Replace", ITCH41_MSG_ORDER_REPLACE);
-        print_stat("Trade (non-cross)", ITCH41_MSG_TRADE);
-        print_stat("Cross Trade", ITCH41_MSG_CROSS_TRADE);
-        print_stat("Broken Trade", ITCH41_MSG_BROKEN_TRADE);
-        print_stat("NOII", ITCH41_MSG_NOII);
-        print_stat("RPII", ITCH41_MSG_RPII);
+	print_stat("System Event", ITCH41_MSG_SYSTEM_EVENT);
+	print_stat("Stock Directory", ITCH41_MSG_STOCK_DIRECTORY);
+	print_stat("Stock Trading Action", ITCH41_MSG_STOCK_TRADING_ACTION);
+	print_stat("REG SHO Restriction", ITCH41_MSG_REG_SHO_RESTRICTION);
+	print_stat("Market Participant Position", ITCH41_MSG_MARKET_PARTICIPANT_POS);
+	print_stat("Add Order", ITCH41_MSG_ADD_ORDER);
+	print_stat("Add Order - MPID Attribution", ITCH41_MSG_ADD_ORDER_MPID);
+	print_stat("Order Executed", ITCH41_MSG_ORDER_EXECUTED);
+	print_stat("Order Executed With Price", ITCH41_MSG_ORDER_EXECUTED_WITH_PRICE);
+	print_stat("Order Cancel", ITCH41_MSG_ORDER_CANCEL);
+	print_stat("Order Delete", ITCH41_MSG_ORDER_DELETE);
+	print_stat("Order Replace", ITCH41_MSG_ORDER_REPLACE);
+	print_stat("Trade (non-cross)", ITCH41_MSG_TRADE);
+	print_stat("Cross Trade", ITCH41_MSG_CROSS_TRADE);
+	print_stat("Broken Trade", ITCH41_MSG_BROKEN_TRADE);
+	print_stat("NOII", ITCH41_MSG_NOII);
+	print_stat("RPII", ITCH41_MSG_RPII);
 
 	printf("\n");
 }
