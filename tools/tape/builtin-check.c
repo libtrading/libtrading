@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <inttypes.h>
+#include <getopt.h>
 #include <libgen.h>
 #include <locale.h>
 #include <stdarg.h>
@@ -20,6 +21,10 @@
 #include <zlib.h>
 
 extern const char *program;
+
+static const char *filename;
+static bool show_progress = true;
+static bool verbose;
 
 static uint64_t stats[26];
 
@@ -38,7 +43,7 @@ static void usage(void)
 {
 #define FMT								\
 "\n usage: %s check [<options>] [filename]\n"				\
-"\n    -v                    be more verbose\n"				\
+"\n    -v, --verbose         be more verbose\n"				\
 "\n"
 	fprintf(stderr, FMT, program);
 #undef FMT
@@ -46,6 +51,35 @@ static void usage(void)
 	exit(EXIT_FAILURE);
 }
 
+static const struct option options[] = {
+	{ "verbose",	no_argument,	NULL, 'v' },
+	{ }
+};
+
+static void parse_args(int argc, char *argv[])
+{
+	int opt;
+
+	while ((opt = getopt_long(argc, argv, "v", options, NULL)) != -1) {
+		switch (opt) {
+		case 'v':
+			verbose		= true;
+			show_progress	= false;
+			break;
+		default:
+			usage();
+			break;
+		}
+	}
+
+	argc -= optind;
+	argv += optind;
+
+	if (argc != 1)
+		usage();
+
+	filename	= argv[0];
+}
 
 #define BUFFER_SIZE	(1ULL << 20) /* 1 MB */
 
@@ -54,7 +88,7 @@ static void print_stat(const char *name, u8 msg_type)
 	fprintf(stdout, "%'14.0f  %s\n", (double) stats[msg_type - 'A'], name);
 }
 
-static void print_stats(const char *filename)
+static void print_stats(void)
 {
 	printf(" Message type stats for '%s':\n\n", filename);
 
@@ -103,12 +137,8 @@ static void release_stream(z_stream *stream)
 int cmd_check(int argc, char *argv[])
 {
 	struct buffer *comp_buf, *uncomp_buf;
-	const char *filename;
-	bool show_progress;
 	z_stream stream;
 	struct stat st;
-	bool verbose;
-	int opt;
 	int fd;
 
 	setlocale(LC_ALL, "");
@@ -116,24 +146,9 @@ int cmd_check(int argc, char *argv[])
 	if (argc < 2)
 		usage();
 
-	show_progress	= true;
-	verbose		= false;
-
-	while ((opt = getopt(argc, argv, "v")) != -1) {
-		switch (opt) {
-		case 'v':
-			verbose		= true;
-			show_progress	= false;
-			break;
-		default:
-			usage();
-			break;
-		}
-	}
+	parse_args(argc, argv);
 
 	init_stream(&stream);
-
-	filename = argv[optind];
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0)
@@ -213,7 +228,7 @@ retry_message:
 
 	release_stream(&stream);
 
-	print_stats(filename);
+	print_stats();
 
 	return 0;
 }
