@@ -36,10 +36,16 @@ static void die(const char *fmt, ...)
 
 static void usage(void)
 {
-	printf("usage: %s check [-v] <itch-file>\n", program);
+#define FMT								\
+"\n usage: %s check [<options>] [filename]\n"				\
+"\n    -v                    be more verbose\n"				\
+"\n"
+	fprintf(stderr, FMT, program);
+#undef FMT
 
 	exit(EXIT_FAILURE);
 }
+
 
 #define BUFFER_SIZE	(1ULL << 20) /* 1 MB */
 
