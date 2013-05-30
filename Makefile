@@ -115,6 +115,8 @@ fast_server_EXTRA_DEPS += tools/fast/test.o
 fast_parser_EXTRA_DEPS += lib/die.o
 fast_parser_EXTRA_DEPS += tools/fast/test.o
 
+tape_EXTRA_DEPS += tools/tape/builtin-check.o
+
 CFLAGS += $(DEFINES)
 CFLAGS += $(INCLUDES)
 CFLAGS += $(CONFIG_OPTS)
