@@ -203,7 +203,6 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 	xmlNodePtr tmp;
 	int i, ret = 1;
 	int nr_fields;
-	int pmap_bit;
 
 	field->ptr_value = calloc(1, sizeof(struct fast_sequence));
 	if (!field->ptr_value)
@@ -238,7 +237,6 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 			goto exit;
 
 		msg->nr_fields = 0;
-		pmap_bit = 0;
 
 		while (tmp != NULL) {
 			if (tmp->type != XML_ELEMENT_NODE) {
@@ -251,10 +249,8 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 			if (fast_field_init(tmp, field))
 				goto exit;
 
-			if (pmap_required(field)) {
+			if (pmap_required(field))
 				field_add_flags(orig, FAST_FIELD_FLAGS_PMAPREQ);
-				field->pmap_bit = pmap_bit++;
-			}
 
 			msg->nr_fields++;
 			tmp = tmp->next;
@@ -321,7 +317,6 @@ static int fast_message_init(xmlNodePtr node, struct fast_message *msg)
 	struct fast_field *field;
 	int nr_fields;
 	xmlChar *prop;
-	int pmap_bit;
 	int ret = 1;
 
 	if (xmlStrcmp(node->name, (const xmlChar *)"template"))
@@ -352,7 +347,6 @@ static int fast_message_init(xmlNodePtr node, struct fast_message *msg)
 		goto exit;
 
 	msg->nr_fields = 0;
-	pmap_bit = 1;
 
 	node = node->xmlChildrenNode;
 	while (node != NULL) {
@@ -365,9 +359,6 @@ static int fast_message_init(xmlNodePtr node, struct fast_message *msg)
 
 		if (fast_field_init(node, field))
 			goto exit;
-
-		if (pmap_required(field))
-			field->pmap_bit = pmap_bit++;
 
 		msg->nr_fields++;
 		node = node->next;

@@ -178,7 +178,9 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 		break;
 	case FAST_OP_COPY:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 				if (field_has_reset_value(field)) {
@@ -224,7 +226,9 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 		break;
 	case FAST_OP_INCR:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 				if (field_has_reset_value(field)) {
@@ -294,7 +298,9 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 		break;
 	case FAST_OP_DEFAULT:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 			case FAST_STATE_ASSIGNED:
@@ -341,7 +347,9 @@ static int fast_decode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		if (field_is_mandatory(field))
 			break;
 
-		if (!pmap_is_set(pmap, field->pmap_bit))
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit))
 			field->state = FAST_STATE_EMPTY;
 
 		break;
@@ -379,7 +387,9 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 
 		break;
 	case FAST_OP_COPY:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 				if (field_has_reset_value(field)) {
@@ -425,7 +435,9 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 
 		break;
 	case FAST_OP_INCR:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 				if (field_has_reset_value(field)) {
@@ -491,7 +503,9 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 
 		break;
 	case FAST_OP_DEFAULT:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 			case FAST_STATE_ASSIGNED:
@@ -538,7 +552,9 @@ static int fast_decode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		if (field_is_mandatory(field))
 			break;
 
-		if (!pmap_is_set(pmap, field->pmap_bit))
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit))
 			field->state = FAST_STATE_EMPTY;
 
 		break;
@@ -581,7 +597,9 @@ static int fast_decode_unicode(struct buffer *buffer, struct fast_pmap *pmap, st
 
 		break;
 	case FAST_OP_COPY:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 				if (field_has_reset_value(field)) {
@@ -640,7 +658,9 @@ static int fast_decode_unicode(struct buffer *buffer, struct fast_pmap *pmap, st
 			ret = FAST_MSG_STATE_GARBLED;
 			goto fail;
 	case FAST_OP_DEFAULT:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 			case FAST_STATE_ASSIGNED:
@@ -695,7 +715,9 @@ static int fast_decode_unicode(struct buffer *buffer, struct fast_pmap *pmap, st
 		if (field_is_mandatory(field))
 			break;
 
-		if (!pmap_is_set(pmap, field->pmap_bit))
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit))
 			field->state = FAST_STATE_EMPTY;
 
 		break;
@@ -730,7 +752,9 @@ static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, stru
 
 		break;
 	case FAST_OP_COPY:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 				if (field_has_reset_value(field)) {
@@ -781,7 +805,9 @@ static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, stru
 			ret = FAST_MSG_STATE_GARBLED;
 			goto fail;
 	case FAST_OP_DEFAULT:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 			case FAST_STATE_ASSIGNED:
@@ -828,7 +854,9 @@ static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, stru
 		if (field_is_mandatory(field))
 			break;
 
-		if (!pmap_is_set(pmap, field->pmap_bit))
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit))
 			field->state = FAST_STATE_EMPTY;
 
 		break;
@@ -887,7 +915,9 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 
 		break;
 	case FAST_OP_COPY:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 				if (field_has_reset_value(field)) {
@@ -982,7 +1012,9 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 
 		break;
 	case FAST_OP_DEFAULT:
-		if (!pmap_is_set(pmap, field->pmap_bit)) {
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
 			switch (field->state) {
 			case FAST_STATE_UNDEFINED:
 			case FAST_STATE_ASSIGNED:
@@ -1045,7 +1077,9 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 		if (field_is_mandatory(field))
 			break;
 
-		if (!pmap_is_set(pmap, field->pmap_bit))
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit))
 			field->state = FAST_STATE_EMPTY;
 
 		break;
@@ -1107,6 +1141,7 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 				goto exit;
 
 			spmap->is_valid = true;
+			spmap->pmap_bit = -1;
 		}
 
 		msg = seq->elements;
@@ -1209,6 +1244,7 @@ struct fast_message *fast_message_decode(struct fast_session *session)
 			goto fail;
 
 		pmap->is_valid = true;
+		pmap->pmap_bit = 0;
 	}
 
 	if (!session->rx_message) {
@@ -1606,8 +1642,10 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 		break;
 	case FAST_OP_CONSTANT:
 		if (!field_is_mandatory(field)) {
+			pmap->pmap_bit++;
+
 			if (!field_state_empty(field))
-				pmap_set(pmap, field->pmap_bit);
+				pmap_set(pmap, pmap->pmap_bit);
 			else
 				break;
 		}
@@ -1633,7 +1671,7 @@ transfer:
 		goto fail;
 
 	if (pset)
-		pmap_set(pmap, field->pmap_bit);
+		pmap_set(pmap, ++pmap->pmap_bit);
 
 	return 0;
 
@@ -1788,8 +1826,10 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 		break;
 	case FAST_OP_CONSTANT:
 		if (!field_is_mandatory(field)) {
+			pmap->pmap_bit++;
+
 			if (!field_state_empty(field))
-				pmap_set(pmap, field->pmap_bit);
+				pmap_set(pmap, pmap->pmap_bit);
 			else
 				break;
 		}
@@ -1820,7 +1860,7 @@ transfer:
 	}
 
 	if (pset)
-		pmap_set(pmap, field->pmap_bit);
+		pmap_set(pmap, ++pmap->pmap_bit);
 
 	return 0;
 
@@ -1925,8 +1965,10 @@ static int fast_encode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 		break;
 	case FAST_OP_CONSTANT:
 		if (!field_is_mandatory(field)) {
+			pmap->pmap_bit++;
+
 			if (!field_state_empty(field))
-				pmap_set(pmap, field->pmap_bit);
+				pmap_set(pmap, pmap->pmap_bit);
 			else
 				break;
 		}
@@ -1952,7 +1994,7 @@ transfer:
 		goto fail;
 
 	if (pset)
-		pmap_set(pmap, field->pmap_bit);
+		pmap_set(pmap, ++pmap->pmap_bit);
 
 	return 0;
 
@@ -2050,8 +2092,10 @@ static int fast_encode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 		break;
 	case FAST_OP_CONSTANT:
 		if (!field_is_mandatory(field)) {
+			pmap->pmap_bit++;
+
 			if (!field_state_empty(field))
-				pmap_set(pmap, field->pmap_bit);
+				pmap_set(pmap, pmap->pmap_bit);
 			else
 				break;
 		}
@@ -2083,7 +2127,7 @@ transfer:
 		goto fail;
 
 	if (pset)
-		pmap_set(pmap, field->pmap_bit);
+		pmap_set(pmap, ++pmap->pmap_bit);
 
 	return 0;
 
@@ -2100,6 +2144,7 @@ int fast_message_encode(struct fast_message *msg)
 	pmap.nr_bytes = FAST_PMAP_MAX_BYTES;
 	memset(pmap.bytes, 0, pmap.nr_bytes);
 	pmap_set(&pmap, 0);
+	pmap.pmap_bit = 0;
 
 	if (transfer_uint(msg->msg_buf, msg->tid))
 		goto fail;

@@ -56,6 +56,7 @@ enum fast_state {
 
 struct fast_pmap {
 	bool		is_valid;
+	long		pmap_bit;
 	unsigned long	nr_bytes;
 	char	bytes[FAST_PMAP_MAX_BYTES];
 };
@@ -69,8 +70,6 @@ struct fast_field {
 	enum fast_presence	presence;
 	enum fast_type		type;
 	enum fast_op		op;
-
-	unsigned long		pmap_bit;
 
 	enum fast_state		state;
 	enum fast_state		state_previous;
