@@ -878,7 +878,7 @@ static int fast_decode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 		return fast_decode_ascii(buffer, pmap, field);
 }
 
-static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+static int fast_decode_decimal_atomic(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
 {
 	int ret = 0;
 	i64 exp, mnt;
@@ -1091,6 +1091,54 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 
 fail:
 	return ret;
+}
+
+static int fast_decode_decimal_individ(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	int ret = 0;
+	struct fast_decimal *decimal;
+
+	decimal = &field->decimal_value;
+
+	ret = fast_decode_int(buffer, pmap, &decimal->fields[0]);
+	if (ret)
+		goto done;
+
+	if (field_state_empty(&decimal->fields[0])) {
+		if (field_is_mandatory(field))
+			ret = FAST_MSG_STATE_GARBLED;
+
+		field->state = FAST_STATE_EMPTY;
+
+		goto done;
+	}
+
+	if (decimal->fields[0].int_value > 63 ||
+		decimal->fields[0].int_value < -63) {
+		ret = FAST_MSG_STATE_GARBLED;
+
+		goto done;
+	}
+
+	ret = fast_decode_int(buffer, pmap, &decimal->fields[1]);
+	if (ret)
+		goto done;
+
+	field->state = FAST_STATE_ASSIGNED;
+
+	decimal->exp = decimal->fields[0].int_value;
+	decimal->mnt = decimal->fields[1].int_value;
+
+done:
+	return ret;
+}
+
+static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	if (!field_has_flags(field, FAST_FIELD_FLAGS_DECIMAL_INDIVID))
+		return fast_decode_decimal_atomic(buffer, pmap, field);
+	else
+		return fast_decode_decimal_individ(buffer, pmap, field);
 }
 
 static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
@@ -1348,6 +1396,8 @@ void fast_fields_free(struct fast_message *self)
 				free((seq->elements + j)->fields);
 
 			free(field->ptr_value);
+		} else if (field->type == FAST_TYPE_DECIMAL) {
+			free(field->decimal_value.fields);
 		}
 	}
 
@@ -2002,7 +2052,7 @@ fail:
 	return -1;
 }
 
-static int fast_encode_decimal(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+static int fast_encode_decimal_atomic(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
 {
 	i64 exp = field->decimal_value.exp;
 	i64 mnt = field->decimal_value.mnt;
@@ -2133,6 +2183,46 @@ transfer:
 
 fail:
 	return -1;
+}
+
+static int fast_encode_decimal_individ(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	struct fast_decimal *decimal;
+	int ret;
+
+	decimal = &field->decimal_value;
+
+	if (!field_state_empty(field)) {
+		decimal->fields[0].int_value = decimal->exp;
+		decimal->fields[1].int_value = decimal->mnt;
+	}
+
+	decimal->fields[0].state = field->state;
+	decimal->fields[1].state = field->state;
+
+	ret = fast_encode_int(buffer, pmap, &decimal->fields[0]);
+	if (ret)
+		goto exit;
+
+	if (field_state_empty(&decimal->fields[0]))
+		goto exit;
+
+	field->state = FAST_STATE_ASSIGNED;
+
+	ret = fast_encode_int(buffer, pmap, &decimal->fields[1]);
+	if (ret)
+		goto exit;
+
+exit:
+	return ret;
+}
+
+static int fast_encode_decimal(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	if (!field_has_flags(field, FAST_FIELD_FLAGS_DECIMAL_INDIVID))
+		return fast_encode_decimal_atomic(buffer, pmap, field);
+	else
+		return fast_encode_decimal_individ(buffer, pmap, field);
 }
 
 int fast_message_encode(struct fast_message *msg)

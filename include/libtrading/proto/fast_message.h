@@ -22,6 +22,7 @@
 
 #define	FAST_FIELD_FLAGS_UNICODE		0x00000001
 #define	FAST_FIELD_FLAGS_PMAPREQ		0x00000002
+#define	FAST_FIELD_FLAGS_DECIMAL_INDIVID	0x00000004
 
 struct buffer;
 struct fast_session;
@@ -62,6 +63,7 @@ struct fast_pmap {
 };
 
 struct fast_decimal {
+	struct fast_field	*fields;
 	i64			exp;
 	i64			mnt;
 };

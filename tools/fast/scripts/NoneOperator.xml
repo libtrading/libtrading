@@ -6,6 +6,18 @@
       <uInt32 presence="optional" />
       <decimal />
       <decimal presence="optional" />
+      <decimal>
+         <exponent>
+         </exponent>
+         <mantissa>
+         </mantissa>
+      </decimal>
+      <decimal presence="optional">
+         <exponent>
+         </exponent>
+         <mantissa>
+         </mantissa>
+      </decimal>
       <string />
       <string presence="optional" />
    </template>

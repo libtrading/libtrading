@@ -18,6 +18,22 @@
       <decimal presence="optional">
          <copy />
       </decimal>
+      <decimal>
+         <exponent>
+            <copy />
+         </exponent>
+         <mantissa>
+            <copy />
+         </mantissa>
+      </decimal>
+      <decimal presence="optional">
+         <exponent>
+            <copy />
+         </exponent>
+         <mantissa>
+            <copy />
+         </mantissa>
+      </decimal>
       <string>
          <copy />
       </string>

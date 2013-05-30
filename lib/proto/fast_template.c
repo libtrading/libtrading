@@ -84,6 +84,12 @@ static int fast_type_init(xmlNodePtr node, struct fast_field *field)
 	else if (!xmlStrcmp(node->name, (const xmlChar *)"sequence") ||
 			!xmlStrcmp(node->name, (const xmlChar *)"Sequence"))
 		field->type = FAST_TYPE_SEQUENCE;
+	else if (!xmlStrcmp(node->name, (const xmlChar *)"exponent") ||
+			!xmlStrcmp(node->name, (const xmlChar *)"Exponent"))
+		field->type = FAST_TYPE_INT;
+	else if (!xmlStrcmp(node->name, (const xmlChar *)"mantissa") ||
+			!xmlStrcmp(node->name, (const xmlChar *)"Mantissa"))
+		field->type = FAST_TYPE_INT;
 	else
 		ret = 1;
 
@@ -263,6 +269,66 @@ exit:
 	return ret;
 }
 
+static int fast_decimal_init_atomic(xmlNodePtr node, struct fast_field *field)
+{
+	int ret = 0;
+
+	node = node->xmlChildrenNode;
+
+	while (node && node->type != XML_ELEMENT_NODE)
+		node = node->next;
+
+	ret = fast_op_init(node, field);
+	if (ret)
+		goto exit;
+
+	ret = fast_reset_init(node, field);
+	if (ret)
+		goto exit;
+
+exit:
+	return ret;
+}
+
+static int fast_decimal_init_individ(xmlNodePtr node, struct fast_field *field)
+{
+	struct fast_decimal *decimal;
+	int ret = -1;
+
+	decimal = &field->decimal_value;
+
+	decimal->fields = calloc(2, sizeof(struct fast_field));
+	if (!decimal->fields)
+		goto exit;
+
+	node = node->xmlChildrenNode;
+
+	while (node) {
+		if (node->type != XML_ELEMENT_NODE) {
+			node = node->next;
+			continue;
+		}
+
+		if (!xmlStrcmp(node->name, (const xmlChar *)"exponent"))
+			ret = fast_field_init(node, &decimal->fields[0]);
+		else if (!xmlStrcmp(node->name, (const xmlChar *)"mantissa"))
+			ret = fast_field_init(node, &decimal->fields[1]);
+		else
+			ret = -1;
+
+		if (ret)
+			goto exit;
+
+		node = node->next;
+	}
+
+	field_add_flags(field, FAST_FIELD_FLAGS_DECIMAL_INDIVID);
+	decimal->fields[0].presence = field->presence;
+
+exit:
+	return ret;
+}
+
 static int fast_field_init(xmlNodePtr node, struct fast_field *field)
 {
 	int ret;
@@ -272,6 +338,9 @@ static int fast_field_init(xmlNodePtr node, struct fast_field *field)
 	ret = fast_type_init(node, field);
 	if (ret)
 		goto exit;
+
+	if (field->type == FAST_TYPE_DECIMAL)
+		ret = 0;
 
 	ret = fast_presence_init(node, field);
 	if (ret)
@@ -285,7 +354,6 @@ static int fast_field_init(xmlNodePtr node, struct fast_field *field)
 	case FAST_TYPE_INT:
 	case FAST_TYPE_UINT:
 	case FAST_TYPE_STRING:
-	case FAST_TYPE_DECIMAL:
 		node = node->xmlChildrenNode;
 
 		while (node && node->type != XML_ELEMENT_NODE)
@@ -298,6 +366,16 @@ static int fast_field_init(xmlNodePtr node, struct fast_field *field)
 		ret = fast_reset_init(node, field);
 		if (ret)
 			goto exit;
+
+		break;
+	case FAST_TYPE_DECIMAL:
+		field->decimal_value.fields = NULL;
+
+		ret = fast_decimal_init_atomic(node, field);
+		if (!ret)
+			goto exit;
+
+		ret = fast_decimal_init_individ(node, field);
 
 		break;
 	case FAST_TYPE_SEQUENCE:
