@@ -40,14 +40,11 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 	struct fast_decimal price;
 	struct fast_field *field;
 	struct price_level level;
-	unsigned long *map;
 	char type;
 	i64 size;
 	u32 ind;
 
-	map = book->md_map->inc_map;
-
-	field = map_field(msg, map, MDEntryTypeInc);
+	field = fast_field_id(msg, MDEntryType);
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -63,19 +60,19 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 		goto fail;
 	}
 
-	field = map_field(msg, map, MDPriceLevelInc);
+	field = fast_field_id(msg, MDPriceLevel);
 	if (!field || field_state_empty(field))
 		goto fail;
 
 	ind = field->uint_value - 1;
 
-	field = map_field(msg, map, MDEntrySizeInc);
+	field = fast_field_id(msg, MDEntrySize);
 	if (!field || field_state_empty(field))
 		goto fail;
 
 	size = field->int_value;
 
-	field = map_field(msg, map, MDEntryPxInc);
+	field = fast_field_id(msg, MDEntryPx);
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -86,7 +83,7 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 	level.price = price.mnt;
 	level.size = size;
 
-	field = map_field(msg, map, MDUpdateActionInc);
+	field = fast_field_id(msg, MDUpdateAction);
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -116,14 +113,11 @@ static int md_snapshot(struct fast_book *book, struct fast_message *msg)
 	struct fast_decimal price;
 	struct fast_field *field;
 	struct price_level level;
-	unsigned long *map;
 	char type;
 	i64 size;
 	u32 ind;
 
-	map = book->md_map->snp_map;
-
-	field = map_field(msg, map, MDEntryTypeSnp);
+	field = fast_field_id(msg, MDEntryType);
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -139,19 +133,19 @@ static int md_snapshot(struct fast_book *book, struct fast_message *msg)
 		goto fail;
 	}
 
-	field = map_field(msg, map, MDPriceLevelSnp);
+	field = fast_field_id(msg, MDPriceLevel);
 	if (!field || field_state_empty(field))
 		goto fail;
 
 	ind = field->uint_value - 1;
 
-	field = map_field(msg, map, MDEntrySizeSnp);
+	field = fast_field_id(msg, MDEntrySize);
 	if (!field || field_state_empty(field))
 		goto fail;
 
 	size = field->int_value;
 
-	field = map_field(msg, map, MDEntryPxSnp);
+	field = fast_field_id(msg, MDEntryPx);
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -178,12 +172,9 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 	struct fast_field *field;
 	struct fast_message *md;
 	struct fast_book *book;
-	unsigned long *map;
 	int i;
 
-	map = set->msg_map.inc_map;
-
-	field = map_field(msg, map, MDEntriesInc);
+	field = fast_field_name(msg, "MDEntries");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -191,12 +182,10 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 	if (field_state_empty(&seq->length))
 		goto fail;
 
-	map = set->md_map.inc_map;
-
 	for (i = 1; i <= seq->length.uint_value; i++) {
 		md = seq->elements + i;
 
-		field = map_field(md, map, SecurityIDInc);
+		field = fast_field_id(md, SecurityID);
 		if (!field || field_state_empty(field))
 			goto fail;
 
@@ -207,7 +196,7 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 		if (dst && dst->secid != book->secid)
 			continue;
 
-		field = map_field(md, map, RptSeqInc);
+		field = fast_field_id(md, RptSeq);
 		if (!field || field_state_empty(field))
 			goto fail;
 
@@ -234,12 +223,9 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 	struct fast_field *field;
 	struct fast_message *md;
 	struct fast_book *book;
-	unsigned long *map;
 	int i;
 
-	map = set->msg_map.snp_map;
-
-	field = map_field(msg, map, SecurityIDSnp);
+	field = fast_field_id(msg, SecurityID);
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -250,7 +236,7 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 	if (dst && dst->secid != book->secid)
 		goto done;
 
-	field = map_field(msg, map, MDEntriesSnp);
+	field = fast_field_name(msg, "MDEntries");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -258,7 +244,7 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 	if (field_state_empty(&seq->length))
 		goto fail;
 
-	field = map_field(msg, map, RptSeqSnp);
+	field = fast_field_id(msg, RptSeq);
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -293,10 +279,8 @@ static int recv_increment(struct fast_book_set *set, struct fast_feed *feed, str
 	struct fast_message *msg;
 	struct fast_field *field;
 	enum fix_msg_type type;
-	unsigned long *map;
 	u64 msg_num;
 
-	map = set->msg_map.inc_map;
 	*next = NULL;
 
 	if (feed->recv_num > set->inc_msg_num)
@@ -311,7 +295,7 @@ static int recv_increment(struct fast_book_set *set, struct fast_feed *feed, str
 		goto done;
 	}
 
-	field = map_field(msg, map, MsgSeqNumInc);
+	field = fast_field_id(msg, MsgSeqNum);
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -332,7 +316,7 @@ static int recv_increment(struct fast_book_set *set, struct fast_feed *feed, str
 	} else
 		goto done;
 
-	field = map_field(msg, map, MessageTypeInc);
+	field = fast_field_id(msg, MsgType);
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -365,9 +349,7 @@ static int recv_snapshot(struct fast_book_set *set, struct fast_feed *feed, stru
 	struct fast_message *msg;
 	struct fast_field *field;
 	enum fix_msg_type type;
-	unsigned long *map;
 
-	map = set->msg_map.snp_map;
 	*next = NULL;
 
 	msg = fast_feed_recv(feed, 0);
@@ -379,7 +361,7 @@ static int recv_snapshot(struct fast_book_set *set, struct fast_feed *feed, stru
 		goto done;
 	}
 
-	field = map_field(msg, map, MessageTypeSnp);
+	field = fast_field_id(msg, MsgType);
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -484,7 +466,6 @@ static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 	unsigned long pos = 0;
 	u64 last_msg_seq_num;
 	u64 msg_seq_num = 0;
-	unsigned long *map;
 	unsigned long i;
 
 	if (fast_feed_open(set->snp_feeds))
@@ -497,8 +478,6 @@ static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 	book_clear_flags(book, FAST_BOOK_ACTIVE);
 
 	while (!book_has_flags(book, FAST_BOOK_ACTIVE)) {
-		map = set->msg_map.inc_map;
-
 		if (next_increment(set, &msg))
 			goto fail;
 
@@ -524,7 +503,7 @@ static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 			pos++;
 
 		if (!msg_seq_num) {
-			field = map_field(msg, map, MsgSeqNumInc);
+			field = fast_field_id(msg, MsgSeqNum);
 
 			if (!field || field_state_empty(field))
 				goto fail;
@@ -532,15 +511,13 @@ static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 			msg_seq_num = field->uint_value;
 		}
 
-		map = set->msg_map.snp_map;
-
 		if (next_snapshot(set, &msg))
 			goto fail;
 
 		if (!msg)
 			continue;
 
-		field = map_field(msg, map, LastMsgSeqNumProcessedSnp);
+		field = fast_field_id(msg, LastMsgSeqNumProcessed);
 		if (!field || field_state_empty(field))
 			goto fail;
 
@@ -556,12 +533,10 @@ static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 	if (!pos)
 		goto fail;
 
-	map = set->msg_map.inc_map;
-
 	for (i = 0; i < pos; i++) {
 		msg = inc_buf + i;
 
-		field = map_field(msg, map, MsgSeqNumInc);
+		field = fast_field_id(msg, MsgSeqNum);
 		if (!field || field_state_empty(field))
 			goto fail;
 
@@ -661,237 +636,8 @@ fail:
 	return -1;
 }
 
-static inline struct fast_message *fast_msg_by_type(struct fast_session *session, enum fix_msg_type type)
-{
-	struct fast_message *msg;
-	struct fast_field *field;
-	int i;
-
-	for (i = 0; i < FAST_TEMPLATE_MAX_NUMBER; i++) {
-		msg = session->rx_messages + i;
-
-		field = fast_get_field(msg, MsgType);
-		if (!field)
-			continue;
-
-		if (fix_msg_type_parse(field->string_value, 0x00) == type)
-			return msg;
-	}
-
-	return NULL;
-}
-
-static int map_init_increment(struct fast_book_set *set, struct fast_message *msg)
-{
-	struct fast_sequence *seq;
-	struct fast_field *field;
-	struct fast_message *md;
-	unsigned long *msg_map;
-	unsigned long *md_map;
-	int msg_init_num = 0;
-	int md_init_num = 0;
-	unsigned long i, j;
-	int ret = -1;
-
-	msg_map = set->msg_map.inc_map;
-	md_map = set->md_map.inc_map;
-
-	for (i = 0; i < msg->nr_fields; i++) {
-		field = msg->fields + i;
-
-		if (!strncmp(field->name, "MessageType", 12)) {
-			if (field->id != MsgType)
-				goto done;
-
-			msg_map[MessageTypeInc] = i;
-			msg_init_num++;
-		} else if (!strncmp(field->name, "MsgSeqNum", 10)) {
-			if (field->id != MsgSeqNum)
-				goto done;
-
-			msg_map[MsgSeqNumInc] = i;
-			msg_init_num++;
-		} else if (!strncmp(field->name, "MDEntries", 10)) {
-			if (field->type != FAST_TYPE_SEQUENCE)
-				goto done;
-
-			msg_map[MDEntriesInc] = i;
-			msg_init_num++;
-
-			seq = field->ptr_value;
-
-			md = seq->elements;
-			for (j = 0; j < md->nr_fields; j++) {
-				field = md->fields + j;
-
-				if (!strncmp(field->name, "MDUpdateAction", 15)) {
-					if (field->id != MDUpdateAction)
-						goto done;
-
-					md_map[MDUpdateActionInc] = j;
-					md_init_num++;
-				} else if (!strncmp(field->name, "MDEntryType", 12)) {
-					if (field->id != MDEntryType)
-						goto done;
-
-					md_map[MDEntryTypeInc] = j;
-					md_init_num++;
-				} else if (!strncmp(field->name, "SecurityID", 11)) {
-					if (field->id != SecurityID)
-						goto done;
-
-					md_map[SecurityIDInc] = j;
-					md_init_num++;
-				} else if (!strncmp(field->name, "RptSeq", 7)) {
-					if (field->id != RptSeq)
-						goto done;
-
-					md_map[RptSeqInc] = j;
-					md_init_num++;
-				} else if (!strncmp(field->name, "MDPriceLevel", 13)) {
-					if (field->id != MDPriceLevel)
-						goto done;
-
-					md_map[MDPriceLevelInc] = j;
-					md_init_num++;
-				} else if (!strncmp(field->name, "MDEntryPx", 10)) {
-					if (field->id != MDEntryPx)
-						goto done;
-
-					md_map[MDEntryPxInc] = j;
-					md_init_num++;
-				} else if (!strncmp(field->name, "MDEntrySize", 12)) {
-					if (field->id != MDEntrySize)
-						goto done;
-
-					md_map[MDEntrySizeInc] = j;
-					md_init_num++;
-				}
-			}
-
-			break;
-		}
-	}
-
-	if (msg_init_num < MsgMapMaxInc)
-		goto done;
-
-	if (md_init_num < MDMapMaxInc)
-		goto done;
-
-	ret = 0;
-
-done:
-	return ret;
-}
-
-static int map_init_snapshot(struct fast_book_set *set, struct fast_message *msg)
-{
-	struct fast_sequence *seq;
-	struct fast_field *field;
-	struct fast_message *md;
-	unsigned long *msg_map;
-	unsigned long *md_map;
-	int msg_init_num = 0;
-	int md_init_num = 0;
-	unsigned long i, j;
-	int ret = -1;
-
-	msg_map = set->msg_map.snp_map;
-	md_map = set->md_map.snp_map;
-
-	for (i = 0; i < msg->nr_fields; i++) {
-		field = msg->fields + i;
-
-		if (!strncmp(field->name, "MessageType", 12)) {
-			if (field->id != MsgType)
-				goto done;
-
-			msg_map[MessageTypeSnp] = i;
-			msg_init_num++;
-		} else if (!strncmp(field->name, "MsgSeqNum", 10)) {
-			if (field->id != MsgSeqNum)
-				goto done;
-
-			msg_map[MsgSeqNumSnp] = i;
-			msg_init_num++;
-		} else if (!strncmp(field->name, "RptSeq", 7)) {
-			if (field->id != RptSeq)
-				goto done;
-
-			msg_map[RptSeqSnp] = i;
-			msg_init_num++;
-		} else if (!strncmp(field->name, "LastMsgSeqNumProcessed", 23)) {
-			if (field->id != LastMsgSeqNumProcessed)
-				goto done;
-
-			msg_map[LastMsgSeqNumProcessedSnp] = i;
-			msg_init_num++;
-		} else if (!strncmp(field->name, "SecurityID", 11)) {
-			if (field->id != SecurityID)
-				goto done;
-
-			msg_map[SecurityIDSnp] = i;
-			msg_init_num++;
-		} else if (!strncmp(field->name, "MDEntries", 10)) {
-			if (field->type != FAST_TYPE_SEQUENCE)
-				goto done;
-
-			msg_map[MDEntriesSnp] = i;
-			msg_init_num++;
-
-			seq = field->ptr_value;
-
-			md = seq->elements;
-			for (j = 0; j < md->nr_fields; j++) {
-				field = md->fields + j;
-
-				if (!strncmp(field->name, "MDEntryType", 12)) {
-					if (field->id != MDEntryType)
-						goto done;
-
-					md_map[MDEntryTypeSnp] = j;
-					md_init_num++;
-				} else if (!strncmp(field->name, "MDEntryPx", 10)) {
-					if (field->id != MDEntryPx)
-						goto done;
-
-					md_map[MDEntryPxSnp] = j;
-					md_init_num++;
-				} else if (!strncmp(field->name, "MDEntrySize", 12)) {
-					if (field->id != MDEntrySize)
-						goto done;
-
-					md_map[MDEntrySizeSnp] = j;
-					md_init_num++;
-				} else if (!strncmp(field->name, "MDPriceLevel", 13)) {
-					if (field->id != MDPriceLevel)
-						goto done;
-
-					md_map[MDPriceLevelSnp] = j;
-					md_init_num++;
-				}
-			}
-
-			break;
-		}
-	}
-
-	if (msg_init_num < MsgMapMaxSnp)
-		goto done;
-
-	if (md_init_num < MDMapMaxSnp)
-		goto done;
-
-	ret = 0;
-
-done:
-	return ret;
-}
-
 int fast_books_init(struct fast_book_set *set)
 {
-	struct fast_message *msg;
 	int i;
 
 	if (!set)
@@ -907,26 +653,6 @@ int fast_books_init(struct fast_book_set *set)
 		if (fast_feed_open(set->inc_feeds + i))
 			goto fail;
 	}
-
-	if (fast_feed_open(set->snp_feeds))
-		goto fail;
-
-	msg = fast_msg_by_type(set->inc_feeds->session, FIX_MSG_TYPE_INCREMENT_REFRESH);
-	if (!msg)
-		goto fail;
-
-	if (map_init_increment(set, msg))
-		goto fail;
-
-	msg = fast_msg_by_type(set->inc_feeds->session, FIX_MSG_TYPE_SNAPSHOT_REFRESH);
-	if (!msg)
-		goto fail;
-
-	if (map_init_snapshot(set, msg))
-		goto fail;
-
-	if (fast_feed_close(set->snp_feeds))
-		goto fail;
 
 	set->inc_gap_mode = false;
 	set->inc_msg_num = 0;

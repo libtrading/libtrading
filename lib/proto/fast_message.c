@@ -2310,12 +2310,24 @@ exit:
 	return ret;
 }
 
-struct fast_field *fast_get_field(struct fast_message *msg, int id)
+struct fast_field *fast_field_id(struct fast_message *msg, int id)
 {
 	unsigned long i;
 
 	for (i = 0; i < msg->nr_fields; i++) {
 		if (msg->fields[i].id == id)
+			return &msg->fields[i];
+	}
+
+	return NULL;
+}
+
+struct fast_field *fast_field_name(struct fast_message *msg, const char *name)
+{
+	unsigned long i;
+
+	for (i = 0; i < msg->nr_fields; i++) {
+		if (!strncmp(msg->fields[i].name, name, strlen(msg->fields[i].name)))
 			return &msg->fields[i];
 	}
 

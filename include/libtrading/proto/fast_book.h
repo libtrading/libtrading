@@ -14,58 +14,9 @@
 
 #define	FAST_BOOK_MASK_SIZE	(1 + ((FAST_BOOK_NUM) >> 6))
 
-enum increment_msg_map {
-	MessageTypeInc			= 0,
-	MsgSeqNumInc			= 1,
-	MDEntriesInc			= 2,
-	MsgMapMaxInc,
-};
-
-enum snapshot_msg_map {
-	MessageTypeSnp			= 0,
-	MsgSeqNumSnp			= 1,
-	RptSeqSnp			= 2,
-	LastMsgSeqNumProcessedSnp	= 3,
-	SecurityIDSnp			= 4,
-	MDEntriesSnp			= 5,
-	MsgMapMaxSnp,
-};
-
-enum increment_md_map {
-	MDUpdateActionInc		= 0,
-	MDEntryTypeInc			= 1,
-	SecurityIDInc			= 2,
-	RptSeqInc			= 3,
-	MDPriceLevelInc			= 4,
-	MDEntryPxInc			= 5,
-	MDEntrySizeInc			= 6,
-	MDMapMaxInc,
-};
-
-enum snapshot_md_map {
-	MDEntryTypeSnp			= 0,
-	MDEntryPxSnp			= 1,
-	MDEntrySizeSnp			= 2,
-	MDPriceLevelSnp			= 3,
-	MDMapMaxSnp,
-};
-
-struct msg_map {
-	unsigned long inc_map[MsgMapMaxInc];
-	unsigned long snp_map[MsgMapMaxSnp];
-};
-
-struct md_map {
-	unsigned long inc_map[MDMapMaxInc];
-	unsigned long snp_map[MDMapMaxSnp];
-};
-
 struct fast_book {
 	struct fast_decimal	tick;
 	struct order_book	ob;
-
-	struct msg_map	*msg_map;
-	struct md_map	*md_map;
 
 	char		symbol[8];
 	u64		rptseq;
@@ -105,9 +56,6 @@ struct fast_book_set {
 	struct fast_book	books[FAST_BOOK_NUM];
 	unsigned long		books_num;
 
-	struct msg_map		msg_map;
-	struct md_map		md_map;
-
 	bool			inc_gap_mode;
 	u64			inc_msg_num;
 };
@@ -137,8 +85,6 @@ static inline struct fast_book *fast_book_add(struct fast_book_set *set)
 	book = set->books + set->books_num;
 
 	memset(book, 0, sizeof(struct fast_book));
-	book->msg_map = &set->msg_map;
-	book->md_map = &set->md_map;
 	book->num = set->books_num;
 	set->books_num++;
 
@@ -194,16 +140,6 @@ static inline struct fast_feed *snp_feed_add(struct fast_book_set *set)
 
 fail:
 	return NULL;
-}
-
-static inline struct fast_field *map_field(struct fast_message *msg, unsigned long *map, int ind)
-{
-	unsigned long i = map[ind];
-
-	if (i < msg->nr_fields)
-		return msg->fields + i;
-	else
-		return NULL;
 }
 
 int fast_books_subscribe(struct fast_book_set *set, struct fast_book *book);
