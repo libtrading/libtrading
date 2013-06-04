@@ -1,13 +1,13 @@
 # The default target of this Makefile:
 all:
+#
+# Define WERROR=0 to disable -Werror.
 
 LIBTRADING-VERSION-FILE: .FORCE-LIBTRADING-VERSION-FILE
 	sh tools/gen-version-file
 
 uname_S	:= $(shell sh -c 'uname -s 2>/dev/null || echo not')
 uname_R	:= $(shell sh -c 'uname -r 2>/dev/null || echo not')
-
-PREFIX ?= $(HOME)
 
 DESTDIR=
 BINDIR=$(PREFIX)/bin
@@ -19,6 +19,12 @@ CC	?= gcc
 LD	:= $(CC)
 AR	:= ar
 XXD	?= xxd
+
+ifneq ($(WERROR),0)
+	CFLAGS_WERROR = -Werror
+endif
+
+PREFIX ?= $(HOME)
 
 # Set up source directory for GNU Make
 libdir		:= lib
@@ -46,10 +52,9 @@ EXTRA_WARNINGS += -Wnested-externs
 EXTRA_WARNINGS += -Wold-style-definition
 EXTRA_WARNINGS += -Wstrict-prototypes
 EXTRA_WARNINGS += -Wdeclaration-after-statement
-EXTRA_WARNINGS += -Werror
 
 # Compile flags
-CFLAGS		:= -I$(CURDIR)/include -Wall $(EXTRA_WARNINGS) -g -O3 -std=gnu99
+CFLAGS		:= -I$(CURDIR)/include -Wall $(EXTRA_WARNINGS) $(CFLAGS_WERROR) -g -O3 -std=gnu99
 
 # Output to current directory by default
 O =
