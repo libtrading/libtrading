@@ -482,7 +482,7 @@ static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 	struct fast_message *msg;
 	unsigned long size = 32;
 	unsigned long pos = 0;
-	u64 last_msg_seq_num;
+	u64 last_msg_seq_num = 0;
 	u64 msg_seq_num = 0;
 	unsigned long *map;
 	unsigned long i;
