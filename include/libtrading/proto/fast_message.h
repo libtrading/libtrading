@@ -4,12 +4,15 @@
 #include <libtrading/types.h>
 
 #include <stdbool.h>
+#include <search.h>
 #include <stdint.h>
 
 #define	FAST_PMAP_MAX_BYTES		8
 #define	FAST_FIELD_MAX_NUMBER		128
 #define	FAST_STRING_MAX_BYTES		256
 #define	FAST_MESSAGE_MAX_SIZE		2048
+
+#define	FAST_FIELDS_HASH_SIZE		128
 
 #define	FAST_TEMPLATE_MAX_NUMBER	128
 
@@ -156,6 +159,7 @@ struct fast_message {
 	unsigned long		nr_fields;
 	unsigned long		decoded;
 	struct fast_field	*fields;
+	struct hsearch_data	*htab;
 
 	char			name[32];
 	int			flags;
@@ -284,8 +288,7 @@ struct fast_message *fast_message_new(int nr_messages);
 void fast_fields_free(struct fast_message *self);
 void fast_message_free(struct fast_message *self, int nr_messages);
 void fast_message_reset(struct fast_message *msg);
-struct fast_field *fast_field_id(struct fast_message *msg, int id);
-struct fast_field *fast_field_name(struct fast_message *msg, const char *name);
+struct fast_field *fast_get_field(struct fast_message *msg, const char *name);
 struct fast_message *fast_message_decode(struct fast_session *session);
 int fast_message_send(struct fast_message *self, int sockfd, int flags);
 int fast_message_encode(struct fast_message *msg);

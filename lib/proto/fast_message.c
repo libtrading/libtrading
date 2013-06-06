@@ -1392,14 +1392,21 @@ void fast_fields_free(struct fast_message *self)
 		if (field->type == FAST_TYPE_SEQUENCE) {
 			seq = field->ptr_value;
 
-			for (j = 0; j < FAST_SEQUENCE_ELEMENTS; j++)
+			for (j = 0; j < FAST_SEQUENCE_ELEMENTS; j++) {
+				hdestroy_r((seq->elements + j)->htab);
+				free((seq->elements + j)->htab);
+
 				free((seq->elements + j)->fields);
+			}
 
 			free(field->ptr_value);
 		} else if (field->type == FAST_TYPE_DECIMAL) {
 			free(field->decimal_value.fields);
 		}
 	}
+
+	hdestroy_r(self->htab);
+	free(self->htab);
 
 	free(self->fields);
 }
@@ -1423,6 +1430,8 @@ int fast_message_copy(struct fast_message *dst, struct fast_message *src)
 	struct fast_sequence *src_seq;
 	struct fast_field *dst_field;
 	struct fast_field *src_field;
+	struct entry entry;
+	struct entry *val;
 	int i, j;
 
 	if (!dst)
@@ -1432,6 +1441,13 @@ int fast_message_copy(struct fast_message *dst, struct fast_message *src)
 
 	dst->fields = calloc(src->nr_fields, sizeof(struct fast_field));
 	if (!dst->fields)
+		goto fail;
+
+	dst->htab = calloc(1, sizeof(struct hsearch_data));
+	if (!dst->htab)
+		goto fail;
+
+	if (!hcreate_r(FAST_FIELDS_HASH_SIZE, dst->htab))
 		goto fail;
 
 	for (i = 0; i < src->nr_fields; i++) {
@@ -1444,9 +1460,27 @@ int fast_message_copy(struct fast_message *dst, struct fast_message *src)
 		case FAST_TYPE_STRING:
 		case FAST_TYPE_DECIMAL:
 			memcpy(dst_field, src_field, sizeof(struct fast_field));
+
+			if (strlen(dst_field->name)) {
+				entry.key = dst_field->name;
+				entry.data = dst_field;
+
+				if (!hsearch_r(entry, ENTER, &val, dst->htab))
+					goto fail;
+			}
+
 			break;
 		case FAST_TYPE_SEQUENCE:
 			memcpy(dst_field, src_field, sizeof(struct fast_field));
+
+			if (strlen(dst_field->name)) {
+				entry.key = dst_field->name;
+				entry.data = dst_field;
+
+				if (!hsearch_r(entry, ENTER, &val, dst->htab))
+					goto fail;
+			}
+
 			src_seq = src_field->ptr_value;
 
 			dst_field->ptr_value = calloc(1, sizeof(struct fast_sequence));
@@ -2310,26 +2344,17 @@ exit:
 	return ret;
 }
 
-struct fast_field *fast_field_id(struct fast_message *msg, int id)
+struct fast_field *fast_get_field(struct fast_message *msg, const char *name)
 {
-	unsigned long i;
+	struct entry entry;
+	struct entry *found;
 
-	for (i = 0; i < msg->nr_fields; i++) {
-		if (msg->fields[i].id == id)
-			return &msg->fields[i];
-	}
+	entry.key = (char *)name;
+	if (!hsearch_r(entry, FIND, &found, msg->htab))
+		return NULL;
 
-	return NULL;
-}
+	if (!found)
+		return NULL;
 
-struct fast_field *fast_field_name(struct fast_message *msg, const char *name)
-{
-	unsigned long i;
-
-	for (i = 0; i < msg->nr_fields; i++) {
-		if (!strncmp(msg->fields[i].name, name, strlen(msg->fields[i].name)))
-			return &msg->fields[i];
-	}
-
-	return NULL;
+	return found->data;
 }

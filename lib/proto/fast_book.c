@@ -44,7 +44,7 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 	i64 size;
 	u32 ind;
 
-	field = fast_field_id(msg, MDEntryType);
+	field = fast_get_field(msg, "MDEntryType");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -60,19 +60,19 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 		goto fail;
 	}
 
-	field = fast_field_id(msg, MDPriceLevel);
+	field = fast_get_field(msg, "MDPriceLevel");
 	if (!field || field_state_empty(field))
 		goto fail;
 
 	ind = field->uint_value - 1;
 
-	field = fast_field_id(msg, MDEntrySize);
+	field = fast_get_field(msg, "MDEntrySize");
 	if (!field || field_state_empty(field))
 		goto fail;
 
 	size = field->int_value;
 
-	field = fast_field_id(msg, MDEntryPx);
+	field = fast_get_field(msg, "MDEntryPx");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -83,7 +83,7 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 	level.price = price.mnt;
 	level.size = size;
 
-	field = fast_field_id(msg, MDUpdateAction);
+	field = fast_get_field(msg, "MDUpdateAction");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -117,7 +117,7 @@ static int md_snapshot(struct fast_book *book, struct fast_message *msg)
 	i64 size;
 	u32 ind;
 
-	field = fast_field_id(msg, MDEntryType);
+	field = fast_get_field(msg, "MDEntryType");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -133,19 +133,19 @@ static int md_snapshot(struct fast_book *book, struct fast_message *msg)
 		goto fail;
 	}
 
-	field = fast_field_id(msg, MDPriceLevel);
+	field = fast_get_field(msg, "MDPriceLevel");
 	if (!field || field_state_empty(field))
 		goto fail;
 
 	ind = field->uint_value - 1;
 
-	field = fast_field_id(msg, MDEntrySize);
+	field = fast_get_field(msg, "MDEntrySize");
 	if (!field || field_state_empty(field))
 		goto fail;
 
 	size = field->int_value;
 
-	field = fast_field_id(msg, MDEntryPx);
+	field = fast_get_field(msg, "MDEntryPx");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -174,7 +174,7 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 	struct fast_book *book;
 	int i;
 
-	field = fast_field_name(msg, "MDEntries");
+	field = fast_get_field(msg, "MDEntries");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -185,7 +185,7 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 	for (i = 1; i <= seq->length.uint_value; i++) {
 		md = seq->elements + i;
 
-		field = fast_field_id(md, SecurityID);
+		field = fast_get_field(md, "SecurityID");
 		if (!field || field_state_empty(field))
 			goto fail;
 
@@ -196,7 +196,7 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 		if (dst && dst->secid != book->secid)
 			continue;
 
-		field = fast_field_id(md, RptSeq);
+		field = fast_get_field(md, "RptSeq");
 		if (!field || field_state_empty(field))
 			goto fail;
 
@@ -225,7 +225,7 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 	struct fast_book *book;
 	int i;
 
-	field = fast_field_id(msg, SecurityID);
+	field = fast_get_field(msg, "SecurityID");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -236,7 +236,7 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 	if (dst && dst->secid != book->secid)
 		goto done;
 
-	field = fast_field_name(msg, "MDEntries");
+	field = fast_get_field(msg, "MDEntries");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -244,7 +244,7 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 	if (field_state_empty(&seq->length))
 		goto fail;
 
-	field = fast_field_id(msg, RptSeq);
+	field = fast_get_field(msg, "RptSeq");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -295,7 +295,7 @@ static int recv_increment(struct fast_book_set *set, struct fast_feed *feed, str
 		goto done;
 	}
 
-	field = fast_field_id(msg, MsgSeqNum);
+	field = fast_get_field(msg, "MsgSeqNum");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -316,7 +316,7 @@ static int recv_increment(struct fast_book_set *set, struct fast_feed *feed, str
 	} else
 		goto done;
 
-	field = fast_field_id(msg, MsgType);
+	field = fast_get_field(msg, "MessageType");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -361,7 +361,7 @@ static int recv_snapshot(struct fast_book_set *set, struct fast_feed *feed, stru
 		goto done;
 	}
 
-	field = fast_field_id(msg, MsgType);
+	field = fast_get_field(msg, "MessageType");
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -503,7 +503,7 @@ static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 			pos++;
 
 		if (!msg_seq_num) {
-			field = fast_field_id(msg, MsgSeqNum);
+			field = fast_get_field(msg, "MsgSeqNum");
 
 			if (!field || field_state_empty(field))
 				goto fail;
@@ -517,7 +517,7 @@ static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 		if (!msg)
 			continue;
 
-		field = fast_field_id(msg, LastMsgSeqNumProcessed);
+		field = fast_get_field(msg, "LastMsgSeqNumProcessed");
 		if (!field || field_state_empty(field))
 			goto fail;
 
@@ -536,7 +536,7 @@ static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 	for (i = 0; i < pos; i++) {
 		msg = inc_buf + i;
 
-		field = fast_field_id(msg, MsgSeqNum);
+		field = fast_get_field(msg, "MsgSeqNum");
 		if (!field || field_state_empty(field))
 			goto fail;
 
