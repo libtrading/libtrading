@@ -37,7 +37,7 @@ static unsigned long pitch_message_size(u8 type)
 	return 0;
 }
 
-struct pitch_message *pitch_message_decode(struct buffer *buf)
+struct pitch_message *pitch_message_decode(struct buffer *buf, unsigned long extra)
 {
 	struct pitch_message *msg;
 	size_t available;
@@ -54,7 +54,7 @@ struct pitch_message *pitch_message_decode(struct buffer *buf)
 	if (!size)
 		return NULL;
 
-	if (available < size)
+	if (available < size + extra)
 		return NULL;
 
 	buffer_advance(buf, size);
