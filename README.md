@@ -35,6 +35,8 @@ is crucial in trading today's markets, reliability is also a top priority.
 
  * [NYSE Arca XDP][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/xdp_message.h))
 
+ * [NYSE Daily TAQ][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/nyse_taq_message.h))
+
 [BATS BOE]:          http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf
 [BATS PITCH]:        http://www.batstrading.com/resources/membership/BATS_PITCH_Specification.pdf
 [FIX]:               http://fixprotocol.org/specifications/
@@ -47,6 +49,7 @@ is crucial in trading today's markets, reliability is also a top priority.
 [NASDAQ OUCH 4.2]:   http://www.nasdaqtrader.com/content/technicalsupport/specifications/TradingProducts/OUCH4.2.pdf
 [NASDAQ SoupBinTCP]: http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/soupbintcp.pdf
 [NYSE Arca XDP]:     http://www.nyxdata.com/nysedata/Default.aspx?tabid=1084
+[NYSE Daily TAQ]:    http://www.nyxdata.com/data-products/daily-taq
 
 ## Build Instructions
 
