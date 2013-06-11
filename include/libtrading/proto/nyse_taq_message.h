@@ -3,6 +3,8 @@
 
 #include "libtrading/types.h"
 
+#include <stddef.h>
+
 struct buffer;
 
 struct nyse_taq_msg_daily_quote {
@@ -30,8 +32,6 @@ struct nyse_taq_msg_daily_quote {
 	char			LineChange[2];
 } packed;
 
-struct nyse_taq_msg_daily_quote *nyse_taq_msg_daily_quote_decode(struct buffer *buf);
-
 struct nyse_taq_msg_daily_trade {
 	char			Time[9];
 	char			Exchange;
@@ -46,8 +46,6 @@ struct nyse_taq_msg_daily_trade {
 	char			TradeReportingFacility;
 	char			LineChange[2];
 } packed;
-
-struct nyse_taq_msg_daily_trade *nyse_taq_msg_daily_trade_decode(struct buffer *buf);
 
 struct nyse_taq_msg_daily_nbbo {
 	char			Time[9];
@@ -84,6 +82,21 @@ struct nyse_taq_msg_daily_nbbo {
 	char			LineChange[2];
 } packed;
 
-struct nyse_taq_msg_daily_nbbo *nyse_taq_msg_daily_nbbo_decode(struct buffer *buf);
+void *nyse_taq_msg_decode(struct buffer *buf, size_t size);
+
+static inline struct nyse_taq_msg_daily_quote *nyse_taq_msg_daily_quote_decode(struct buffer *buf)
+{
+	return nyse_taq_msg_decode(buf, sizeof(struct nyse_taq_msg_daily_quote));
+}
+
+static inline struct nyse_taq_msg_daily_trade *nyse_taq_msg_daily_trade_decode(struct buffer *buf)
+{
+	return nyse_taq_msg_decode(buf, sizeof(struct nyse_taq_msg_daily_trade));
+}
+
+static inline struct nyse_taq_msg_daily_nbbo *nyse_taq_msg_daily_nbbo_decode(struct buffer *buf)
+{
+	return nyse_taq_msg_decode(buf, sizeof(struct nyse_taq_msg_daily_nbbo));
+}
 
 #endif
