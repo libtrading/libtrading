@@ -134,6 +134,7 @@ LIBS := $(LIB_FILE)
 
 LIB_H += array.h
 LIB_H += buffer.h
+LIB_H += byte-order.h
 LIB_H += compat.h
 LIB_H += order_book.h
 LIB_H += proto/bats_pitch_message.h
