@@ -10,6 +10,7 @@
 #define	FAST_PMAP_MAX_BYTES		8
 #define	FAST_FIELD_MAX_NUMBER		128
 #define	FAST_STRING_MAX_BYTES		256
+#define	FAST_VECTOR_MAX_BYTES		256
 #define	FAST_MESSAGE_MAX_SIZE		2048
 
 #define	FAST_FIELDS_HASH_SIZE		128
@@ -34,6 +35,7 @@ enum fast_type {
 	FAST_TYPE_INT,
 	FAST_TYPE_UINT,
 	FAST_TYPE_STRING,
+	FAST_TYPE_VECTOR,
 	FAST_TYPE_DECIMAL,
 	FAST_TYPE_SEQUENCE,
 };
@@ -90,6 +92,7 @@ struct fast_field {
 		u64			uint_value;
 		void			*ptr_value;
 		char			string_value[FAST_STRING_MAX_BYTES];
+		char			vector_value[FAST_VECTOR_MAX_BYTES];
 		struct fast_decimal	decimal_value;
 	};
 
@@ -98,6 +101,7 @@ struct fast_field {
 		u64			uint_reset;
 		void			*ptr_reset;
 		char			string_reset[FAST_STRING_MAX_BYTES];
+		char			vector_reset[FAST_VECTOR_MAX_BYTES];
 		struct fast_decimal	decimal_reset;
 	};
 
@@ -106,6 +110,7 @@ struct fast_field {
 		u64			uint_previous;
 		void			*ptr_previous;
 		char			string_previous[FAST_STRING_MAX_BYTES];
+		char			vector_previous[FAST_VECTOR_MAX_BYTES];
 		struct fast_decimal	decimal_previous;
 	};
 };

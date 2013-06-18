@@ -1141,6 +1141,169 @@ static int fast_decode_decimal(struct buffer *buffer, struct fast_pmap *pmap, st
 		return fast_decode_decimal_individ(buffer, pmap, field);
 }
 
+static int fast_decode_vector(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
+{
+	int ret;
+	u64 len;
+
+	switch (field->op) {
+	case FAST_OP_NONE:
+		ret = parse_uint(buffer, &len);
+		if (ret)
+			goto fail;
+
+		field->state = FAST_STATE_ASSIGNED;
+
+		if (!field_is_mandatory(field)) {
+			if (!len) {
+				field->state = FAST_STATE_EMPTY;
+				break;
+			} else
+				len--;
+		}
+
+		ret = parse_bytes(buffer, field->vector_value, len);
+		if (ret)
+			goto fail;
+
+		memset(field->vector_value + len, 0, sizeof(u64));
+
+		break;
+	case FAST_OP_COPY:
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					memcpy(field->vector_value, field->vector_reset,
+								sizeof(field->vector_reset));
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			case FAST_STATE_ASSIGNED:
+				break;
+			case FAST_STATE_EMPTY:
+				if (field_is_mandatory(field)) {
+					ret = FAST_MSG_STATE_GARBLED;
+					goto fail;
+				}
+
+				break;
+			default:
+				break;
+			}
+		} else {
+			ret = parse_uint(buffer, &len);
+
+			if (ret)
+				goto fail;
+
+			field->state = FAST_STATE_ASSIGNED;
+
+			if (!field_is_mandatory(field)) {
+				if (!len) {
+					field->state = FAST_STATE_EMPTY;
+					break;
+				} else
+					len--;
+			}
+
+			ret = parse_bytes(buffer, field->vector_value, len);
+			if (ret)
+				goto fail;
+
+			memset(field->vector_value + len, 0, sizeof(u64));
+		}
+
+		break;
+	case FAST_OP_INCR:
+			ret = FAST_MSG_STATE_GARBLED;
+			goto fail;
+	case FAST_OP_DELTA:
+			ret = FAST_MSG_STATE_GARBLED;
+			goto fail;
+	case FAST_OP_DEFAULT:
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit)) {
+			switch (field->state) {
+			case FAST_STATE_UNDEFINED:
+			case FAST_STATE_ASSIGNED:
+			case FAST_STATE_EMPTY:
+				if (field_has_reset_value(field)) {
+					field->state = FAST_STATE_ASSIGNED;
+					memcpy(field->vector_value, field->vector_reset,
+								sizeof(field->vector_reset));
+				} else {
+					if (field_is_mandatory(field)) {
+						ret = FAST_MSG_STATE_GARBLED;
+						goto fail;
+					} else
+						field->state = FAST_STATE_EMPTY;
+				}
+
+				break;
+			default:
+				break;
+			}
+		} else {
+			ret = parse_uint(buffer, &len);
+
+			if (ret)
+				goto fail;
+
+			field->state = FAST_STATE_ASSIGNED;
+
+			if (!field_is_mandatory(field)) {
+				if (!len) {
+					field->state = FAST_STATE_EMPTY;
+					break;
+				} else
+					len--;
+			}
+
+			ret = parse_bytes(buffer, field->vector_value, len);
+			if (ret)
+				goto fail;
+
+			memset(field->vector_value + len, 0, sizeof(u64));
+		}
+
+		break;
+	case FAST_OP_CONSTANT:
+		if (field->state != FAST_STATE_ASSIGNED)
+			memcpy(field->vector_value, field->vector_reset,
+						sizeof(field->vector_reset));
+
+		field->state = FAST_STATE_ASSIGNED;
+
+		if (field_is_mandatory(field))
+			break;
+
+		pmap->pmap_bit++;
+
+		if (!pmap_is_set(pmap, pmap->pmap_bit))
+			field->state = FAST_STATE_EMPTY;
+
+		break;
+	default:
+		return FAST_MSG_STATE_GARBLED;
+	}
+
+	return 0;
+
+fail:
+	return ret;
+}
+
 static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
 {
 	struct fast_sequence *seq;
@@ -1223,6 +1386,11 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 
 				strcpy(cur->string_value, field->string_value);
 				cur->state = field->state;
+				break;
+			case FAST_TYPE_VECTOR:
+				ret = fast_decode_vector(buffer, spmap, field);
+				if (ret)
+					goto exit;
 				break;
 			case FAST_TYPE_DECIMAL:
 				ret = fast_decode_decimal(buffer, spmap, field);
@@ -1332,6 +1500,11 @@ struct fast_message *fast_message_decode(struct fast_session *session)
 			break;
 		case FAST_TYPE_STRING:
 			ret = fast_decode_string(buffer, pmap, field);
+			if (ret)
+				goto fail;
+			break;
+		case FAST_TYPE_VECTOR:
+			ret = fast_decode_vector(buffer, pmap, field);
 			if (ret)
 				goto fail;
 			break;
@@ -1459,6 +1632,7 @@ int fast_message_copy(struct fast_message *dst, struct fast_message *src)
 		case FAST_TYPE_UINT:
 		case FAST_TYPE_STRING:
 		case FAST_TYPE_DECIMAL:
+		case FAST_TYPE_VECTOR:
 			memcpy(dst_field, src_field, sizeof(struct fast_field));
 
 			if (strlen(dst_field->name)) {
@@ -1553,6 +1727,18 @@ void fast_message_reset(struct fast_message *msg)
 			} else {
 				field->string_value[0] = 0;
 				field->string_previous[0] = 0;
+			}
+
+			break;
+		case FAST_TYPE_VECTOR:
+			if (field->has_reset) {
+				memcpy(field->vector_value, field->vector_reset,
+							sizeof(field->vector_reset));
+				memcpy(field->vector_previous, field->vector_reset,
+							sizeof(field->vector_reset));
+			} else {
+				memset(field->vector_value, 0, sizeof(u64));
+				memset(field->vector_previous, 0, sizeof(u64));
 			}
 
 			break;
@@ -2289,6 +2475,8 @@ int fast_message_encode(struct fast_message *msg)
 			if (fast_encode_string(msg->msg_buf, &pmap, field))
 				goto fail;
 			break;
+		case FAST_TYPE_VECTOR:
+			goto fail;
 		case FAST_TYPE_DECIMAL:
 			if (fast_encode_decimal(msg->msg_buf, &pmap, field))
 				goto fail;

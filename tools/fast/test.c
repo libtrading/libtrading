@@ -124,6 +124,8 @@ int init_elem(struct felem *elem, char *line)
 
 			start = start + strlen(field->string_value) + 1;
 			break;
+		case FAST_TYPE_VECTOR:
+			goto fail;
 		case FAST_TYPE_DECIMAL:
 			field->decimal_value.exp = strtol(start, &end, 10);
 			start = end + 1;
@@ -208,6 +210,8 @@ int fmsgcmp(struct fast_message *expected, struct fast_message *actual)
 			if (strcmp(actual_field->string_value, expected_field->string_value))
 				goto exit;
 			break;
+		case FAST_TYPE_VECTOR:
+			break;
 		case FAST_TYPE_DECIMAL:
 			if (actual_field->decimal_value.exp != expected_field->decimal_value.exp)
 				goto exit;
@@ -259,6 +263,9 @@ int snprintmsg(char *buf, size_t size, struct fast_message *msg)
 			break;
 		case FAST_TYPE_STRING:
 			len += snprintf(buf + len, size - len, "%s%c", field->string_value, delim);
+			break;
+		case FAST_TYPE_VECTOR:
+			len += snprintf(buf + len, size - len, "%s%c", field->vector_value, delim);
 			break;
 		case FAST_TYPE_DECIMAL:
 			len += snprintf(buf + len, size - len, "%" PRId64 "%c", field->decimal_value.exp, delim);

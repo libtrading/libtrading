@@ -4,6 +4,7 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <string.h>
+#include <ctype.h>
 
 static int fast_field_init(xmlNodePtr node, struct fast_field *field);
 
@@ -90,6 +91,9 @@ static int fast_type_init(xmlNodePtr node, struct fast_field *field)
 	else if (!xmlStrcmp(node->name, (const xmlChar *)"mantissa") ||
 			!xmlStrcmp(node->name, (const xmlChar *)"Mantissa"))
 		field->type = FAST_TYPE_INT;
+	else if (!xmlStrcmp(node->name, (const xmlChar *)"bytevector") ||
+			!xmlStrcmp(node->name, (const xmlChar *)"byteVector"))
+		field->type = FAST_TYPE_VECTOR;
 	else
 		ret = 1;
 
@@ -116,6 +120,26 @@ static int fast_op_init(xmlNodePtr node, struct fast_field *field)
 		ret = 1;
 
 	return ret;
+}
+
+static int fast_vector_init(const char *in, char *out)
+{
+	int hex;
+
+	for ( ; *in; in++) {
+		if (isblank(*in))
+			continue;
+
+		if (sscanf(in++, "%02X", &hex) != 1)
+			goto fail;
+
+		*out++ = (char)hex;
+	}
+
+	return 0;
+
+fail:
+	return -1;
 }
 
 static int fast_reset_init(xmlNodePtr node, struct fast_field *field)
@@ -182,6 +206,30 @@ static int fast_reset_init(xmlNodePtr node, struct fast_field *field)
 		strcpy(field->string_previous, (char *)prop);
 
 		xmlFree(prop);
+		break;
+	case FAST_TYPE_VECTOR:
+		memset(field->vector_value, 0, sizeof(field->vector_value));
+		memset(field->vector_previous, 0, sizeof(field->vector_previous));
+
+		if (node == NULL)
+			break;
+
+		prop = xmlGetProp(node, (const xmlChar *)"value");
+
+		if (prop == NULL)
+			break;
+
+		field->has_reset = true;
+
+		ret = fast_vector_init((const char *)prop, field->vector_reset);
+		if (ret)
+			break;
+
+		memcpy(field->vector_value, field->vector_reset,
+						sizeof(field->vector_reset));
+		memcpy(field->vector_previous, field->vector_reset,
+						sizeof(field->vector_reset));
+
 		break;
 	case FAST_TYPE_DECIMAL:
 		field->decimal_value.exp = 0;
@@ -371,6 +419,7 @@ static int fast_field_init(xmlNodePtr node, struct fast_field *field)
 	case FAST_TYPE_INT:
 	case FAST_TYPE_UINT:
 	case FAST_TYPE_STRING:
+	case FAST_TYPE_VECTOR:
 		node = node->xmlChildrenNode;
 
 		while (node && node->type != XML_ELEMENT_NODE)
