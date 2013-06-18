@@ -1367,11 +1367,14 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 	struct fast_message *msg;
 	struct fast_pmap *spmap;
 	struct fast_field *cur;
+	long spmap_bit = 0;
 	const char *start;
 	int pmap_req;
 	int ret = 0;
 
 	seq = field->ptr_value;
+	spmap = NULL;
+	msg = NULL;
 
 	if (!seq->decoded) {
 		start = buffer_start(buffer);
@@ -1418,6 +1421,7 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 			cur = (msg + seq->decoded)->fields + msg->decoded;
 			field = msg->fields + msg->decoded;
 			start = buffer_start(buffer);
+			spmap_bit = spmap->pmap_bit;
 
 			switch (field->type) {
 			case FAST_TYPE_INT:
@@ -1478,8 +1482,12 @@ static int fast_decode_sequence(struct buffer *buffer, struct fast_pmap *pmap, s
 	seq->decoded = 0;
 
 exit:
-	if (ret == FAST_MSG_STATE_PARTIAL)
+	if (ret == FAST_MSG_STATE_PARTIAL) {
 		buffer_advance(buffer, start - buffer_start(buffer));
+
+		if (msg)
+			spmap->pmap_bit = spmap_bit;
+	}
 
 	return ret;
 }
@@ -1503,6 +1511,7 @@ struct fast_message *fast_message_decode(struct fast_session *session)
 	struct fast_field *field;
 	struct fast_pmap *pmap;
 	struct buffer *buffer;
+	long pmap_bit = 0;
 	const char *start;
 	u64 tid;
 	int ret;
@@ -1510,6 +1519,7 @@ struct fast_message *fast_message_decode(struct fast_session *session)
 	preamble = &session->preamble;
 	buffer = session->rx_buffer;
 	pmap = &session->pmap;
+	msg = NULL;
 
 	if (preamble->nr_bytes && !preamble->is_valid) {
 		start = buffer_start(buffer);
@@ -1557,6 +1567,7 @@ struct fast_message *fast_message_decode(struct fast_session *session)
 	for (; msg->decoded < msg->nr_fields; msg->decoded++) {
 		field = msg->fields + msg->decoded;
 		start = buffer_start(buffer);
+		pmap_bit = pmap->pmap_bit;
 
 		switch (field->type) {
 		case FAST_TYPE_INT:
@@ -1606,8 +1617,12 @@ struct fast_message *fast_message_decode(struct fast_session *session)
 	return msg;
 
 fail:
-	if (ret == FAST_MSG_STATE_PARTIAL)
+	if (ret == FAST_MSG_STATE_PARTIAL) {
 		buffer_advance(buffer, start - buffer_start(buffer));
+
+		if (msg)
+			pmap->pmap_bit = pmap_bit;
+	}
 
 	return NULL;
 }
