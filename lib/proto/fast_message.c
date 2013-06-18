@@ -1653,8 +1653,7 @@ void fast_fields_free(struct fast_message *self)
 			seq = field->ptr_value;
 
 			for (j = 0; j < FAST_SEQUENCE_ELEMENTS; j++) {
-				hdestroy_r((seq->elements + j)->htab);
-				free((seq->elements + j)->htab);
+				g_hash_table_destroy((seq->elements + j)->ghtab);
 
 				free((seq->elements + j)->fields);
 			}
@@ -1665,8 +1664,8 @@ void fast_fields_free(struct fast_message *self)
 		}
 	}
 
-	hdestroy_r(self->htab);
-	free(self->htab);
+	if (self->ghtab)
+		g_hash_table_destroy(self->ghtab);
 
 	free(self->fields);
 }
@@ -1690,8 +1689,6 @@ int fast_message_copy(struct fast_message *dst, struct fast_message *src)
 	struct fast_sequence *src_seq;
 	struct fast_field *dst_field;
 	struct fast_field *src_field;
-	struct entry entry;
-	struct entry *val;
 	int i, j;
 
 	if (!dst)
@@ -1703,11 +1700,8 @@ int fast_message_copy(struct fast_message *dst, struct fast_message *src)
 	if (!dst->fields)
 		goto fail;
 
-	dst->htab = calloc(1, sizeof(struct hsearch_data));
-	if (!dst->htab)
-		goto fail;
-
-	if (!hcreate_r(FAST_FIELDS_HASH_SIZE, dst->htab))
+	dst->ghtab = g_hash_table_new(g_str_hash, g_str_equal);
+	if (!dst->ghtab)
 		goto fail;
 
 	for (i = 0; i < src->nr_fields; i++) {
@@ -1722,25 +1716,15 @@ int fast_message_copy(struct fast_message *dst, struct fast_message *src)
 		case FAST_TYPE_VECTOR:
 			memcpy(dst_field, src_field, sizeof(struct fast_field));
 
-			if (strlen(dst_field->name)) {
-				entry.key = dst_field->name;
-				entry.data = dst_field;
-
-				if (!hsearch_r(entry, ENTER, &val, dst->htab))
-					goto fail;
-			}
+			if (strlen(dst_field->name))
+				g_hash_table_insert(dst->ghtab, dst_field->name, dst_field);
 
 			break;
 		case FAST_TYPE_SEQUENCE:
 			memcpy(dst_field, src_field, sizeof(struct fast_field));
 
-			if (strlen(dst_field->name)) {
-				entry.key = dst_field->name;
-				entry.data = dst_field;
-
-				if (!hsearch_r(entry, ENTER, &val, dst->htab))
-					goto fail;
-			}
+			if (strlen(dst_field->name))
+				g_hash_table_insert(dst->ghtab, dst_field->name, dst_field);
 
 			src_seq = src_field->ptr_value;
 
@@ -2621,15 +2605,5 @@ exit:
 
 struct fast_field *fast_get_field(struct fast_message *msg, const char *name)
 {
-	struct entry entry;
-	struct entry *found;
-
-	entry.key = (char *)name;
-	if (!hsearch_r(entry, FIND, &found, msg->htab))
-		return NULL;
-
-	if (!found)
-		return NULL;
-
-	return found->data;
+	return g_hash_table_lookup(msg->ghtab, name);
 }

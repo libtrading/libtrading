@@ -254,8 +254,6 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 	struct fast_sequence *seq;
 	struct fast_message *msg;
 	struct fast_field *orig;
-	struct entry entry;
-	struct entry *val;
 	xmlNodePtr tmp;
 	int i, ret = 1;
 	int nr_fields;
@@ -292,11 +290,8 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 		if (!msg->fields)
 			goto exit;
 
-		msg->htab = calloc(1, sizeof(struct hsearch_data));
-		if (!msg->htab)
-			goto exit;
-
-		if (!hcreate_r(FAST_FIELDS_HASH_SIZE, msg->htab))
+		msg->ghtab = g_hash_table_new(g_str_hash, g_str_equal);
+		if (!msg->ghtab)
 			goto exit;
 
 		msg->nr_fields = 0;
@@ -312,13 +307,8 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 			if (fast_field_init(tmp, field))
 				goto exit;
 
-			if (strlen(field->name)) {
-				entry.key = field->name;
-				entry.data = field;
-
-				if (!hsearch_r(entry, ENTER, &val, msg->htab))
-					goto exit;
-			}
+			if (strlen(field->name))
+				g_hash_table_insert(msg->ghtab, field->name, field);
 
 			if (pmap_required(field))
 				field_add_flags(orig, FAST_FIELD_FLAGS_PMAPREQ);
@@ -459,8 +449,6 @@ exit:
 static int fast_message_init(xmlNodePtr node, struct fast_message *msg)
 {
 	struct fast_field *field;
-	struct entry entry;
-	struct entry *val;
 	int nr_fields;
 	xmlChar *prop;
 	int ret = 1;
@@ -494,11 +482,8 @@ static int fast_message_init(xmlNodePtr node, struct fast_message *msg)
 
 	msg->nr_fields = 0;
 
-	msg->htab = calloc(1, sizeof(struct hsearch_data));
-	if (!msg->htab)
-		goto exit;
-
-	if (!hcreate_r(FAST_FIELDS_HASH_SIZE, msg->htab))
+	msg->ghtab = g_hash_table_new(g_str_hash, g_str_equal);
+	if (!msg->ghtab)
 		goto exit;
 
 	node = node->xmlChildrenNode;
@@ -513,13 +498,8 @@ static int fast_message_init(xmlNodePtr node, struct fast_message *msg)
 		if (fast_field_init(node, field))
 			goto exit;
 
-		if (strlen(field->name)) {
-			entry.key = field->name;
-			entry.data = field;
-
-			if (!hsearch_r(entry, ENTER, &val, msg->htab))
-				goto exit;
-		}
+		if (strlen(field->name))
+			g_hash_table_insert(msg->ghtab, field->name, field);
 
 		msg->nr_fields++;
 		node = node->next;

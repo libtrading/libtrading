@@ -82,9 +82,11 @@ PROGRAMS += tools/test-fix-server
 PROGRAMS += tools/tape/tape
 
 DEFINES =
-INCLUDES = $(shell sh -c 'xml2-config --cflags')
+INCLUDES += $(shell sh -c 'xml2-config --cflags')
+INCLUDES += $(shell sh -c 'pkg-config --cflags glib-2.0')
 
 EXTRA_LIBS += $(shell sh -c 'xml2-config --libs')
+EXTRA_LIBS += $(shell sh -c 'pkg-config --libs glib-2.0')$
 
 EXTRA_LIBS += -lz
 

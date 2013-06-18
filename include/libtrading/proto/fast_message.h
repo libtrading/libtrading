@@ -4,8 +4,8 @@
 #include <libtrading/types.h>
 
 #include <stdbool.h>
-#include <search.h>
 #include <stdint.h>
+#include <glib.h>
 
 #define	FAST_PMAP_MAX_BYTES		8
 #define	FAST_PREAMBLE_MAX_BYTES		8
@@ -13,8 +13,6 @@
 #define	FAST_STRING_MAX_BYTES		256
 #define	FAST_VECTOR_MAX_BYTES		256
 #define	FAST_MESSAGE_MAX_SIZE		2048
-
-#define	FAST_FIELDS_HASH_SIZE		128
 
 #define	FAST_TEMPLATE_MAX_NUMBER	128
 
@@ -171,7 +169,7 @@ struct fast_message {
 	unsigned long		nr_fields;
 	unsigned long		decoded;
 	struct fast_field	*fields;
-	struct hsearch_data	*htab;
+	GHashTable		*ghtab;
 
 	char			name[32];
 	int			flags;
