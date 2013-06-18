@@ -10,8 +10,10 @@
 
 static int fast_feed_socket(struct fast_feed *feed)
 {
-	struct sockaddr_in sa;
+	struct ip_mreq_source group_src;
 	struct ip_mreq group;
+
+	struct sockaddr_in sa;
 	int sockfd;
 
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -36,11 +38,22 @@ static int fast_feed_socket(struct fast_feed *feed)
 	if (bind(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0)
 		goto fail;
 
-	group.imr_multiaddr.s_addr = inet_addr(feed->ip);
-	group.imr_interface.s_addr = inet_addr(feed->lip);
+	if (inet_addr(feed->sip) == INADDR_NONE) {
+		group.imr_multiaddr.s_addr = inet_addr(feed->ip);
+		group.imr_interface.s_addr = inet_addr(feed->lip);
 
-	if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&group, sizeof(group)) < 0)
-		goto fail;
+		if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+					(char *)&group, sizeof(group)) < 0)
+			goto fail;
+	} else {
+		group_src.imr_multiaddr.s_addr = inet_addr(feed->ip);
+		group_src.imr_sourceaddr.s_addr = inet_addr(feed->sip);
+		group_src.imr_interface.s_addr = inet_addr(feed->lip);
+
+		if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP,
+					(char *)&group_src, sizeof(group_src)) < 0)
+			goto fail;
+	}
 
 	return sockfd;
 
@@ -61,7 +74,9 @@ int fast_feed_open(struct fast_feed *feed)
 	if (sockfd < 0)
 		goto fail;
 
-	feed->session = fast_session_new(sockfd);
+	feed->cfg.sockfd = sockfd;
+
+	feed->session = fast_session_new(&feed->cfg);
 	if (!feed->session)
 		goto fail;
 

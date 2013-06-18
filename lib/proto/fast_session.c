@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-struct fast_session *fast_session_new(int sockfd)
+struct fast_session *fast_session_new(struct fast_session_cfg *cfg)
 {
 	struct fast_session *self = calloc(1, sizeof *self);
 
@@ -33,7 +33,14 @@ struct fast_session *fast_session_new(int sockfd)
 		return NULL;
 	}
 
-	self->sockfd		= sockfd;
+	if (cfg->preamble_bytes > FAST_PREAMBLE_MAX_BYTES) {
+		fast_session_free(self);
+		return NULL;
+	} else
+		self->preamble.nr_bytes = cfg->preamble_bytes;
+
+	self->sockfd		= cfg->sockfd;
+	self->reset		= cfg->reset;
 	self->rx_message	= NULL;
 	self->last_tid		= 0;
 	self->nr_messages	= 0;

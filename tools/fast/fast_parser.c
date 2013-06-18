@@ -27,10 +27,10 @@ static void signal_handler(int signum)
 
 struct protocol_info {
 	const char		*name;
-	int			(*session_initiate)(const struct protocol_info *, int, const char *);
+	int			(*session_initiate)(struct fast_session_cfg *, const char *);
 };
 
-static int raw_session_initiate(const struct protocol_info *proto, int fd, const char *out)
+static int raw_session_initiate(struct fast_session_cfg *cfg, const char *out)
 {
 	unsigned char buf[FAST_MESSAGE_MAX_SIZE];
 	int ret = 1;
@@ -42,7 +42,7 @@ static int raw_session_initiate(const struct protocol_info *proto, int fd, const
 		goto exit;
 	}
 
-	ret = read(fd, buf, FAST_MESSAGE_MAX_SIZE);
+	ret = read(cfg->sockfd, buf, FAST_MESSAGE_MAX_SIZE);
 	if (ret < 0) {
 		fprintf(stderr, "Parser: Cannot read data (%s)\n", strerror(errno));
 		goto exit;
@@ -60,7 +60,7 @@ exit:
 	return ret;
 }
 
-static int fast_session_initiate(const struct protocol_info *proto, int fd, const char *xml)
+static int fast_session_initiate(struct fast_session_cfg *cfg, const char *xml)
 {
 	struct fast_session *session = NULL;
 	struct fast_message *msg;
@@ -74,7 +74,7 @@ static int fast_session_initiate(const struct protocol_info *proto, int fd, cons
 	if (sigaction(SIGINT, &sa, NULL) == -1)
 		die("unable to register signal handler");
 
-	session = fast_session_new(fd);
+	session = fast_session_new(cfg);
 	if (!session) {
 		fprintf(stderr, "Parser: FAST session cannot be created\n");
 		goto exit;
@@ -101,6 +101,9 @@ static int fast_session_initiate(const struct protocol_info *proto, int fd, cons
 		} else {
 			fprintf(stdout, "< tid = %lu:\n", msg->tid);
 			fprintmsg(stdout, msg);
+
+			if (session->reset)
+				fast_session_reset(session);
 		}
 	}
 
@@ -142,10 +145,13 @@ static void usage(void)
 	fprintf(stdout, "\n\n  Here is a short summary of the options available:\n");
 	fprintf(stdout, format, "-p, --protocol [fast | raw]", "protocol to be used");
 	fprintf(stdout, format, "-m, --multicast ip:port", "multicast data input");
+	fprintf(stdout, format, "-s, --source ip", "source specific multicast");
 	fprintf(stdout, format, "-l, --listen ip", "multicast listen address");
 	fprintf(stdout, format, "-t, --template file", "template file to be used");
+	fprintf(stdout, format, "-b, --preamble bytes", "number of bytes in preamble");
 	fprintf(stdout, format, "-f, --file file", "ordinary file data input");
 	fprintf(stdout, format, "-o, --out file", "ordinary file data output");
+	fprintf(stdout, format, "-r, --reset", "implicit reset (0xCO 0xF8)");
 
 	fprintf(stdout, "\n\n  Usage examples:");
 	fprintf(stdout, "\n  # fast_parser -p fast -t template -m ip:port -l ip");
@@ -161,8 +167,9 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
-static int msocket(const char *ip, const char *lip, int port)
+static int msocket(const char *ip, const char *lip, const char *sip, int port)
 {
+	struct ip_mreq_source group_src;
 	struct sockaddr_in sa;
 	struct ip_mreq group;
 	int sockfd;
@@ -197,12 +204,23 @@ static int msocket(const char *ip, const char *lip, int port)
 		goto fail;
 	}
 
-	group.imr_multiaddr.s_addr = inet_addr(ip);
-	group.imr_interface.s_addr = inet_addr(lip);
+	if (!sip) {
+		group.imr_multiaddr.s_addr = inet_addr(ip);
+		group.imr_interface.s_addr = inet_addr(lip);
 
-	if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&group, sizeof(group)) < 0) {
-		fprintf(stderr, "Parser: Unable to join a group (%s)\n", strerror(errno));
-		goto fail;
+		if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&group, sizeof(group)) < 0) {
+			fprintf(stderr, "Parser: Unable to join a group (%s)\n", strerror(errno));
+			goto fail;
+		}
+	} else {
+		group_src.imr_multiaddr.s_addr = inet_addr(ip);
+		group_src.imr_interface.s_addr = inet_addr(lip);
+		group_src.imr_sourceaddr.s_addr = inet_addr(sip);
+
+		if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, (char *)&group_src, sizeof(group_src)) < 0) {
+			fprintf(stderr, "Parser: Unable to join a group (%s)\n", strerror(errno));
+			goto fail;
+		}
 	}
 
 	return sockfd;
@@ -214,27 +232,34 @@ fail:
 int main(int argc, char *argv[])
 {
 	const struct protocol_info *proto_info = NULL;
+	struct fast_session_cfg cfg;
 	const char *output = NULL;
 	const char *input = NULL;
 	const char *proto = NULL;
 	const char *tmp = NULL;
 	const char *xml = NULL;
 	const char *lip = NULL;
+	const char *sip = NULL;
 	const char *ip = NULL;
+	bool reset = false;
 	int opt_index = 0;
+	int preamble = 0;
 	int port = 0;
 	int fd = -1;
 	int opt;
 	int ret;
 
-	const char *short_opt = "f:l:m:o:p:t:";
+	const char *short_opt = "f:l:m:o:p:t:b:s:r";
 	const struct option long_opt[] = {
 		{"multicast", required_argument, NULL, 'm'},
 		{"protocol", required_argument, NULL, 'p'},
+		{"preamble", required_argument, NULL, 'b'},
 		{"template", required_argument, NULL, 't'},
 		{"listen", required_argument, NULL, 'l'},
+		{"source", required_argument, NULL, 's'},
 		{"file", required_argument, NULL, 'h'},
 		{"out", required_argument, NULL, 'o'},
+		{"reset", no_argument, NULL, 'r'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -245,6 +270,9 @@ int main(int argc, char *argv[])
 			port = atoi(strchr(ip, ':') + 1);
 			*strchr(ip, ':') = 0;
 			break;
+		case 'b':
+			preamble = atoi(optarg);
+			break;
 		case 'p':
 			proto = optarg;
 			break;
@@ -254,11 +282,17 @@ int main(int argc, char *argv[])
 		case 'l':
 			lip = optarg;
 			break;
+		case 's':
+			sip = optarg;
+			break;
 		case 'f':
 			input = optarg;
 			break;
 		case 'o':
 			output = optarg;
+			break;
+		case 'r':
+			reset = true;
 			break;
 		default: /* '?' */
 			usage();
@@ -277,7 +311,7 @@ int main(int argc, char *argv[])
 		if (!proto_info)
 			error("Parser: Unsupported protocol '%s'\n", proto);
 
-		fd = msocket(ip, lip, port);
+		fd = msocket(ip, lip, sip, port);
 		if (fd < 0)
 			error("Parser: Multicast socket creation failed\n");
 
@@ -298,7 +332,7 @@ int main(int argc, char *argv[])
 			if (fd < 0)
 				error("Parser: Unable to open a file (%s)\n", strerror(errno));
 		} else {
-			fd = msocket(ip, lip, port);
+			fd = msocket(ip, lip, sip, port);
 			if (fd < 0)
 				error("Parser: Multicast socket creation failed\n");
 		}
@@ -307,7 +341,11 @@ int main(int argc, char *argv[])
 	} else
 		usage();
 
-	ret = proto_info->session_initiate(proto_info, fd, tmp);
+	cfg.preamble_bytes = preamble;
+	cfg.reset = reset;
+	cfg.sockfd = fd;
+
+	ret = proto_info->session_initiate(&cfg, tmp);
 
 	if (ip || port)
 		shutdown(fd, SHUT_RDWR);

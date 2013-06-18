@@ -21,11 +21,10 @@
 
 struct protocol_info {
 	const char		*name;
-	int			(*session_initiate)(const struct protocol_info *, int, const char *, const char *);
+	int			(*session_initiate)(struct fast_session_cfg *, const char *, const char *);
 };
 
-static int fast_session_initiate(const struct protocol_info *proto, int sockfd,
-						const char *xml, const char *script)
+static int fast_session_initiate(struct fast_session_cfg *cfg, const char *xml, const char *script)
 {
 	struct fcontainer *container = NULL;
 	struct fast_session *session = NULL;
@@ -40,7 +39,7 @@ static int fast_session_initiate(const struct protocol_info *proto, int sockfd,
 		goto exit;
 	}
 
-	session = fast_session_new(sockfd);
+	session = fast_session_new(cfg);
 	if (!session) {
 		fprintf(stderr, "FAST session cannot be created\n");
 		goto exit;
@@ -126,6 +125,7 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 int main(int argc, char *argv[])
 {
 	const struct protocol_info *proto_info;
+	struct fast_session_cfg cfg;
 	const char *filename = NULL;
 	const char *proto = NULL;
 	const char *host = NULL;
@@ -205,7 +205,11 @@ int main(int argc, char *argv[])
 	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	retval = proto_info->session_initiate(proto_info, sockfd, xml, filename);
+	cfg.preamble_bytes = 0;
+	cfg.sockfd = sockfd;
+	cfg.reset = false;
+
+	retval = proto_info->session_initiate(&cfg, xml, filename);
 
 	shutdown(sockfd, SHUT_RDWR);
 

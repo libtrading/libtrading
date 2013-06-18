@@ -8,10 +8,12 @@
 
 struct fast_feed {
 	struct fast_session	*session;
+	struct fast_session_cfg	cfg;
 
 	u64			recv_num;
 	char			xml[128];
 	char			lip[32];
+	char			sip[32];
 	char			ip[32];
 	bool			active;
 	int			port;

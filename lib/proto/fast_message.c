@@ -1441,6 +1441,7 @@ static inline struct fast_message *fast_get_msg(struct fast_message *msgs, int t
 
 struct fast_message *fast_message_decode(struct fast_session *session)
 {
+	struct fast_preamble *preamble;
 	struct fast_message *msg;
 	struct fast_field *field;
 	struct fast_pmap *pmap;
@@ -1449,8 +1450,21 @@ struct fast_message *fast_message_decode(struct fast_session *session)
 	u64 tid;
 	int ret;
 
+	preamble = &session->preamble;
 	buffer = session->rx_buffer;
 	pmap = &session->pmap;
+
+	if (preamble->nr_bytes && !preamble->is_valid) {
+		start = buffer_start(buffer);
+
+		ret = FAST_MSG_STATE_PARTIAL;
+		if (buffer_size(buffer) < preamble->nr_bytes)
+			goto fail;
+
+		buffer_get_n(buffer, preamble->nr_bytes, preamble->bytes);
+
+		preamble->is_valid = true;
+	}
 
 	if (!pmap->is_valid) {
 		start = buffer_start(buffer);
@@ -1528,6 +1542,7 @@ struct fast_message *fast_message_decode(struct fast_session *session)
 
 	session->last_tid = msg->tid;
 	session->rx_message = NULL;
+	preamble->is_valid = false;
 	pmap->is_valid = false;
 	msg->decoded = 0;
 

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #define	FAST_PMAP_MAX_BYTES		8
+#define	FAST_PREAMBLE_MAX_BYTES		8
 #define	FAST_FIELD_MAX_NUMBER		128
 #define	FAST_STRING_MAX_BYTES		256
 #define	FAST_VECTOR_MAX_BYTES		256
@@ -65,6 +66,12 @@ struct fast_pmap {
 	long		pmap_bit;
 	unsigned long	nr_bytes;
 	char	bytes[FAST_PMAP_MAX_BYTES];
+};
+
+struct fast_preamble {
+	bool		is_valid;
+	unsigned long	nr_bytes;
+	char	bytes[FAST_PREAMBLE_MAX_BYTES];
 };
 
 struct fast_decimal {
