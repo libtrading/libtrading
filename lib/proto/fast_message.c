@@ -82,14 +82,14 @@ partial:
  * indicates an error. If the return value is equal to 1 and
  * the string is nullable, it means that the string is NULL.
  */
-static int parse_string(struct buffer *buffer, char *value)
+static int parse_string(struct buffer *buffer, char *value, size_t size)
 {
 	int len;
 	u8 c;
 
 	len = 0;
 
-	while (len < FAST_STRING_MAX_BYTES - 1) {
+	while (len < size - 1) {
 		if (!buffer_size(buffer))
 			goto partial;
 
@@ -733,12 +733,16 @@ fail:
 
 static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, struct fast_field *field)
 {
+	char delta[32];
+	i64 lenb, lend;
+	char *base;
+	i64 length;
 	int ret;
 
 	switch (field->op) {
 	case FAST_OP_NONE:
-		ret = parse_string(buffer, field->string_value);
-
+		ret = parse_string(buffer, field->string_value,
+						FAST_STRING_MAX_BYTES);
 		if (ret < 0)
 			goto fail;
 
@@ -747,7 +751,7 @@ static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, stru
 		if (field_is_mandatory(field))
 			break;
 
-		if (ret == 1)
+		if (ret == 1 && !field->string_value[0])
 			field->state = FAST_STATE_EMPTY;
 
 		break;
@@ -783,8 +787,8 @@ static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, stru
 				break;
 			}
 		} else {
-			ret = parse_string(buffer, field->string_value);
-
+			ret = parse_string(buffer, field->string_value,
+							FAST_STRING_MAX_BYTES);
 			if (ret < 0)
 				goto fail;
 
@@ -793,7 +797,7 @@ static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, stru
 			if (field_is_mandatory(field))
 				break;
 
-			if (ret == 1)
+			if (ret == 1 && !field->string_value[0])
 				field->state = FAST_STATE_EMPTY;
 		}
 
@@ -802,8 +806,61 @@ static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, stru
 			ret = FAST_MSG_STATE_GARBLED;
 			goto fail;
 	case FAST_OP_DELTA:
-			ret = FAST_MSG_STATE_GARBLED;
-			goto fail;
+			ret = parse_int(buffer, &length);
+			if (ret)
+				goto fail;
+
+			field->state = FAST_STATE_ASSIGNED;
+
+			if (!field_is_mandatory(field)) {
+				if (!length) {
+					field->state = FAST_STATE_EMPTY;
+					break;
+				} else if (length > 0)
+					length--;
+			}
+
+			ret = parse_string(buffer, delta, sizeof(delta));
+			if (ret < 0)
+				goto fail;
+
+			base = field->string_value;
+
+			lenb = strlen(base);
+			lend = strlen(delta);
+
+			if (length >= 0) {
+				if (lenb < length) {
+					ret = FAST_MSG_STATE_GARBLED;
+					goto fail;
+				}
+
+				if (lenb + lend - length + 1 >
+						FAST_STRING_MAX_BYTES) {
+					ret = FAST_MSG_STATE_GARBLED;
+					goto fail;
+				}
+
+				strncpy(base + lenb - length, delta, lend + 1);
+			} else {
+				length = -(length + 1);
+
+				if (strlen(base) < length) {
+					ret = FAST_MSG_STATE_GARBLED;
+					goto fail;
+				}
+
+				if (lenb + lend - length + 1 >
+						FAST_STRING_MAX_BYTES) {
+					ret = FAST_MSG_STATE_GARBLED;
+					goto fail;
+				}
+
+				memmove(base + lend, base + length, lenb - length + 1);
+				strncpy(base, delta, lend);
+			}
+
+			break;
 	case FAST_OP_DEFAULT:
 		pmap->pmap_bit++;
 
@@ -829,8 +886,8 @@ static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, stru
 				break;
 			}
 		} else {
-			ret = parse_string(buffer, field->string_value);
-
+			ret = parse_string(buffer, field->string_value,
+							FAST_STRING_MAX_BYTES);
 			if (ret < 0)
 				goto fail;
 
@@ -839,7 +896,7 @@ static int fast_decode_ascii(struct buffer *buffer, struct fast_pmap *pmap, stru
 			if (field_is_mandatory(field))
 				break;
 
-			if (ret == 1)
+			if (ret == 1 && !field->string_value[0])
 				field->state = FAST_STATE_EMPTY;
 		}
 
