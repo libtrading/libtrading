@@ -230,6 +230,7 @@ static inline int pmap_required(struct fast_field *field)
 		break;
 	case FAST_OP_COPY:
 	case FAST_OP_INCR:
+	case FAST_OP_DEFAULT:
 		ret = 1;
 		break;
 	case FAST_OP_NONE:
