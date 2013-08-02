@@ -193,6 +193,10 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 	int i;
 
 	field = fast_get_field(msg, "MDEntries");
+	if (!field) {
+		field = fast_get_field(msg, "GroupMDEntries");
+	}
+
 	if (!field || field_state_empty(field))
 		goto fail;
 
@@ -293,6 +297,10 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 	}
 
 	field = fast_get_field(msg, "MDEntries");
+	if (!field) {
+		field = fast_get_field(msg, "GroupMDEntries");
+	}
+
 	if (!field || field_state_empty(field))
 		goto fail;
 
