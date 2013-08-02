@@ -567,12 +567,16 @@ fail:
 
 static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 {
+	struct fast_message *inc_msg = NULL;
+	struct fast_message *snp_msg = NULL;
+	bool snp_received = false;
 	struct fast_field *field;
-	struct fast_message *msg;
+	struct fast_book *sbook;
 	struct ob_level *level;
 	struct ob_order order;
 	u64 last_msg_seq_num;
-	u64 msg_seq_num = 0;
+	u64 msg_num_init = 0;
+	u64 msg_num_cur = 0;
 	GList *list;
 
 	if (fast_feed_open(set->snp_feeds))
@@ -582,41 +586,70 @@ static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 	book_add_flags(book, FAST_BOOK_JOIN);
 
 	while (!book_has_flags(book, FAST_BOOK_ACTIVE)) {
-		if (next_increment(set, &msg))
+		if (next_increment(set, &inc_msg))
 			goto fail;
 
-		if (msg) {
-			if (apply_increment(set, NULL, msg))
+		if (inc_msg) {
+			if (apply_increment(set, NULL, inc_msg))
 				goto fail;
 
-			if (!msg_seq_num) {
-				field = fast_get_field(msg, "MsgSeqNum");
+			field = fast_get_field(inc_msg, "MsgSeqNum");
 
+			if (!field || field_state_empty(field))
+				goto fail;
+
+			msg_num_cur = field->uint_value;
+
+			if (!msg_num_init)
+				msg_num_init = msg_num_cur;
+		}
+
+		if (!snp_received) {
+			if (next_snapshot(set, &snp_msg))
+				goto fail;
+		}
+
+		if (snp_msg) {
+			field = fast_get_field(snp_msg, "SecurityID");
+			if (field) {
+				if (field_state_empty(field))
+					goto fail;
+
+				sbook = fast_book_by_id(set, field->uint_value);
+				if (!sbook || book->secid != sbook->secid)
+					continue;
+			} else {
+				field = fast_get_field(snp_msg, "Symbol");
 				if (!field || field_state_empty(field))
 					goto fail;
 
-				msg_seq_num = field->uint_value;
+				sbook = fast_book_by_symbol(set, field->string_value);
+				if (!sbook || strcmp(sbook->symbol, book->symbol))
+					continue;
 			}
-		}
 
-		if (next_snapshot(set, &msg))
-			goto fail;
-
-		if (msg) {
-			if (!msg_seq_num)
-				continue;
-
-			field = fast_get_field(msg, "LastMsgSeqNumProcessed");
+			field = fast_get_field(snp_msg, "LastMsgSeqNumProcessed");
 			if (!field || field_state_empty(field))
 				goto fail;
 
 			last_msg_seq_num = field->uint_value;
 
-			if (last_msg_seq_num < msg_seq_num)
+			if (!msg_num_init)
 				continue;
 
-			if (apply_snapshot(set, book, msg))
+			if (last_msg_seq_num < msg_num_init)
+				continue;
+
+			snp_received = true;
+
+			if (last_msg_seq_num > msg_num_cur)
+				continue;
+
+			if (apply_snapshot(set, book, snp_msg))
 				goto fail;
+
+			if (book_has_flags(book, FAST_BOOK_EMPTY))
+				snp_received = false;
 		}
 	}
 
