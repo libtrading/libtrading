@@ -116,9 +116,9 @@ static inline struct fast_book *fast_book_by_symbol(struct fast_book_set *set, c
 	size_t len;
 	int i;
 
-	len = strlen(symbol);
-
 	for (i = 0; i < set->books_num; i++) {
+		len = strlen(set->books[i].symbol);
+
 		if (!strncmp(set->books[i].symbol, symbol, len))
 			return set->books + i;
 	}
