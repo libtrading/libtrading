@@ -162,15 +162,30 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 		md = seq->elements + i;
 
 		field = fast_get_field(md, "SecurityID");
-		if (!field || field_state_empty(field))
-			goto fail;
+		if (field) {
+			if (field_state_empty(field))
+				goto fail;
 
-		book = fast_book_find(set, field->uint_value);
-		if (!book || !book_has_flags(book, FAST_BOOK_ACTIVE))
-			continue;
+			book = fast_book_by_id(set, field->uint_value);
+			if (!book || !book_has_flags(book, FAST_BOOK_ACTIVE))
+				continue;
 
-		if (dst && dst->secid != book->secid)
-			continue;
+			if (dst && dst->secid != book->secid)
+				continue;
+		} else {
+			field = fast_get_field(md, "Symbol");
+			if (!field || field_state_empty(field))
+				goto fail;
+
+			book = fast_book_by_symbol(set, field->string_value);
+			if (!book || !book_has_flags(book, FAST_BOOK_ACTIVE))
+				continue;
+
+			if (dst && strncmp(book->symbol, dst->symbol,
+							strlen(dst->symbol)))
+				continue;
+		}
+
 
 		field = fast_get_field(md, "RptSeq");
 		if (!field || field_state_empty(field))
@@ -202,15 +217,29 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 	int i;
 
 	field = fast_get_field(msg, "SecurityID");
-	if (!field || field_state_empty(field))
-		goto fail;
+	if (field) {
+		if (field_state_empty(field))
+			goto fail;
 
-	book = fast_book_find(set, field->uint_value);
-	if (!book || book_has_flags(book, FAST_BOOK_ACTIVE))
-		goto done;
+		book = fast_book_by_id(set, field->uint_value);
+		if (!book || book_has_flags(book, FAST_BOOK_ACTIVE))
+			goto done;
 
-	if (dst && dst->secid != book->secid)
-		goto done;
+		if (dst && dst->secid != book->secid)
+			goto done;
+	} else {
+		field = fast_get_field(msg, "Symbol");
+		if (!field || field_state_empty(field))
+			goto fail;
+
+		book = fast_book_by_symbol(set, field->string_value);
+		if (!book || book_has_flags(book, FAST_BOOK_ACTIVE))
+			goto done;
+
+		if (dst && strncmp(book->symbol, dst->symbol,
+						strlen(dst->symbol)))
+			goto done;
+	}
 
 	field = fast_get_field(msg, "MDEntries");
 	if (!field || field_state_empty(field))

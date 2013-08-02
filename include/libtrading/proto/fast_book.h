@@ -18,7 +18,7 @@ struct fast_book {
 	struct fast_decimal	tick;
 	struct order_book	ob;
 
-	char		symbol[8];
+	char		symbol[32];
 	u64		rptseq;
 	int		flags;
 	u64		secid;
@@ -97,7 +97,22 @@ fail:
 	return NULL;
 }
 
-static inline struct fast_book *fast_book_find(struct fast_book_set *set, u64 secid)
+static inline struct fast_book *fast_book_by_symbol(struct fast_book_set *set, char *symbol)
+{
+	size_t len;
+	int i;
+
+	len = strlen(symbol);
+
+	for (i = 0; i < set->books_num; i++) {
+		if (!strncmp(set->books[i].symbol, symbol, len))
+			return set->books + i;
+	}
+
+	return NULL;
+}
+
+static inline struct fast_book *fast_book_by_id(struct fast_book_set *set, u64 secid)
 {
 	int i;
 
