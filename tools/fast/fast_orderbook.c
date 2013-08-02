@@ -113,8 +113,6 @@ static int parse_feeds(xmlNodePtr node, struct fast_book_set *set, const char *t
 			}
 
 			prop = xmlGetProp(ptr, (const xmlChar *)"value");
-			if (!prop)
-				goto fail;
 
 			if (!xmlStrcmp(ptr->name, (const xmlChar *)"port")) {
 				feed->port = atoi((const char *)prop);
@@ -122,6 +120,12 @@ static int parse_feeds(xmlNodePtr node, struct fast_book_set *set, const char *t
 				strncpy(feed->ip, (const char *)prop, sizeof(feed->ip));
 			} else if (!xmlStrcmp(ptr->name, (const xmlChar *)"lip")) {
 				strncpy(feed->lip, (const char *)prop, sizeof(feed->lip));
+			} else if (!xmlStrcmp(ptr->name, (const xmlChar *)"sip")) {
+				strncpy(feed->sip, (const char *)prop, sizeof(feed->sip));
+			} else if (!xmlStrcmp(ptr->name, (const xmlChar *)"reset")) {
+				feed->cfg.reset = true;
+			} else if (!xmlStrcmp(ptr->name, (const xmlChar *)"preamble")) {
+				feed->cfg.preamble_bytes = atoi((const char *)prop);
 			}
 
 			ptr = ptr->next;
