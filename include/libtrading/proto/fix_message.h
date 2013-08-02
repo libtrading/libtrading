@@ -93,6 +93,7 @@ enum fix_tag {
 	MDEntryPx		= 270,
 	MDEntrySize		= 271,
 	MDUpdateAction		= 279,
+	TradingSessionID	= 336,
 	LastMsgSeqNumProcessed	= 369,
 	MDPriceLevel		= 1023,
 };

@@ -18,6 +18,7 @@ struct fast_book {
 	struct fast_decimal	tick;
 	struct order_book	ob;
 
+	char		session[32];
 	char		symbol[32];
 	u64		rptseq;
 	int		flags;

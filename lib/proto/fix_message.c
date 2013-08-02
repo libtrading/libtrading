@@ -171,6 +171,7 @@ static enum fix_type fix_tag_type(int tag)
 	case CumQty:			return FIX_TYPE_FLOAT;
 	case AvgPx:			return FIX_TYPE_FLOAT;
 	case Price:			return FIX_TYPE_FLOAT;
+	case TradingSessionID:		return FIX_TYPE_STRING;
 	case MDUpdateAction:		return FIX_TYPE_STRING;
 	case TransactTime:		return FIX_TYPE_STRING;
 	case MDEntryType:		return FIX_TYPE_STRING;

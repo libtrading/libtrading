@@ -181,6 +181,8 @@ static int parse_books(xmlNodePtr node, struct fast_book_set *set)
 				book->tick.mnt = atoi((const char *)prop);
 			else if (!xmlStrcmp(ptr->name, (const xmlChar *)"tick_exp"))
 				book->tick.exp = atoi((const char *)prop);
+			else if (!xmlStrcmp(ptr->name, (const xmlChar *)"session"))
+				strncpy(book->session, (const char *)prop, sizeof(book->session));
 
 			ptr = ptr->next;
 		}

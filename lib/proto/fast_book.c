@@ -186,6 +186,15 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 				continue;
 		}
 
+		field = fast_get_field(md, "TradingSessionID");
+		if (field) {
+			if (field_state_empty(field))
+				goto fail;
+
+			if (strncmp(book->session, field->string_value,
+						strlen(book->session)))
+				continue;
+		}
 
 		field = fast_get_field(md, "RptSeq");
 		if (!field || field_state_empty(field))
@@ -248,6 +257,21 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 	seq = field->ptr_value;
 	if (field_state_empty(&seq->length))
 		goto fail;
+
+	if (!seq->length.uint_value)
+		goto done;
+
+	md = seq->elements;
+
+	field = fast_get_field(md, "TradingSessionID");
+	if (field) {
+		if (field_state_empty(field))
+			goto fail;
+
+		if (strncmp(book->session, field->string_value,
+					strlen(book->session)))
+			goto done;
+	}
 
 	field = fast_get_field(msg, "RptSeq");
 	if (!field || field_state_empty(field))
