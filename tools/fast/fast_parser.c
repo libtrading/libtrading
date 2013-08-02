@@ -42,16 +42,18 @@ static int raw_session_initiate(struct fast_session_cfg *cfg, const char *out)
 		goto exit;
 	}
 
-	ret = read(cfg->sockfd, buf, FAST_MESSAGE_MAX_SIZE);
-	if (ret < 0) {
-		fprintf(stderr, "Parser: Cannot read data (%s)\n", strerror(errno));
-		goto exit;
-	}
+	while (!stop) {
+		ret = read(cfg->sockfd, buf, FAST_MESSAGE_MAX_SIZE);
+		if (ret < 0) {
+			fprintf(stderr, "Parser: Cannot read data (%s)\n", strerror(errno));
+			goto exit;
+		}
 
-	ret = write(outfd, buf, ret);
-	if (ret < 0) {
-		fprintf(stderr, "Parser: Cannot write data (%s)\n", strerror(errno));
-		goto exit;
+		ret = write(outfd, buf, ret);
+		if (ret < 0) {
+			fprintf(stderr, "Parser: Cannot write data (%s)\n", strerror(errno));
+			goto exit;
+		}
 	}
 
 	close(outfd);
