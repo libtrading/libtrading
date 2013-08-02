@@ -436,6 +436,8 @@ static int recv_increment(struct fast_book_set *set, struct fast_feed *feed, str
 		break;
 	case FIX_MSG_TYPE_HEARTBEAT:
 		break;
+	case FIX_MSG_TYPE_SECURITY_STATUS:
+		break;
 	case FIX_MSG_TYPE_INCREMENT_REFRESH:
 		*next = msg;
 
