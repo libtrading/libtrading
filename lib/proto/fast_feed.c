@@ -70,7 +70,12 @@ int fast_feed_open(struct fast_feed *feed)
 
 	feed->session = NULL;
 
-	sockfd = fast_feed_socket(feed);
+	if (strlen(feed->file)) {
+		sockfd = open(feed->file, O_RDONLY);
+	} else {
+		sockfd = fast_feed_socket(feed);
+	}
+
 	if (sockfd < 0)
 		goto fail;
 

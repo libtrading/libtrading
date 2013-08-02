@@ -11,6 +11,7 @@ struct fast_feed {
 	struct fast_session_cfg	cfg;
 
 	u64			recv_num;
+	char			file[64];
 	char			xml[128];
 	char			lip[32];
 	char			sip[32];

@@ -122,6 +122,8 @@ static int parse_feeds(xmlNodePtr node, struct fast_book_set *set, const char *t
 				strncpy(feed->lip, (const char *)prop, sizeof(feed->lip));
 			} else if (!xmlStrcmp(ptr->name, (const xmlChar *)"sip")) {
 				strncpy(feed->sip, (const char *)prop, sizeof(feed->sip));
+			} else if (!xmlStrcmp(ptr->name, (const xmlChar *)"file")) {
+				strncpy(feed->file, (const char *)prop, sizeof(feed->file));
 			} else if (!xmlStrcmp(ptr->name, (const xmlChar *)"reset")) {
 				feed->cfg.reset = true;
 			} else if (!xmlStrcmp(ptr->name, (const xmlChar *)"preamble")) {
