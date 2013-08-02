@@ -26,6 +26,9 @@ static inline int socket_setopt(int sockfd, int level, int optname, int optval)
 
 static inline struct fast_message *fast_feed_recv(struct fast_feed *feed, int flags)
 {
+	if (feed->session->reset)
+		fast_session_reset(feed->session);
+
 	return fast_session_recv(feed->session, flags);
 }
 
