@@ -88,6 +88,9 @@ static inline struct fast_book *fast_book_add(struct fast_book_set *set)
 	book->num = set->books_num;
 	set->books_num++;
 
+	if (ob_init(&book->ob))
+		goto fail;
+
 	return book;
 
 fail:

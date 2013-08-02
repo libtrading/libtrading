@@ -21,10 +21,11 @@ static void signal_handler(int signum)
 static void fast_books_print(struct fast_book_set *set)
 {
 	struct fast_book *book;
+	struct ob_level *level;
 	int row, col;
 	u64 mask = 0;
-	int depth;
-	int i, j;
+	GList *list;
+	int i;
 
 	for (i = 0; i < set->books_num; i++) {
 		book = set->books + i;
@@ -46,19 +47,20 @@ static void fast_books_print(struct fast_book_set *set)
 		mvprintw(row++, col, "%s\n", book->symbol);
 
 		attron(COLOR_PAIR(1));
-		depth = book->ob.depth;
-		for (j = 0; j < depth; j++) {
-			mvprintw(row++, col, "%6"PRIi64" %6"PRIi64"\n",
-					book->ob.asks[depth - 1 - j].price,
-						book->ob.asks[depth - 1 - j].size);
+		list = g_list_last(book->ob.glasks);
+		while (list) {
+			level = g_list_nth_data(list, 0);
+			mvprintw(row++, col, "%6lu %6lu\n", level->price, level->size);
+			list = g_list_previous(list);
 		}
 		attroff(COLOR_PAIR(1));
 
 		attron(COLOR_PAIR(2));
-		for (j = 0; j < depth; j++) {
-			mvprintw(row++, col, "%6"PRIi64" %6"PRIi64"\n",
-					book->ob.bids[j].price,
-						book->ob.bids[j].size);
+		list = g_list_last(book->ob.glbids);
+		while (list) {
+			level = g_list_nth_data(list, 0);
+			mvprintw(row++, col, "%6lu %6lu\n", level->price, level->size);
+			list = g_list_previous(list);
 		}
 		attroff(COLOR_PAIR(2));
 	}
@@ -175,8 +177,6 @@ static int parse_books(xmlNodePtr node, struct fast_book_set *set)
 
 			if (!xmlStrcmp(ptr->name, (const xmlChar *)"id"))
 				book->secid = atol((const char *)prop);
-			else if (!xmlStrcmp(ptr->name, (const xmlChar *)"depth"))
-				book->ob.depth = atoi((const char *)prop);
 			else if (!xmlStrcmp(ptr->name, (const xmlChar *)"tick_mnt"))
 				book->tick.mnt = atoi((const char *)prop);
 			else if (!xmlStrcmp(ptr->name, (const xmlChar *)"tick_exp"))

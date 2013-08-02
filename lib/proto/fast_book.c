@@ -26,23 +26,13 @@ static int price_align(struct fast_decimal *price, struct fast_decimal *tick)
 	return 0;
 }
 
-static bool fast_book_is_valid(struct fast_book *book)
-{
-	if (book_has_flags(book, FAST_BOOK_EMPTY))
-		return false;
-
-	return order_book_is_valid(&book->ob);
-}
-
 static int md_increment(struct fast_book *book, struct fast_message *msg)
 {
-	struct price_level *levels;
 	struct fast_decimal price;
 	struct fast_field *field;
-	struct price_level level;
+	struct ob_order order;
 	char type;
 	i64 size;
-	u32 ind;
 
 	field = fast_get_field(msg, "MDEntryType");
 	if (!field || field_state_empty(field))
@@ -50,21 +40,15 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 
 	type = field->string_value[0];
 	if (type == '0') {
-		levels = book->ob.bids;
+		order.buy = true;
 	} else if (type == '1') {
-		levels = book->ob.asks;
+		order.buy = false;
 	} else if (type == 'J') {
 		book_add_flags(book, FAST_BOOK_EMPTY);
 		goto exit;
 	} else {
 		goto fail;
 	}
-
-	field = fast_get_field(msg, "MDPriceLevel");
-	if (!field || field_state_empty(field))
-		goto fail;
-
-	ind = field->uint_value - 1;
 
 	field = fast_get_field(msg, "MDEntrySize");
 	if (!field || field_state_empty(field))
@@ -80,21 +64,21 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 	if (price_align(&price, &book->tick))
 		goto fail;
 
-	level.price = price.mnt;
-	level.size = size;
+	order.price = price.mnt;
+	order.size = size;
 
 	field = fast_get_field(msg, "MDUpdateAction");
 	if (!field || field_state_empty(field))
 		goto fail;
 
 	if (field->uint_value == 0) {
-		if (new_price_level(levels, book->ob.depth, &level, ind))
+		if (ob_level_modify(&book->ob, &order))
 			goto fail;
 	} else if (field->uint_value == 1) {
-		if (change_price_level(levels, book->ob.depth, &level, ind))
+		if (ob_level_modify(&book->ob, &order))
 			goto fail;
 	} else if (field->uint_value == 2) {
-		if (delete_price_level(levels, book->ob.depth, &level, ind))
+		if (ob_level_delete(&book->ob, &order))
 			goto fail;
 	} else {
 		goto fail;
@@ -109,13 +93,11 @@ fail:
 
 static int md_snapshot(struct fast_book *book, struct fast_message *msg)
 {
-	struct price_level *levels;
 	struct fast_decimal price;
 	struct fast_field *field;
-	struct price_level level;
+	struct ob_order order;
 	char type;
 	i64 size;
-	u32 ind;
 
 	field = fast_get_field(msg, "MDEntryType");
 	if (!field || field_state_empty(field))
@@ -123,21 +105,15 @@ static int md_snapshot(struct fast_book *book, struct fast_message *msg)
 
 	type = field->string_value[0];
 	if (type == '0') {
-		levels = book->ob.bids;
+		order.buy = true;
 	} else if (type == '1') {
-		levels = book->ob.asks;
+		order.buy = false;
 	} else if (type == 'J') {
 		book_add_flags(book, FAST_BOOK_EMPTY);
 		goto exit;
 	} else {
 		goto fail;
 	}
-
-	field = fast_get_field(msg, "MDPriceLevel");
-	if (!field || field_state_empty(field))
-		goto fail;
-
-	ind = field->uint_value - 1;
 
 	field = fast_get_field(msg, "MDEntrySize");
 	if (!field || field_state_empty(field))
@@ -153,10 +129,10 @@ static int md_snapshot(struct fast_book *book, struct fast_message *msg)
 	if (price_align(&price, &book->tick))
 		goto fail;
 
-	level.price = price.mnt;
-	level.size = size;
+	order.price = price.mnt;
+	order.size = size;
 
-	if (set_price_level(levels, book->ob.depth, &level, ind))
+	if (ob_level_modify(&book->ob, &order))
 		goto fail;
 
 exit:
@@ -260,12 +236,8 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 			goto fail;
 	}
 
-	if (!fast_book_is_valid(book)) {
-		if (!book_has_flags(book, FAST_BOOK_EMPTY))
-			goto fail;
-	} else {
+	if (!book_has_flags(book, FAST_BOOK_EMPTY))
 		book_add_flags(book, FAST_BOOK_ACTIVE);
-	}
 
 done:
 	return 0;

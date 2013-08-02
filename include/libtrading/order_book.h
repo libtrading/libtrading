@@ -4,25 +4,61 @@
 #include <libtrading/types.h>
 
 #include <stdbool.h>
+#include <glib.h>
 
-#define	MAX_BOOK_DEPTH	50
+struct ob_level {
+	unsigned long	price;
+	unsigned long	size;
+};
 
-struct price_level {
-	u64	price;
-	u64	size;
+struct ob_order {
+	unsigned long	price;
+	unsigned long	size;
+	bool		buy;
 };
 
 struct order_book {
-	struct price_level	bids[MAX_BOOK_DEPTH];
-	struct price_level	asks[MAX_BOOK_DEPTH];
+	GHashTable	*ghbids;
+	GHashTable	*ghasks;
 
-	int		depth;
+	GTree		*gtbids;
+	GTree		*gtasks;
+
+	GList		*glbids;
+	GList		*glasks;
 };
 
-bool order_book_is_valid(struct order_book *ob);
-int new_price_level(struct price_level *levels, int depth, struct price_level *level, int ind);
-int set_price_level(struct price_level *levels, int depth, struct price_level *level, int ind);
-int change_price_level(struct price_level *levels, int depth, struct price_level *level, int ind);
-int delete_price_level(struct price_level *levels, int depth, struct price_level *level, int ind);
+static inline gint g_uint_compare(gconstpointer pa, gconstpointer pb)
+{
+	unsigned int a = GPOINTER_TO_UINT(pa);
+	unsigned int b = GPOINTER_TO_UINT(pb);
+	gint ret = 0;
+
+	if (a < b)
+		ret = -1;
+	else if (a > b)
+		ret  = 1;
+
+	return ret;
+}
+
+static inline gint g_level_compare(gconstpointer pa, gconstpointer pb)
+{
+	const struct ob_level *la = pa;
+	const struct ob_level *lb = pb;
+	gint ret = 0;
+
+	if (la->price < lb->price)
+		ret = -1;
+	else if (la->price > lb->price)
+		ret = 1;
+
+	return ret;
+}
+
+int ob_init(struct order_book *ob);
+void ob_fini(struct order_book *ob);
+int ob_level_modify(struct order_book *ob, struct ob_order *order);
+int ob_level_delete(struct order_book *ob, struct ob_order *order);
 
 #endif	/* LIBTRADING_ORDER_BOOK_H */
