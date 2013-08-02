@@ -64,6 +64,26 @@ void ob_fini(struct order_book *ob)
 	return;
 }
 
+int ob_clear(struct order_book *ob)
+{
+	ob_fini(ob);
+
+	return ob_init(ob);
+}
+
+struct ob_level *ob_level_lookup(struct order_book *ob, struct ob_order *order)
+{
+	GHashTable *ghtable;
+
+	if (order->buy) {
+		ghtable = ob->ghbids;
+	} else {
+		ghtable = ob->ghasks;
+	}
+
+	return g_hash_table_lookup(ghtable, GUINT_TO_POINTER(order->price));
+}
+
 int ob_level_modify(struct order_book *ob, struct ob_order *order)
 {
 	struct ob_level *level;
@@ -91,14 +111,20 @@ int ob_level_modify(struct order_book *ob, struct ob_order *order)
 		if (!level)
 			goto fail;
 
+		level->seq_num = order->seq_num;
 		level->price = order->price;
 		level->size = order->size;
 
 		g_hash_table_insert(ghtable, GUINT_TO_POINTER(level->price), level);
 		*glist = g_list_insert_sorted(*glist, level, g_level_compare);
 		g_tree_insert(gtree, GUINT_TO_POINTER(level->price), level);
-	} else
+	} else {
+		if (level->seq_num >= order->seq_num)
+			goto fail;
+
+		level->seq_num = order->seq_num;
 		level->size = order->size;
+	}
 
 	return 0;
 

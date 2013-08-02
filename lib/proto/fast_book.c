@@ -92,6 +92,7 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 	if (price_align(&price, &book->tick))
 		goto fail;
 
+	order.seq_num = book->rptseq;
 	order.price = price.mnt;
 	order.size = size;
 
@@ -106,8 +107,14 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 		if (ob_level_modify(&book->ob, &order))
 			goto fail;
 	} else if (field->uint_value == 2) {
-		if (ob_level_delete(&book->ob, &order))
-			goto fail;
+		if (book_has_flags(book, FAST_BOOK_ACTIVE)) {
+			if (ob_level_delete(&book->ob, &order))
+				goto fail;
+		} else {
+			order.size = 0;
+			if (ob_level_modify(&book->ob, &order))
+				goto fail;
+		}
 	} else {
 		goto fail;
 	}
@@ -123,6 +130,7 @@ static int md_snapshot(struct fast_book *book, struct fast_message *msg)
 {
 	struct fast_decimal price;
 	struct fast_field *field;
+	struct ob_level *level;
 	struct ob_order order;
 	char type;
 	i64 size;
@@ -171,11 +179,18 @@ static int md_snapshot(struct fast_book *book, struct fast_message *msg)
 	if (price_align(&price, &book->tick))
 		goto fail;
 
+	order.seq_num = book->snpseq;
 	order.price = price.mnt;
 	order.size = size;
 
-	if (ob_level_modify(&book->ob, &order))
-		goto fail;
+	level = ob_level_lookup(&book->ob, &order);
+	if (!level) {
+		if (ob_level_modify(&book->ob, &order))
+			goto fail;
+	} else if (level->seq_num <= book->snpseq) {
+		if (level->size != size)
+			goto fail;
+	}
 
 exit:
 	return 0;
@@ -213,7 +228,11 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 				goto fail;
 
 			book = fast_book_by_id(set, field->uint_value);
-			if (!book || !book_has_flags(book, FAST_BOOK_ACTIVE))
+			if (!book)
+				continue;
+
+			if (!book_has_flags(book, FAST_BOOK_ACTIVE) &&
+					!book_has_flags(book, FAST_BOOK_JOIN))
 				continue;
 
 			if (dst && dst->secid != book->secid)
@@ -224,7 +243,11 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 				goto fail;
 
 			book = fast_book_by_symbol(set, field->string_value);
-			if (!book || !book_has_flags(book, FAST_BOOK_ACTIVE))
+			if (!book)
+				continue;
+
+			if (!book_has_flags(book, FAST_BOOK_ACTIVE) &&
+					!book_has_flags(book, FAST_BOOK_JOIN))
 				continue;
 
 			if (dst && strncmp(book->symbol, dst->symbol,
@@ -245,6 +268,9 @@ static int apply_increment(struct fast_book_set *set, struct fast_book *dst, str
 		field = fast_get_field(md, "RptSeq");
 		if (!field || field_state_empty(field))
 			goto fail;
+
+		if (!book->rptseq)
+			book->rptseq = field->uint_value - 1;
 
 		book->rptseq++;
 		if (book->rptseq != field->uint_value)
@@ -280,6 +306,9 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 		if (!book || book_has_flags(book, FAST_BOOK_ACTIVE))
 			goto done;
 
+		if (!book_has_flags(book, FAST_BOOK_JOIN))
+			goto done;
+
 		if (dst && dst->secid != book->secid)
 			goto done;
 	} else {
@@ -289,6 +318,9 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 
 		book = fast_book_by_symbol(set, field->string_value);
 		if (!book || book_has_flags(book, FAST_BOOK_ACTIVE))
+			goto done;
+
+		if (!book_has_flags(book, FAST_BOOK_JOIN))
 			goto done;
 
 		if (dst && strncmp(book->symbol, dst->symbol,
@@ -327,7 +359,7 @@ static int apply_snapshot(struct fast_book_set *set, struct fast_book *dst, stru
 	if (!field || field_state_empty(field))
 		goto fail;
 
-	book->rptseq = field->uint_value;
+	book->snpseq = field->uint_value;
 
 	book_clear_flags(book, FAST_BOOK_EMPTY);
 	book_add_mask(set, book);
@@ -533,107 +565,96 @@ fail:
 
 static int fast_books_join(struct fast_book_set *set, struct fast_book *book)
 {
-	struct fast_message *inc_buf = NULL;
-	struct fast_message *tmp_buf;
 	struct fast_field *field;
 	struct fast_message *msg;
-	unsigned long size = 32;
-	unsigned long pos = 0;
+	struct ob_level *level;
+	struct ob_order order;
 	u64 last_msg_seq_num;
 	u64 msg_seq_num = 0;
-	unsigned long i;
+	GList *list;
 
 	if (fast_feed_open(set->snp_feeds))
 		goto fail;
 
-	inc_buf = calloc(size, sizeof(struct fast_message));
-	if (!inc_buf)
-		goto fail;
-
 	book_clear_flags(book, FAST_BOOK_ACTIVE);
+	book_add_flags(book, FAST_BOOK_JOIN);
 
 	while (!book_has_flags(book, FAST_BOOK_ACTIVE)) {
 		if (next_increment(set, &msg))
 			goto fail;
 
-		if (!msg)
-			continue;
-
-		if (apply_increment(set, NULL, msg))
-			goto fail;
-
-		if (pos >= size) {
-			size *= 2;
-
-			tmp_buf = realloc(inc_buf, size * sizeof(struct fast_message));
-			if (!tmp_buf)
+		if (msg) {
+			if (apply_increment(set, NULL, msg))
 				goto fail;
 
-			inc_buf = tmp_buf;
-		}
+			if (!msg_seq_num) {
+				field = fast_get_field(msg, "MsgSeqNum");
 
-		if (fast_message_copy(inc_buf + pos, msg)) {
-			goto fail;
-		} else
-			pos++;
+				if (!field || field_state_empty(field))
+					goto fail;
 
-		if (!msg_seq_num) {
-			field = fast_get_field(msg, "MsgSeqNum");
-
-			if (!field || field_state_empty(field))
-				goto fail;
-
-			msg_seq_num = field->uint_value;
+				msg_seq_num = field->uint_value;
+			}
 		}
 
 		if (next_snapshot(set, &msg))
 			goto fail;
 
-		if (!msg)
-			continue;
+		if (msg) {
+			if (!msg_seq_num)
+				continue;
 
-		field = fast_get_field(msg, "LastMsgSeqNumProcessed");
-		if (!field || field_state_empty(field))
-			goto fail;
+			field = fast_get_field(msg, "LastMsgSeqNumProcessed");
+			if (!field || field_state_empty(field))
+				goto fail;
 
-		last_msg_seq_num = field->uint_value;
+			last_msg_seq_num = field->uint_value;
 
-		if (last_msg_seq_num < msg_seq_num)
-			continue;
+			if (last_msg_seq_num < msg_seq_num)
+				continue;
 
-		if (apply_snapshot(set, book, msg))
-			goto fail;
+			if (apply_snapshot(set, book, msg))
+				goto fail;
+		}
 	}
 
-	if (!pos)
-		goto fail;
+	order.buy = false;
+	list = g_list_first(book->ob.glasks);
+	while (list) {
+		level = g_list_nth_data(list, 0);
+		list = g_list_next(list);
 
-	for (i = 0; i < pos; i++) {
-		msg = inc_buf + i;
+		if (!level->size) {
+			order.price = level->price;
 
-		field = fast_get_field(msg, "MsgSeqNum");
-		if (!field || field_state_empty(field))
-			goto fail;
-
-		msg_seq_num = field->uint_value;
-
-		if (msg_seq_num <= last_msg_seq_num)
-			continue;
-
-		if (apply_increment(set, book, msg))
-			goto fail;
+			if (ob_level_delete(&book->ob, &order))
+				goto fail;
+		}
 	}
+
+	order.buy = true;
+	list = g_list_first(book->ob.glbids);
+	while (list) {
+		level = g_list_nth_data(list, 0);
+		list = g_list_next(list);
+
+		if (!level->size) {
+			order.price = level->price;
+
+			if (ob_level_delete(&book->ob, &order))
+				goto fail;
+		}
+	}
+
+	book_clear_flags(book, FAST_BOOK_JOIN);
 
 	if (fast_feed_close(set->snp_feeds))
 		goto fail;
-
-	fast_message_free(inc_buf, pos);
 
 	return 0;
 
 fail:
 	fast_feed_close(set->snp_feeds);
-	fast_message_free(inc_buf, pos);
 
 	return -1;
 }
@@ -665,11 +686,17 @@ retry:
 		if (!book_has_flags(book, FAST_BOOK_SUBSCRIBED))
 			continue;
 
+		if (fast_book_clear(book))
+			goto fail;
+
 		if (fast_books_join(set, book))
 			goto retry;
 	}
 
 	return 0;
+
+fail:
+	return -1;
 }
 
 int fast_books_subscribe(struct fast_book_set *set, struct fast_book *book)

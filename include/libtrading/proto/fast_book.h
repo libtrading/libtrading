@@ -11,6 +11,7 @@
 #define	FAST_BOOK_SUBSCRIBED	0x00000001
 #define	FAST_BOOK_ACTIVE	0x00000002
 #define	FAST_BOOK_EMPTY		0x00000004
+#define	FAST_BOOK_JOIN		0x00000008
 
 #define	FAST_BOOK_MASK_SIZE	(1 + ((FAST_BOOK_NUM) >> 6))
 
@@ -21,6 +22,7 @@ struct fast_book {
 	char		session[32];
 	char		symbol[32];
 	u64		rptseq;
+	u64		snpseq;
 	int		flags;
 	u64		secid;
 	int		num;
@@ -74,6 +76,17 @@ static inline void book_clear_mask(struct fast_book_set *set, struct fast_book *
 static inline u64 book_has_mask(struct fast_book_set *set, struct fast_book *book)
 {
 	return set->books_mask[book->num / 64] & (1 << book->num % 64);
+}
+
+static inline int fast_book_clear(struct fast_book *book)
+{
+	if (ob_clear(&book->ob))
+		return -1;
+
+	book->rptseq = 0;
+	book->snpseq = 0;
+
+	return 0;
 }
 
 static inline struct fast_book *fast_book_add(struct fast_book_set *set)

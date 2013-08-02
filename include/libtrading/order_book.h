@@ -7,11 +7,13 @@
 #include <glib.h>
 
 struct ob_level {
+	unsigned long	seq_num;
 	unsigned long	price;
 	unsigned long	size;
 };
 
 struct ob_order {
+	unsigned long	seq_num;
 	unsigned long	price;
 	unsigned long	size;
 	bool		buy;
@@ -58,7 +60,9 @@ static inline gint g_level_compare(gconstpointer pa, gconstpointer pb)
 
 int ob_init(struct order_book *ob);
 void ob_fini(struct order_book *ob);
+int ob_clear(struct order_book *ob);
 int ob_level_modify(struct order_book *ob, struct ob_order *order);
 int ob_level_delete(struct order_book *ob, struct ob_order *order);
+struct ob_level *ob_level_lookup(struct order_book *ob, struct ob_order *order);
 
 #endif	/* LIBTRADING_ORDER_BOOK_H */
