@@ -3,6 +3,20 @@
 
 #include <stdlib.h>
 
+static int decimal_to_int(struct fast_decimal *decimal, i64 *out)
+{
+	i64 exp = decimal->exp;
+
+	if (exp < 0)
+		return -1;
+
+	*out = decimal->mnt;
+	while (exp--)
+		*out *= 10;
+
+	return 0;
+}
+
 static int price_align(struct fast_decimal *price, struct fast_decimal *tick)
 {
 	if (price->exp == tick->exp)
@@ -54,7 +68,21 @@ static int md_increment(struct fast_book *book, struct fast_message *msg)
 	if (!field || field_state_empty(field))
 		goto fail;
 
-	size = field->int_value;
+	switch (field->type) {
+	case FAST_TYPE_INT:
+		size = field->int_value;
+		break;
+	case FAST_TYPE_DECIMAL:
+		if (decimal_to_int(&field->decimal_value, &size))
+			goto fail;
+		break;
+	case FAST_TYPE_UINT:
+	case FAST_TYPE_STRING:
+	case FAST_TYPE_VECTOR:
+	case FAST_TYPE_SEQUENCE:
+	default:
+		goto fail;
+	}
 
 	field = fast_get_field(msg, "MDEntryPx");
 	if (!field || field_state_empty(field))
@@ -119,7 +147,21 @@ static int md_snapshot(struct fast_book *book, struct fast_message *msg)
 	if (!field || field_state_empty(field))
 		goto fail;
 
-	size = field->int_value;
+	switch (field->type) {
+	case FAST_TYPE_INT:
+		size = field->int_value;
+		break;
+	case FAST_TYPE_DECIMAL:
+		if (decimal_to_int(&field->decimal_value, &size))
+			goto fail;
+		break;
+	case FAST_TYPE_UINT:
+	case FAST_TYPE_STRING:
+	case FAST_TYPE_VECTOR:
+	case FAST_TYPE_SEQUENCE:
+	default:
+		goto fail;
+	}
 
 	field = fast_get_field(msg, "MDEntryPx");
 	if (!field || field_state_empty(field))
