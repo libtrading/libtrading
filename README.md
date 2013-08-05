@@ -53,6 +53,12 @@ is crucial in trading today's markets, reliability is also a top priority.
 
 ## Build Instructions
 
+Install prerequisite packages:
+
+On Fedora:
+
+   yum install zlib-devel libxml2-devel glib2-devel
+
 To build via Makefile simply execute:
 
     make
