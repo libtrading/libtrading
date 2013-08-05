@@ -57,7 +57,7 @@ Install prerequisite packages:
 
 On Fedora:
 
-   yum install zlib-devel libxml2-devel glib2-devel
+   yum install zlib-devel libxml2-devel glib2-devel vim-common
 
 To build via Makefile simply execute:
 
