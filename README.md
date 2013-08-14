@@ -51,19 +51,19 @@ is crucial in trading today's markets, reliability is also a top priority.
 [NYSE Arca XDP]:     http://www.nyxdata.com/nysedata/Default.aspx?tabid=1084
 [NYSE Daily TAQ]:    http://www.nyxdata.com/data-products/daily-taq
 
-## Build Instructions
+## Install
+
+### Fedora
 
 Install prerequisite packages:
 
-On Fedora:
+    yum install zlib-devel libxml2-devel glib2-devel vim-common
 
-   yum install zlib-devel libxml2-devel glib2-devel vim-common
+Then run:
 
-To build via Makefile simply execute:
+    make install
 
-    make
-
-To run the test harness:
+You can also run the test harness:
 
     make check
 
