@@ -1,0 +1,460 @@
+<templates xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+
+    <!--
+       The most complete Incremental refresh template
+   -->
+    <template name="DefaultIncrementalRefreshMessage" id="74" dictionary="74">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="X"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34">
+            <increment/>
+        </uInt32>
+        <uInt64 name="SendingTime" id="52">
+            <delta/>
+        </uInt64>
+        <sequence name="MDEntries">
+            <length name="NoMDEntries" id="268"/>
+
+            <uInt32 name="MDUpdateAction" id="279">
+                <copy value="0"/>
+            </uInt32>
+
+            <string name="MDEntryType" id="269"/>
+
+            <uInt64 name="SecurityID" id="48" presence="optional">
+                <delta/>
+            </uInt64>
+            <uInt32 name="SecurityIDSource" id="22">
+                <constant value="8"/>
+            </uInt32>
+            <string name="Symbol" id="55" presence="optional">
+                <copy/>
+            </string>
+            <uInt32 name="ExchangeTradingSessionID" id="5842" presence="optional">
+                <copy/>
+            </uInt32>
+
+            <uInt32 name="RptSeq" id="83"/>
+
+            <uInt32 name="MarketDepth" id="264" presence="optional">
+                <copy value="1"/>
+            </uInt32>
+
+            <uInt32 name="MDPriceLevel" id="1023" presence="optional"/>
+
+            <int64 name="MDEntryID" id="278" presence="optional"/>
+
+            <!-- optional due to Fundamentals. toDo create specific template-->
+            <decimal name="MDEntryPx" id="270" presence="optional"/>
+            <int64 name="MDEntrySize" id="271" presence="optional"/>
+
+            <uInt32 name="MDEntryDate" id="272" presence="optional">
+                <delta/>
+            </uInt32>
+            <uInt32 name="MDEntryTime" id="273">
+                <delta/>
+            </uInt32>
+            <int32 name="NumberOfOrders" id="346" presence="optional"/>
+            <string name="MDEntryTradeType" id="20003" presence="optional"/>
+            <int32 name="TrdType" id="828" presence="optional"/>
+            <decimal name="LastPx" id="31" presence="optional"/>
+            <int32 name="MDFlags" id="20017" presence="optional"/>
+        </sequence>
+    </template>
+
+    <!--
+       The most complete Snapshot template
+   -->
+    <template name="DefaultSnapshotMessage" id="75" dictionary="75">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="W"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34">
+            <increment/>
+        </uInt32>
+        <uInt64 name="SendingTime" id="52">
+            <delta/>
+        </uInt64>
+
+        <uInt32 name="RptSeq" id="83"/>
+        <uInt32 name="TotNumReports" id="911"/>
+
+        <uInt32 name="LastMsgSeqNumProcessed" id="369"/>
+        <uInt64 name="SecurityID" id="48" presence="optional"/>
+        <uInt32 name="SecurityIDSource" id="22">
+            <constant value="8"/>
+        </uInt32>
+        <string name="Symbol" id="55" presence="optional"/>
+
+        <sequence name="MDEntries">
+            <length name="NoMDEntries" id="268"/>
+
+            <string name="MDEntryType" id="269">
+                <copy/>
+            </string>
+            <uInt32 name="ExchangeTradingSessionID" id="5842" presence="optional">
+                <copy/>
+            </uInt32>
+
+            <int64 name="MDEntryID" id="278" presence="optional"/>
+
+            <uInt32 name="MarketDepth" id="264" presence="optional">
+                <copy value="1"/>
+            </uInt32>
+
+            <decimal name="MDEntryPx" id="270" presence="optional"/>
+            <uInt32 name="MDEntryDate" id="272" presence="optional">
+                <delta/>
+            </uInt32>
+            <uInt32 name="MDEntryTime" id="273">
+                <delta/>
+            </uInt32>
+            <int64 name="MDEntrySize" id="271" presence="optional">
+                <delta/>
+            </int64>
+
+            <uInt32 name="MDPriceLevel" id="1023" presence="optional"/>
+            <int32 name="NumberOfOrders" id="346" presence="optional"/>
+            <string name="MDEntryTradeType" id="20003" presence="optional"/>
+            <int32 name="TrdType" id="828" presence="optional"/>
+            <int32 name="MDFlags" id="20017" presence="optional"/>
+        </sequence>
+    </template>
+
+    <!--
+       Common Security Definition template
+   -->
+    <template name="SecurityDefinition" id="79" dictionary="79">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="d"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34"/>
+        <uInt64 name="SendingTime" id="52"/>
+
+        <!-- Total count of SecurityDefinition messages -->
+        <uInt32 name="TotNumReports" id="911"/>
+
+        <string name="Symbol" id="55"/>
+        <string name="SecurityDesc" id="107" presence="optional" charset="unicode"/>
+
+        <!-- Unique among all instruments; primary key -->
+        <uInt64 name="SecurityID" id="48"/>
+        <uInt32 name="SecurityIDSource" id="22">
+            <constant value="8"/>
+        </uInt32>
+
+        <string name="SecurityAltID" id="455" presence="optional"/>
+        <string name="SecurityAltIDSource" id="456" presence="optional"/>
+
+        <!-- Type of instrument -->
+        <string name="SecurityType" id="167" presence="optional"/>
+        <string name="CFICode" id="461" presence="optional"/>
+
+        <decimal name="StrikePrice" id="202" presence="optional"/>
+        <decimal name="ContractMultiplier" id="231" presence="optional"/>
+        <uInt32 name="SecurityTradingStatus" id="326" presence="optional"/>
+
+        <string name="Currency" id="15" presence="optional">
+            <copy/>
+        </string>
+        <string name="MarketID" id="1301">
+            <constant value="RTSX"/>
+        </string>
+        <string name="MarketSegmentID" id="1300"/>
+        <uInt32 name="TradingSessionID" id="336" presence="optional"/>
+        <uInt32 name="ExchangeTradingSessionID" id="5842" presence="optional"/>
+        <decimal name="Volatility" id="5678" presence="optional"/>
+
+        <sequence name="MDFeedTypes">
+            <length name="NoMDFeedTypes" id="1141"/>
+
+            <!-- RTS-specific feed type name -->
+            <string name="MDFeedType" id="1022"/>
+            <uInt32 name="MarketDepth" id="264" presence="optional"/>
+            <uInt32 name="MDBookType" id="1021" presence="optional"/>
+        </sequence>
+
+        <sequence name="Underlyings" presence="optional">
+            <length name="NoUnderlyings" id="711"/>
+            <string name="UnderlyingSymbol" id="311"/>
+            <uInt64 name="UnderlyingSecurityID" id="309" presence="optional"/>
+        </sequence>
+
+
+        <!-- Price constraints -->
+        <decimal name="HighLimitPx" id="1149" presence="optional"/>
+        <decimal name="LowLimitPx" id="1148" presence="optional"/>
+        <decimal name="MinPriceIncrement" id="969" presence="optional"/>
+        <decimal name="MinPriceIncrementAmount" id="1146" presence="optional"/>
+
+        <decimal name="InitialMarginOnBuy" id="20002" presence="optional"/>
+        <decimal name="InitialMarginOnSell" id="20000" presence="optional"/>
+        <decimal name="InitialMarginSyntetic" id="20001" presence="optional"/>
+
+        <string name="QuotationList" id="20005" presence="optional"/>
+
+        <decimal name="TheorPrice" id="20006" presence="optional"/>
+        <decimal name="TheorPriceLimit" id="20007" presence="optional"/>
+
+        <sequence name="InstrumentLegs" presence="optional">
+            <length name="NoLegs" id="555"/>
+
+            <string name="LegSymbol" id="600"/>
+            <uInt64 name="LegSecurityID" id="602"/>
+            <decimal name="LegRatioQty" id="623"/>
+        </sequence>
+
+        <sequence name="InstrumentAttributes" presence="optional">
+            <length name="NoInstrAttrib" id="870"/>
+
+            <int32 name="InstrAttribType" id="871"/>
+            <string name="InstrAttribValue" id="872"/>
+        </sequence>
+
+        <decimal name="UnderlyingQty" id="879" presence="optional"/>
+
+        <string name="UnderlyingCurrency" id="318" presence="optional"/>
+
+        <sequence name="EvntGrp" presence="optional">
+            <length name="NoEvents" id="864"/>
+            <int32 name="EventType" id="865"/>
+            <uInt32 name="EventDate" id="866"/>
+            <uInt64 name="EventTime" id="1145"/>
+        </sequence>
+
+        <!-- UTC Date Only YYYYMMDD -->
+        <uInt32 name="MaturityDate" id="541" presence="optional"/>
+
+        <!-- UTC Time. HHMMSSsss -->
+        <uInt32 name="MaturityTime" id="1079" presence="optional"/>
+
+    </template>
+
+    <template name="SecurityDefinitionUpdateReport" id="77" dictionary="77">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="BP"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34"/>
+        <uInt64 name="SendingTime" id="52"/>
+
+        <!-- Unique among all instruments; primary key -->
+        <uInt64 name="SecurityID" id="48"/>
+        <uInt32 name="SecurityIDSource" id="22">
+            <constant value="8"/>
+        </uInt32>
+
+        <decimal name="Volatility" id="5678" presence="optional"/>
+        <decimal name="TheorPrice" id="20006" presence="optional"/>
+        <decimal name="TheorPriceLimit" id="20007" presence="optional"/>
+    </template>
+
+    <template name="SecurityStatus" id="78" dictionary="78">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="f"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34"/>
+        <uInt64 name="SendingTime" id="52"/>
+
+        <!-- Unique among all instruments; primary key -->
+        <uInt64 name="SecurityID" id="48"/>
+        <uInt32 name="SecurityIDSource" id="22">
+            <constant value="8"/>
+        </uInt32>
+
+        <string name="Symbol" id="55"/>
+
+        <uInt32 name="SecurityTradingStatus" id="326" presence="optional"/>
+
+        <decimal name="HighLimitPx" id="1149" presence="optional"/>
+        <decimal name="LowLimitPx" id="1148" presence="optional"/>
+
+        <decimal name="InitialMarginOnBuy" id="20002" presence="optional"/>
+        <decimal name="InitialMarginOnSell" id="20000" presence="optional"/>
+        <decimal name="InitialMarginSyntetic" id="20001" presence="optional"/>
+    </template>
+
+    <!--
+       Session-layer heartbeat message
+   -->
+    <template name="Heartbeat" id="44" dictionary="44">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="0"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34"/>
+        <uInt64 name="SendingTime" id="52"/>
+    </template>
+
+    <!--
+       Session-layer message used to reset MsgSeqNum and RptSeq counters
+   -->
+    <template name="SequenceReset" id="49" dictionary="49">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="4"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34"/>
+        <uInt64 name="SendingTime" id="52">
+            <delta/>
+        </uInt64>
+        <uInt32 name="NewSeqNo" id="36"/>
+    </template>
+
+    <!--
+       Transport-layer message used to reset FAST decoder state
+   -->
+    <template name="Reset" id="120"
+              xmlns:scp="http://www.fixprotocol.org/ns/fast/scp/1.1"
+              reset="T" scp:reset="yes" dictionary="120">
+    </template>
+
+    <template name="TradingSessionStatus" id="66" dictionary="66">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="h"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34"/>
+
+        <uInt64 name="SendingTime" id="52">
+            <delta dictionary="type"/>
+        </uInt64>
+        <uInt64 name="TradSesOpenTime" id="342">
+            <delta dictionary="type"/>
+        </uInt64>
+        <uInt64 name="TradSesCloseTime" id="344">
+            <delta dictionary="type"/>
+        </uInt64>
+        <uInt64 name="TradSesIntermClearingStartTime" id="5840" presence="optional">
+            <delta dictionary="type"/>
+        </uInt64>
+        <uInt64 name="TradSesIntermClearingEndTime" id="5841" presence="optional">
+            <delta dictionary="type"/>
+        </uInt64>
+        <uInt32 name="TradingSessionID" id="336"/>
+        <uInt32 name="ExchangeTradingSessionID" id="5842" presence="optional"/>
+        <uInt32 name="TradSesStatus" id="340"/>
+        <string name="MarketID" id="1301">
+            <constant value="RTSX"/>
+        </string>
+        <string name="MarketSegmentID" id="1300"/>
+        <int32 name="TradSesEvent" id="1368" presence="optional"/>
+    </template>
+
+    <template name="News" id="303" dictionary="303">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="B"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34">
+            <increment/>
+        </uInt32>
+        <uInt64 name="SendingTime" id="52">
+            <delta/>
+        </uInt64>
+        <string name="NewsId" id="1472" presence="optional"/>
+        <uInt64 name="OrigTime" id="42" presence="optional">
+            <delta/>
+        </uInt64>
+        <string name="LanguageCode" id="1474" presence="optional"/>
+        <uInt32 name="Urgency" id="61" presence="optional">
+            <copy value="0"/>
+        </uInt32>
+        <string name="Headline" id="148" charset="unicode"/>
+        <string name="MarketID" id="1301">
+            <constant value="RTSX"/>
+        </string>
+        <string name="MarketSegmentID" id="1300" presence="optional"/>
+        <sequence name="NewsText">
+            <length name="NoLinesOfText" id="33"/>
+            <string name="Text" id="58" charset="unicode"/>
+        </sequence>
+    </template>
+
+    <!--
+          Session-layer logon message(recovery replay)
+      -->
+    <template name="Logon" id="1001" dictionary="1001">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="A"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34"/>
+        <uInt64 name="SendingTime" id="52"/>
+    </template>
+
+    <!--
+          Session-layer logon message(recovery replay)
+      -->
+    <template name="Logout" id="1002" dictionary="1002">
+        <string name="ApplVerID" id="1128">
+            <constant value="8"/>
+        </string>
+        <string name="MessageType" id="35">
+            <constant value="5"/>
+        </string>
+        <string name="SenderCompID" id="49">
+            <constant value="RTS"/>
+        </string>
+        <uInt32 name="MsgSeqNum" id="34"/>
+        <uInt64 name="SendingTime" id="52"/>
+        <string name="Text" id="58" presence="optional"/>
+    </template>
+
+
+</templates>

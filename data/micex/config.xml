@@ -1,0 +1,36 @@
+<config>
+	<feeds>
+		<feed type="increment">
+			<file value="increment_a.dat" />
+		</feed>
+		<feed type="increment">
+			<file value="increment_b.dat" />
+		</feed>
+		<feed type="snapshot">
+			<file value="snapshot.dat" />
+		</feed>
+	</feeds>
+
+	<books>
+		<book symbol="RIU3">
+			<tick_exp value="0" />
+			<tick_mnt value="10" />
+			<id value="49634118" />
+		</book>
+		<book symbol="GZU3">
+			<tick_exp value="0" />
+			<tick_mnt value="1" />
+			<id value="49613382" />
+		</book>
+		<book symbol="SiU3">
+			<tick_exp value="0" />
+			<tick_mnt value="1" />
+			<id value="49664582" />
+		</book>
+		<book symbol="LKU3">
+			<tick_exp value="0" />
+			<tick_mnt value="1" />
+			<id value="49630790" />
+		</book>
+	</books>
+</config>
