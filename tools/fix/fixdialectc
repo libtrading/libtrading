@@ -1,0 +1,109 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'yaml'
+
+$parser = OptionParser.new do |opts|
+  opts.on("-f", "--file FILENAME", String, "input file") {
+    |filename| $filename = filename
+  }
+  opts.on("-h", "--header-path PATH", String, "output header path") {
+    |path| $header_path = path
+  }
+  opts.on("-s", "--source-path PATH", String, "output source path") {
+    |path| $source_path = path
+  }
+  opts.parse!
+end
+
+def usage
+  puts $parser.help
+  exit(2)
+end
+
+usage unless $filename && $header_path && $source_path
+
+data = YAML.load(File.read($filename))
+
+name = data["name"]
+base_protocol = data["base_protocol"]
+
+header_filename = "#{$header_path}/#{name}_fix.h"
+source_filename = "#{$source_path}/#{name}_fix.c"
+
+#
+# Header file:
+#
+File.open(header_filename, 'w') do |file|
+  guard = "LIBTRADING_#{name.upcase}_FIX_H"
+
+  #
+  # Heading:
+  #
+  file.puts "#ifndef #{guard}"
+  file.puts "#define #{guard}"
+  file.puts
+  file.puts "#include \"libtrading/proto/fix_session.h\""
+  file.puts
+
+  #
+  # Dialect:
+  #
+  file.puts("extern struct fix_dialect #{name}_fix_dialect;")
+  file.puts
+
+  #
+  # Tags:
+  #
+  file.puts "enum #{name}_fix_tag {"
+  data["tags"].map do |tag, desc|
+    tag, num = tag.scan(/(.*)\((.*)\)/).flatten
+    file.puts "\t#{name.upcase}_TAG_#{tag} = #{num},"
+  end
+  file.puts "};"
+  file.puts
+
+  #
+  # Footer:
+  #
+  file.puts "#endif /* #{guard} */"
+end
+
+#
+# Source file:
+#
+File.open("#{source_filename}", 'w') do |file|
+  #
+  # Heading
+  #
+  file.puts("#include \"libtrading/proto/iex_fix.h\"")
+  file.puts
+  file.puts("#include \"libtrading/proto/fix_message.h\"")
+  file.puts
+
+  #
+  # Tag type:
+  #
+  file.puts "static enum fix_type #{name}_fix_tag_type(int tag)"
+  file.puts "{"
+  file.puts "\tswitch (tag) {"
+  data["tags"].map do |tag, desc|
+    tag, num = tag.scan(/(.*)\((.*)\)/).flatten
+    type = desc["type"]
+    file.puts "\tcase #{name.upcase}_TAG_#{tag}: return FIX_TYPE_#{type.upcase};"
+  end
+  file.puts "\tdefault: return FIX_TYPE_STRING;"
+  file.puts "\t}"
+  file.puts "}"
+  file.puts
+
+  #
+  # Dialect:
+  #
+  file.puts "struct fix_dialect #{name}_fix_dialect = {"
+  file.puts "\t.version = #{base_protocol},"
+  file.puts "\t.tag_type = #{name}_fix_tag_type,"
+  file.puts "};"
+  file.puts
+
+end

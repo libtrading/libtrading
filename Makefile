@@ -147,6 +147,7 @@ LIB_H += proto/fast_message.h
 LIB_H += proto/fast_session.h
 LIB_H += proto/fix_message.h
 LIB_H += proto/fix_message.h
+LIB_H += proto/iex_fix.h
 LIB_H += proto/lse_itch_message.h
 LIB_H += proto/mbt_quote_message.h
 LIB_H += proto/nasdaq_itch40_message.h
@@ -172,6 +173,7 @@ LIB_OBJS	+= lib/proto/fast_feed.o
 LIB_OBJS	+= lib/proto/fast_message.o
 LIB_OBJS	+= lib/proto/fast_session.o
 LIB_OBJS	+= lib/proto/fast_template.o
+LIB_OBJS	+= lib/proto/iex_fix.o
 LIB_OBJS	+= lib/proto/mbt_quote_message.o
 LIB_OBJS	+= lib/proto/nasdaq_itch40_message.o
 LIB_OBJS	+= lib/proto/nasdaq_itch41_message.o
@@ -181,6 +183,8 @@ LIB_OBJS	+= lib/proto/ouch42_message.o
 LIB_OBJS	+= lib/proto/soupbin3_session.o
 LIB_OBJS	+= lib/proto/xdp_message.o
 LIB_OBJS	+= lib/proto/lse_itch_message.o
+
+LIB_GEN_SRC	+= lib/proto/iex_fix.c
 
 LIB_OBJS	+= $(COMPAT_OBJS)
 
@@ -262,6 +266,9 @@ install: all libtrading-config
 	$(E) "  CC      " $@
 	$(Q) $(CC) -c $(CFLAGS) $< -o $@
 
+%.c: %.dialect tools/fix/fixdialectc
+	$(E) "  FIXC    " $@
+	$(Q) $(shell tools/fix/fixdialectc -f $< -h include/libtrading/proto/ -s lib/proto/)
 
 $(foreach p,$(PROGRAMS),$(eval $(p): $($(notdir $p)_EXTRA_DEPS) $(LIBS)))
 $(PROGRAMS): % : %.o
@@ -318,6 +325,7 @@ clean:
 	$(Q) rm -f $(LIB_FILE) $(LIB_OBJS) $(LIB_DEPS)
 	$(Q) rm -f $(PROGRAMS) $(INST_PROGRAMS) $(OBJS) $(DEPS) $(TEST_PROGRAM) $(TEST_SUITE_H) $(TEST_OBJS) $(TEST_DEPS) $(TEST_RUNNER_C) $(TEST_RUNNER_OBJ)
 	$(Q) rm -f $(BOE_TEST_DATA)
+	$(Q) rm -f lib/proto/iex_fix.c
 .PHONY: clean
 
 tags: FORCE
@@ -331,6 +339,8 @@ PHONY += FORCE
 FORCE:
 
 .PHONY: .FORCE-LIBTRADING-VERSION-FILE
+
+.PRECIOUS: %.c
 
 # Deps
 -include $(DEPS)

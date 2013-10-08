@@ -1,0 +1,196 @@
+#
+# The IEX FIX dialect is based on the following specification:
+#
+#   IEX FIX Specification
+#   Version 1.2
+#   Updated: September 27, 2013
+#
+
+name: "iex"
+base_protocol: "FIX_4_2"
+
+tags:
+  #
+  # Session:
+  #
+  SenderCompID(49):      { type: string }
+  SendingTime(52):       { type: string }
+  TargetCompID(56):      { type: string }
+  CheckSum(10):          { type: checksum }
+  PossDupFlag(43):       { type: string }
+  PossResend(97):        { type: string }
+  OrigSendingTime(122):  { type: string }
+  #
+  # Application:
+  #
+  Account(1):            { type: string }
+  ClOrdID(11):           { type: string }
+  ExecInst(18):          { type: string }
+  HandlInst(21):         { type: string }
+  OrderQty(38):          { type: string }
+  OrdType(40):           { type: string }
+  OrigClOrdId(41):       { type: string }
+  Price(44):             { type: float  }
+  OrderCapacity(47):     { type: string }
+  SenderSubID(50):       { type: string }
+  Side(54):              { type: string }
+  Symbol(55):            { type: string }
+  Text(58):              { type: string }
+  TimeInForce(59):       { type: string }
+  TransactTime(60):      { type: string }
+  ClientID(109):         { type: string }
+  MinQty(110):           { type: string }
+  MaxFloor(111):         { type: string }
+  LocateReqd(114):       { type: string }
+  OnBehalfOfCompID(115): { type: string }
+  ExpireTime(126):       { type: string }
+  AvgPrice(6):           { type: float  }
+  CumQty(14):            { type: float  }
+  ExecID(17):            { type: string }
+  ExecRefID(19):         { type: string }
+  ExecTransType(20):     { type: string }
+  LastMkt(30):           { type: string }
+  LastPx(31):            { type: string }
+  LastShares(32):        { type: string }
+  OrderID(37):           { type: string }
+  OrderStatus(39):       { type: string }
+  OrigTime(42):          { type: string }
+  CxlRejReason(102):     { type: string }
+  OrdRejReason(103):     { type: string }
+  DeliverToCompID(128):  { type: string }
+  ExecType(150):         { type: string }
+  LeavesQty(151):        { type: string }
+  CxlRejResponseTo(434): { type: string }
+  TradeLiquidityIndicator(9730): { type: string }
+
+messages:
+  Logon:
+    MsgType: A
+    tags:
+    - HeartBtInt
+  Heartbeat:
+    MsgType: 0
+    tags:
+  TestRequest:
+    MsgType: 1
+    tags:
+    - TestReqID
+  ResendRequest:
+    MsgType: 2
+    tags:
+    - BeginSeqNo
+    - EndSeqNo
+  SessionReject:
+    MsgType: 3
+    tags:
+    - RefSeqNum
+    - SessionRejectReason
+    - Text
+  SequenceReset:
+    MsgType: 4
+    tags:
+    - NewSeqNo
+    - GapFillFlag
+  Logout:
+    MsgType: 5
+    tags:
+    - Text
+  NewOrderSingle:
+    MsgType: D
+    tags:
+    - ClOrdID
+    - ExecInst
+    - HandlInst
+    - OrderQty
+    - OrdType
+    - Price
+    - OrderCapacity
+    - Side
+    - Symbol
+    - TimeInForce
+    - TransactTime
+    - Account
+    - Text
+    - MinQty
+    - MaxFloor
+    - LocateReqd
+  OrderCancelReplaceRequest:
+    MsgType: G
+    tags:
+    - ClOrdID
+    - HandlInst
+    - OrderQty
+    - OrdType
+    - OrigClOrdID
+    - Side
+    - Symbol
+    - TransactTime
+    - Price
+  OrderCancelRequest:
+    MsgType: F
+    tags:
+    - ClOrdID
+    - OrderQty
+    - OrigClOrdID
+    - Side
+    - Symbol
+    - TransactTime
+  ExecutionReport:
+    MsgType: 8
+    tags:
+    - AvgPrice
+    - ClOrdID
+    - CumQty
+    - ExecID
+    - ExecInst
+    - OrderID
+    - OrderQty
+    - OrdType
+    - OrderCapacity
+    - Side
+    - Symbol
+    - TimeInForce
+    - TransactTime
+    - LeavesQty
+    - Account
+    - Price
+    - MinQty
+    - MaxFloor
+    - ExpireTime
+    - ExecTransType
+    - OrderStatus
+    - ExecType
+    - LeavesQty
+    - LastMkt
+    - LastPx
+    - LastShares
+    - TradeLiquidityIndicator
+    # In addition, a Drop Copy will have the following tags:
+    - ClientID
+    - OrigSendingTime
+  # TODO: Add support for multi-character message types
+  #TradeBust:
+  #  MsgType: UCC
+  #  tags:
+  #  - ClOrdID
+  #  - ExecID
+  #  - ExecRefID
+  #  - ExecTransType
+  #  - LastPx
+  #  - LastShares
+  #  - OrderID
+  #  - OrigTime
+  #  - Side
+  #  - Symbol
+  #  - TransactTime
+  #  - TradeLiquidityIndicator
+  CancelReject:
+    MsgType: 9
+    tags:
+    - ClOrdID
+    - OrderID
+    - OrdStatus
+    - OrigClOrdID
+    - CxlRejReason
+    - CxlRejResponseTo
+    - Text
