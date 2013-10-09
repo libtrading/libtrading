@@ -22,15 +22,23 @@ enum fix_version {
 	FIX_4_0,
 };
 
+struct fix_dialect {
+	enum fix_version	version;
+	enum fix_type		(*tag_type)(int tag);
+};
+
+extern struct fix_dialect	fix_dialects[];
+
 struct fix_session_cfg {
 	char			sender_comp_id[32];
 	char			target_comp_id[32];
 	int			heartbtint;
-	enum fix_version	version;
+	struct fix_dialect	*dialect;
 	int			sockfd;
 };
 
 struct fix_session {
+	struct fix_dialect		*dialect;
 	int				sockfd;
 	bool				active;
 	const char			*begin_string;

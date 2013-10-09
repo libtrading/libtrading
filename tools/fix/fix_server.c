@@ -213,6 +213,7 @@ int main(int argc, char *argv[])
 	const char *filename = NULL;
 	struct fix_session_cfg cfg;
 	const char *proto = NULL;
+	enum fix_version version;
 	struct sockaddr_in sa;
 	int port = 0;
 	int sockfd;
@@ -239,7 +240,8 @@ int main(int argc, char *argv[])
 	if (!port || !proto || !filename)
 		usage();
 
-	cfg.version	= strversion(proto);
+	version		= strversion(proto);
+	cfg.dialect	= &fix_dialects[version];
 	strncpy(cfg.sender_comp_id, "BUYSIDE", ARRAY_SIZE(cfg.sender_comp_id));
 	strncpy(cfg.target_comp_id, "SELLSIDE", ARRAY_SIZE(cfg.target_comp_id));
 

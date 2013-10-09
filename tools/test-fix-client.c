@@ -198,6 +198,7 @@ static enum fix_version strversion(const char *name)
 int main(int argc, char *argv[])
 {
 	struct fix_session_cfg cfg;
+	enum fix_version version;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
 	struct hostent *he;
@@ -228,7 +229,8 @@ int main(int argc, char *argv[])
 
 	host		= argv[optind];
 	port		= atoi(argv[optind + 1]);
-	cfg.version	= strversion(argv[optind + 2]);
+	version		= strversion(argv[optind + 2]);
+	cfg.dialect	= &fix_dialects[version];
 	strncpy(cfg.sender_comp_id, argv[optind + 3], ARRAY_SIZE(cfg.sender_comp_id));
 	strncpy(cfg.target_comp_id, argv[optind + 4], ARRAY_SIZE(cfg.target_comp_id));
 

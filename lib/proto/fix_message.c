@@ -1,5 +1,6 @@
 #include "libtrading/proto/fix_message.h"
 
+#include "libtrading/proto/fix_session.h"
 #include "libtrading/read-write.h"
 #include "libtrading/buffer.h"
 #include "libtrading/array.h"
@@ -192,7 +193,7 @@ static enum fix_type fix_tag_type(int tag)
 	}
 }
 
-static void rest_of_message(struct fix_message *self, struct buffer *buffer)
+static void rest_of_message(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer)
 {
 	int tag = 0;
 	const char *tag_ptr = NULL;
@@ -205,7 +206,7 @@ retry:
 	if (parse_field_promisc(buffer, &tag, &tag_ptr))
 		return;
 
-	type = fix_tag_type(tag);
+	type = dialect->tag_type(tag);
 
 	switch (type) {
 	case FIX_TYPE_INT:
@@ -353,7 +354,7 @@ exit:
 	return ret;
 }
 
-int fix_message_parse(struct fix_message *self, struct buffer *buffer)
+int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer)
 {
 	int ret = FIX_MSG_STATE_PARTIAL;
 	unsigned long size;
@@ -376,7 +377,7 @@ retry:
 	if (ret)
 		goto fail;
 
-	rest_of_message(self, buffer);
+	rest_of_message(self, dialect, buffer);
 
 	return 0;
 
@@ -567,3 +568,31 @@ error_out:
 
 	return ret;
 }
+
+struct fix_dialect fix_dialects[] = {
+	[FIXT_1_1] = {
+		.version	= FIXT_1_1,
+		.tag_type	= fix_tag_type,
+	},
+	[FIX_4_4] = {
+		.version	= FIX_4_4,
+		.tag_type	= fix_tag_type,
+	},
+	[FIX_4_3] = {
+		.version	= FIX_4_3,
+		.tag_type	= fix_tag_type,
+	},
+	[FIX_4_2] = {
+		.version	= FIX_4_2,
+		.tag_type	= fix_tag_type,
+	},
+	[FIX_4_1] = {
+		.version	= FIX_4_1,
+		.tag_type	= fix_tag_type,
+	},
+	[FIX_4_0] = {
+		.version	= FIX_4_0,
+		.tag_type	= fix_tag_type,
+	},
+
+};

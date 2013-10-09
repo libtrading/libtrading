@@ -24,6 +24,8 @@ struct fix_session *fix_session_new(struct fix_session_cfg *cfg)
 	if (!self)
 		return NULL;
 
+	self->dialect		= cfg->dialect;
+
 	self->rx_buffer		= buffer_new(RECV_BUFFER_SIZE);
 	if (!self->rx_buffer) {
 		fix_session_free(self);
@@ -58,7 +60,7 @@ struct fix_session *fix_session_new(struct fix_session_cfg *cfg)
 		return NULL;
 	}
 
-	self->begin_string	= begin_strings[cfg->version];
+	self->begin_string	= begin_strings[cfg->dialect->version];
 	self->sender_comp_id	= cfg->sender_comp_id;
 	self->target_comp_id	= cfg->target_comp_id;
 	self->heartbtint	= cfg->heartbtint;
@@ -112,7 +114,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 	struct buffer *buffer = self->rx_buffer;
 	size_t size;
 
-	if (!fix_message_parse(msg, buffer)) {
+	if (!fix_message_parse(msg, self->dialect, buffer)) {
 		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
 		self->in_msg_seq_num++;
 		return msg;
@@ -128,7 +130,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 		buffer_nread(buffer, self->sockfd, size);
 	}
 
-	if (!fix_message_parse(msg, buffer)) {
+	if (!fix_message_parse(msg, self->dialect, buffer)) {
 		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
 		self->in_msg_seq_num++;
 		return msg;
