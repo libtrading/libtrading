@@ -8,13 +8,6 @@ int ob_init(struct order_book *ob)
 	if (!ob)
 		goto fail;
 
-	ob->ghbids = NULL;
-	ob->ghasks = NULL;
-	ob->gtbids = NULL;
-	ob->gtasks = NULL;
-	ob->glbids = NULL;
-	ob->glasks = NULL;
-
 	ob->ghbids = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, free);
 	if (!ob->ghbids)
 		goto fail;
@@ -60,8 +53,6 @@ void ob_fini(struct order_book *ob)
 
 	if (ob->glasks)
 		g_list_free(ob->glasks);
-
-	return;
 }
 
 int ob_clear(struct order_book *ob)
