@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <libgen.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -16,6 +17,8 @@
 #include <errno.h>
 
 #include "test.h"
+
+static const char *program;
 
 struct protocol_info {
 	const char		*name;
@@ -186,7 +189,18 @@ static const struct protocol_info *lookup_protocol_info(const char *name)
 
 static void usage(void)
 {
-	printf("\n  usage: trade server -p [port] -c [protocol] -f [filename]\n\n");
+	int i;
+
+	printf("\n usage: %s -p [port] -c [protocol] -f [filename]\n\n", program);
+
+	printf(" Supported protocols are:\n");
+
+	for (i = 0; i < ARRAY_SIZE(protocols); i++) {
+		const struct protocol_info *proto_info = &protocols[i];
+
+		printf("   %s\n", proto_info->name);
+	}
+
 	exit(EXIT_FAILURE);
 }
 
@@ -219,6 +233,8 @@ int main(int argc, char *argv[])
 	int sockfd;
 	int opt;
 	int ret;
+
+	program = basename(argv[0]);
 
 	while ((opt = getopt(argc, argv, "p:c:f:")) != -1) {
 		switch (opt) {

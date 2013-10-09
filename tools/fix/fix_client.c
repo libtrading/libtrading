@@ -19,6 +19,8 @@
 
 #include "test.h"
 
+static const char *program;
+
 struct protocol_info {
 	const char		*name;
 	int			(*session_initiate)(struct fix_session_cfg *, const char *);
@@ -148,7 +150,18 @@ static const struct protocol_info *lookup_protocol_info(const char *name)
 
 static void usage(void)
 {
-	printf("\n  usage: trade client -f [filename] -h [hostname] -p [port] -c [protocol]\n\n");
+	int i;
+
+	printf("\n usage: %s -f [filename] -h [hostname] -p [port] -c [protocol]\n\n", program);
+
+	printf(" Supported protocols are:\n");
+
+	for (i = 0; i < ARRAY_SIZE(protocols); i++) {
+		const struct protocol_info *proto_info = &protocols[i];
+
+		printf("   %s\n", proto_info->name);
+	}
+
 	exit(EXIT_FAILURE);
 }
 
@@ -184,6 +197,8 @@ int main(int argc, char *argv[])
 	int retval;
 	char **ap;
 	int opt;
+
+	program = basename(argv[0]);
 
 	while ((opt = getopt(argc, argv, "f:h:p:c:")) != -1) {
 		switch (opt) {
