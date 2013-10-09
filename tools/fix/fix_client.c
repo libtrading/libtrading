@@ -152,7 +152,7 @@ static void usage(void)
 {
 	int i;
 
-	printf("\n usage: %s -f [filename] -h [hostname] -p [port] -c [protocol]\n\n", program);
+	printf("\n usage: %s -f [filename] -h [hostname] -p [port] -c [protocol] -s [sender-comp-id] -t [target-comp-id]\n\n", program);
 
 	printf(" Supported protocols are:\n");
 
@@ -185,6 +185,8 @@ static enum fix_version strversion(const char *name)
 int main(int argc, char *argv[])
 {
 	const struct protocol_info *proto_info;
+	const char *target_comp_id = NULL;
+	const char *sender_comp_id = NULL;
 	const char *filename = NULL;
 	struct fix_session_cfg cfg;
 	enum fix_version version;
@@ -200,7 +202,7 @@ int main(int argc, char *argv[])
 
 	program = basename(argv[0]);
 
-	while ((opt = getopt(argc, argv, "f:h:p:c:")) != -1) {
+	while ((opt = getopt(argc, argv, "f:h:p:c:s:t:")) != -1) {
 		switch (opt) {
 		case 'p':
 			port = atoi(optarg);
@@ -214,19 +216,25 @@ int main(int argc, char *argv[])
 		case 'h':
 			host = optarg;
 			break;
+		case 's':
+			sender_comp_id = optarg;
+			break;
+		case 't':
+			target_comp_id = optarg;
+			break;
 		default: /* '?' */
 			usage();
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	if (!port || !proto || !filename || !host)
+	if (!port || !proto || !filename || !host || !sender_comp_id || !target_comp_id)
 		usage();
 
 	version		= strversion(proto);
 	cfg.dialect	= &fix_dialects[version];
-	strncpy(cfg.sender_comp_id, "BUYSIDE", ARRAY_SIZE(cfg.sender_comp_id));
-	strncpy(cfg.target_comp_id, "SELLSIDE", ARRAY_SIZE(cfg.target_comp_id));
+	strncpy(cfg.sender_comp_id, sender_comp_id, ARRAY_SIZE(cfg.sender_comp_id));
+	strncpy(cfg.target_comp_id, target_comp_id, ARRAY_SIZE(cfg.target_comp_id));
 
 	proto_info = lookup_protocol_info(proto);
 	if (!proto_info) {
