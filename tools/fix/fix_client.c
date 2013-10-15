@@ -249,7 +249,7 @@ static unsigned long fix_new_order_single_fields(struct fix_field *fields)
 
 static int fix_client_order(struct fix_session_cfg *cfg, void *arg)
 {
-        double min_usec, avg_usec, max_usec, total_usec;
+	double min_usec, avg_usec, max_usec, total_usec;
 	struct fix_session *session = NULL;
 	struct fix_field *fields = NULL;
 	struct fix_message *msg;
@@ -287,8 +287,8 @@ static int fix_client_order(struct fix_session_cfg *cfg, void *arg)
 
 	nr = fix_new_order_single_fields(fields);
 
-        min_usec	= DBL_MAX;
-        max_usec	= 0;
+	min_usec	= DBL_MAX;
+	max_usec	= 0;
 	total_usec	= 0;
 
 	for (i = 0; i < orders; i++) {
