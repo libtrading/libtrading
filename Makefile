@@ -106,6 +106,7 @@ fix_client_EXTRA_DEPS += tools/fix/test.o
 
 fix_server_EXTRA_DEPS += lib/die.o
 fix_server_EXTRA_DEPS += tools/fix/test.o
+fix_server_EXTRA_LIBS += -lm
 
 fast_client_EXTRA_DEPS += lib/die.o
 fast_client_EXTRA_DEPS += tools/fast/test.o
