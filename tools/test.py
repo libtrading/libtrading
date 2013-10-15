@@ -47,9 +47,6 @@ def popen_fix_server():
     args = [
       "./tools/fix/fix_server",
       "-p", "9000", 
-      "-c", "fix",
-      "-s", "SELLSIDE",
-      "-t", "BUYSIDE",
       "-f", "./tools/fix/scripts/%s" % test]
     return subprocess.Popen(args, stderr = err, stdout = out)
 
@@ -58,9 +55,6 @@ def popen_fix_client():
       "./tools/fix/fix_client",
       "-h", "localhost", 
       "-p", "9000", 
-      "-c", "fix",
-      "-s", "BUYSIDE",
-      "-t", "SELLSIDE",
       "-f", "./tools/fix/scripts/%s" % test]
     return subprocess.Popen(args, stderr = err, stdout = out)
 

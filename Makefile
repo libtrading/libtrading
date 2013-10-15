@@ -77,8 +77,6 @@ PROGRAMS += tools/fast/fast_parser
 PROGRAMS += tools/fast/fast_server
 PROGRAMS += tools/fix/fix_client
 PROGRAMS += tools/fix/fix_server
-PROGRAMS += tools/test-fix-client
-PROGRAMS += tools/test-fix-server
 PROGRAMS += tools/tape/tape
 
 DEFINES =
@@ -102,10 +100,6 @@ ifeq ($(uname_S),Darwin)
 	CONFIG_OPTS += -DCONFIG_NEED_CLOCK_GETTIME=1
 	COMPAT_OBJS += lib/compat/clock_gettime.o
 endif
-
-test-fix-server_EXTRA_DEPS += lib/die.o
-
-test-fix-client_EXTRA_DEPS += lib/die.o
 
 fix_client_EXTRA_DEPS += lib/die.o
 fix_client_EXTRA_DEPS += tools/fix/test.o

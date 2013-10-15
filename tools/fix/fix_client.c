@@ -17,16 +17,34 @@
 #include <netdb.h>
 #include <stdio.h>
 
+#include "fix_client.h"
 #include "test.h"
 
 static const char *program;
+static bool stop;
 
-struct protocol_info {
-	const char		*name;
-	int			(*session_initiate)(struct fix_session_cfg *, const char *);
+static struct fix_client_function fix_client_functions[] = {
+	[FIX_CLIENT_SCRIPT] = {
+		.fix_session_initiate	= fix_client_script,
+		.mode			= FIX_CLIENT_SCRIPT,
+	},
+	[FIX_CLIENT_SESSION] = {
+		.fix_session_initiate	= fix_client_session,
+		.mode			= FIX_CLIENT_SESSION,
+	},
+	[FIX_CLIENT_ORDER] = {
+		.fix_session_initiate	= fix_client_order,
+		.mode			= FIX_CLIENT_ORDER,
+	},
 };
 
-static int fix_session_initiate(struct fix_session_cfg *cfg, const char *script)
+static void signal_handler(int signum)
+{
+	if (signum == SIGINT)
+		stop = true;
+}
+
+static int fix_client_script(struct fix_session_cfg *cfg, void *arg)
 {
 	struct fcontainer *s_container = NULL;
 	struct fcontainer *c_container = NULL;
@@ -34,8 +52,15 @@ static int fix_session_initiate(struct fix_session_cfg *cfg, const char *script)
 	struct felem *expected_elem;
 	struct felem *tosend_elem;
 	struct fix_message *msg;
-	FILE *stream;
+	FILE *stream = NULL;
+	char *script;
 	int ret = -1;
+
+	script = arg;
+	if (!script) {
+		fprintf(stderr, "No script is specified\n");
+		goto exit;
+	}
 
 	stream = fopen(script, "r");
 	if (!stream) {
@@ -72,7 +97,7 @@ static int fix_session_initiate(struct fix_session_cfg *cfg, const char *script)
 		goto exit;
 	}
 
-	fprintf(stderr, "Client Logon OK\n");
+	fprintf(stdout, "Client Logon OK\n");
 
 	expected_elem = cur_elem(s_container);
 	tosend_elem = cur_elem(c_container);
@@ -117,7 +142,7 @@ next:
 		goto exit;
 	}
 
-	fprintf(stderr, "Client Logout OK\n");
+	fprintf(stdout, "Client Logout OK\n");
 
 exit:
 	fcontainer_free(c_container);
@@ -128,39 +153,183 @@ exit:
 	return ret;
 }
 
-static const struct protocol_info protocols[] = {
-	{ "fix",		fix_session_initiate },
-	{ "fix42",		fix_session_initiate },
-	{ "fix43",		fix_session_initiate },
-	{ "fix44",		fix_session_initiate },
-};
-
-static const struct protocol_info *lookup_protocol_info(const char *name)
+static int fix_client_session(struct fix_session_cfg *cfg, void *arg)
 {
+	struct fix_session *session = NULL;
+	struct timespec cur, prev;
+	struct fix_message *msg;
+	int ret = -1;
+	int diff;
+
+	if (signal(SIGINT, signal_handler) == SIG_ERR) {
+		fprintf(stderr, "Unable to register a signal handler\n");
+		goto exit;
+	}
+
+	session	= fix_session_new(cfg);
+	if (!session) {
+		fprintf(stderr, "FIX session cannot be created\n");
+		goto exit;
+	}
+
+	ret = fix_session_logon(session);
+	if (ret) {
+		fprintf(stderr, "Client Logon FAILED\n");
+		goto exit;
+	}
+
+	fprintf(stdout, "Client Logon OK\n");
+
+	clock_gettime(CLOCK_MONOTONIC, &prev);
+
+	while (!stop && session->active) {
+		clock_gettime(CLOCK_MONOTONIC, &cur);
+		diff = cur.tv_sec - prev.tv_sec;
+
+		if (diff > 0.1 * session->heartbtint) {
+			prev = cur;
+
+			if (!fix_session_keepalive(session, &cur)) {
+				stop = true;
+				break;
+			}
+		}
+
+		msg = fix_session_recv(session, 0);
+		if (msg) {
+			if (fix_session_admin(session, msg))
+				continue;
+
+			switch (msg->type) {
+			case FIX_MSG_TYPE_LOGOUT:
+				stop = true;
+				break;
+			default:
+				stop = true;
+				break;
+			}
+		}
+	}
+
+	if (session->active) {
+		ret = fix_session_logout(session, NULL);
+		if (ret) {
+			fprintf(stderr, "Client Logout FAILED\n");
+			goto exit;
+		}
+	}
+
+	fprintf(stdout, "Client Logout OK\n");
+
+exit:
+	fix_session_free(session);
+
+	return ret;
+}
+
+static unsigned long fix_new_order_single_fields(struct fix_field *fields)
+{
+	unsigned long nr = 0;
+	char buf[64];
+
+	fix_timestamp_now(buf, sizeof(buf));
+
+	fields[nr++] = FIX_STRING_FIELD(ClOrdID, "ClOrdID");
+	fields[nr++] = FIX_STRING_FIELD(TransactTime, buf);
+	fields[nr++] = FIX_STRING_FIELD(Symbol, "Symbol");
+	fields[nr++] = FIX_FLOAT_FIELD(OrderQty, 100);
+	fields[nr++] = FIX_STRING_FIELD(OrdType, "2");
+	fields[nr++] = FIX_STRING_FIELD(Side, "1");
+	fields[nr++] = FIX_FLOAT_FIELD(Price, 100);
+
+	return nr;
+}
+
+static int fix_client_order(struct fix_session_cfg *cfg, void *arg)
+{
+	struct fix_session *session = NULL;
+	struct fix_field *fields = NULL;
+	struct fix_message *msg;
+	double average_time;
+	unsigned long nr;
+	int ret = -1;
+	int orders;
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(protocols); i++) {
-		const struct protocol_info *proto_info = &protocols[i];
+	if (!arg)
+		goto exit;
 
-		if (!strcmp(proto_info->name, name))
-			return proto_info;
+	orders = *(int *)arg;
+
+	session	= fix_session_new(cfg);
+	if (!session) {
+		fprintf(stderr, "FIX session cannot be created\n");
+		goto exit;
 	}
-	return NULL;
+
+	ret = fix_session_logon(session);
+	if (ret) {
+		fprintf(stderr, "Client Logon FAILED\n");
+		goto exit;
+	}
+
+	fprintf(stdout, "Client Logon OK\n");
+
+	ret = -1;
+
+	fields = calloc(FIX_MAX_FIELD_NUMBER, sizeof(struct fix_field));
+	if (!fields) {
+		fprintf(stderr, "Cannot allocate memory\n");
+		goto exit;
+	}
+
+	nr = fix_new_order_single_fields(fields);
+
+	average_time = 0.0;
+
+	for (i = 0; i < orders; i++) {
+		struct timespec before, after;
+
+		clock_gettime(CLOCK_MONOTONIC, &before);
+
+		fix_session_new_order_single(session, fields, nr);
+
+retry:
+		msg = fix_session_recv(session, 0);
+		if (!msg)
+			goto retry;
+
+		if (!fix_message_type_is(msg, FIX_MSG_TYPE_EXECUTION_REPORT))
+			goto retry;
+
+		clock_gettime(CLOCK_MONOTONIC, &after);
+
+		average_time += 1000000 * (after.tv_sec - before.tv_sec) +
+						(after.tv_nsec - before.tv_nsec) / 1000;
+	}
+
+	fprintf(stdout, "Messages sent: %d, average latency: %.1lf\n", orders, average_time / orders);
+
+	if (session->active) {
+		ret = fix_session_logout(session, NULL);
+		if (ret) {
+			fprintf(stderr, "Client Logout FAILED\n");
+			goto exit;
+		}
+	}
+
+	fprintf(stdout, "Client Logout OK\n");
+
+exit:
+	fix_session_free(session);
+	free(fields);
+
+	return ret;
 }
 
 static void usage(void)
 {
-	int i;
-
-	printf("\n usage: %s -f [filename] -h [hostname] -p [port] -c [protocol] -s [sender-comp-id] -t [target-comp-id]\n\n", program);
-
-	printf(" Supported protocols are:\n");
-
-	for (i = 0; i < ARRAY_SIZE(protocols); i++) {
-		const struct protocol_info *proto_info = &protocols[i];
-
-		printf("   %s\n", proto_info->name);
-	}
+	printf("\n usage: %s [-m mode] [-d dialect] [-f filename] [-n orders] [-s sender-comp-id] [-t target-comp-id] -h hostname -p port\n\n", program);
 
 	exit(EXIT_FAILURE);
 }
@@ -170,13 +339,39 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
-static enum fix_version strversion(const char *name)
+static enum fix_client_mode strmode(const char *mode)
 {
-	if (!strcmp(name, "fix42"))
+	enum fix_client_mode m;
+
+	if (!strcmp(mode, "session"))
+		return FIX_CLIENT_SESSION;
+	else if (!strcmp(mode, "script"))
+		return FIX_CLIENT_SCRIPT;
+	else if (!strcmp(mode, "order"))
+		return FIX_CLIENT_ORDER;
+
+	if (sscanf(mode, "%u", &m) != 1)
+		return FIX_CLIENT_SCRIPT;
+
+	switch (m) {
+		case FIX_CLIENT_SESSION:
+		case FIX_CLIENT_SCRIPT:
+		case FIX_CLIENT_ORDER:
+			return m;
+		default:
+			break;
+	}
+
+	return FIX_CLIENT_SCRIPT;
+}
+
+static enum fix_version strversion(const char *dialect)
+{
+	if (!strcmp(dialect, "fix42"))
 		return FIX_4_2;
-	else if (!strcmp(name, "fix43"))
+	else if (!strcmp(dialect, "fix43"))
 		return FIX_4_3;
-	else if (!strcmp(name, "fix44"))
+	else if (!strcmp(dialect, "fix44"))
 		return FIX_4_4;
 
 	return FIX_4_4;
@@ -184,37 +379,28 @@ static enum fix_version strversion(const char *name)
 
 int main(int argc, char *argv[])
 {
-	const struct protocol_info *proto_info;
+	enum fix_client_mode mode = FIX_CLIENT_SCRIPT;
+	enum fix_version version = FIX_4_4;
 	const char *target_comp_id = NULL;
 	const char *sender_comp_id = NULL;
 	const char *filename = NULL;
 	struct fix_session_cfg cfg;
-	enum fix_version version;
-	const char *proto = NULL;
 	const char *host = NULL;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
 	struct hostent *he;
+	int orders = 0;
 	int port = 0;
-	int retval;
+	int ret = 0;
 	char **ap;
 	int opt;
 
 	program = basename(argv[0]);
 
-	while ((opt = getopt(argc, argv, "f:h:p:c:s:t:")) != -1) {
+	while ((opt = getopt(argc, argv, "f:h:p:d:s:t:m:n:")) != -1) {
 		switch (opt) {
-		case 'p':
-			port = atoi(optarg);
-			break;
-		case 'f':
-			filename = optarg;
-			break;
-		case 'c':
-			proto = optarg;
-			break;
-		case 'h':
-			host = optarg;
+		case 'd':
+			version = strversion(optarg);
 			break;
 		case 's':
 			sender_comp_id = optarg;
@@ -222,24 +408,42 @@ int main(int argc, char *argv[])
 		case 't':
 			target_comp_id = optarg;
 			break;
+		case 'm':
+			mode = strmode(optarg);
+			break;
+		case 'n':
+			orders = atoi(optarg);
+			break;
+		case 'p':
+			port = atoi(optarg);
+			break;
+		case 'f':
+			filename = optarg;
+			break;
+		case 'h':
+			host = optarg;
+			break;
 		default: /* '?' */
 			usage();
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	if (!port || !proto || !filename || !host || !sender_comp_id || !target_comp_id)
+	if (!port || !host)
 		usage();
 
-	version		= strversion(proto);
 	cfg.dialect	= &fix_dialects[version];
-	strncpy(cfg.sender_comp_id, sender_comp_id, ARRAY_SIZE(cfg.sender_comp_id));
-	strncpy(cfg.target_comp_id, target_comp_id, ARRAY_SIZE(cfg.target_comp_id));
 
-	proto_info = lookup_protocol_info(proto);
-	if (!proto_info) {
-		printf("Unsupported protocol '%s'\n", proto);
-		exit(EXIT_FAILURE);
+	if (!sender_comp_id) {
+		strncpy(cfg.sender_comp_id, "BUYSIDE", ARRAY_SIZE(cfg.sender_comp_id));
+	} else {
+		strncpy(cfg.sender_comp_id, sender_comp_id, ARRAY_SIZE(cfg.sender_comp_id));
+	}
+
+	if (!target_comp_id) {
+		strncpy(cfg.target_comp_id, "SELLSIDE", ARRAY_SIZE(cfg.target_comp_id));
+	} else {
+		strncpy(cfg.target_comp_id, target_comp_id, ARRAY_SIZE(cfg.target_comp_id));
 	}
 
 	he = gethostbyname(host);
@@ -274,12 +478,25 @@ int main(int argc, char *argv[])
 	if (socket_setopt(cfg.sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
-	retval = proto_info->session_initiate(&cfg, filename);
+	switch (mode) {
+	case FIX_CLIENT_SCRIPT:
+		ret = fix_client_functions[mode].fix_session_initiate(&cfg, (void *)filename);
+		break;
+	case FIX_CLIENT_ORDER:
+		ret = fix_client_functions[mode].fix_session_initiate(&cfg, (void *)&orders);
+		break;
+	case FIX_CLIENT_SESSION:
+		cfg.heartbtint = 15;
+		ret = fix_client_functions[mode].fix_session_initiate(&cfg, NULL);
+		break;
+	default:
+		error("Invalid mode");
+	}
 
 	shutdown(cfg.sockfd, SHUT_RDWR);
 
 	if (close(cfg.sockfd) < 0)
 		die("close");
 
-	return retval;
+	return ret;
 }
