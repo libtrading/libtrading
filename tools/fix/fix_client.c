@@ -14,8 +14,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <float.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "fix_client.h"
 #include "test.h"
@@ -247,10 +249,10 @@ static unsigned long fix_new_order_single_fields(struct fix_field *fields)
 
 static int fix_client_order(struct fix_session_cfg *cfg, void *arg)
 {
+        double min_usec, avg_usec, max_usec, total_usec;
 	struct fix_session *session = NULL;
 	struct fix_field *fields = NULL;
 	struct fix_message *msg;
-	double average_time;
 	unsigned long nr;
 	int ret = -1;
 	int orders;
@@ -285,10 +287,13 @@ static int fix_client_order(struct fix_session_cfg *cfg, void *arg)
 
 	nr = fix_new_order_single_fields(fields);
 
-	average_time = 0.0;
+        min_usec	= DBL_MAX;
+        max_usec	= 0;
+	total_usec	= 0;
 
 	for (i = 0; i < orders; i++) {
 		struct timespec before, after;
+		uint64_t elapsed_usec;
 
 		clock_gettime(CLOCK_MONOTONIC, &before);
 
@@ -304,11 +309,19 @@ retry:
 
 		clock_gettime(CLOCK_MONOTONIC, &after);
 
-		average_time += 1000000 * (after.tv_sec - before.tv_sec) +
+		elapsed_usec = 1000000 * (after.tv_sec - before.tv_sec) +
 						(after.tv_nsec - before.tv_nsec) / 1000;
+
+		total_usec += elapsed_usec;
+
+		min_usec = fmin(min_usec, elapsed_usec);
+		max_usec = fmax(max_usec, elapsed_usec);
 	}
 
-	fprintf(stdout, "Messages sent: %d, average latency: %.1lf\n", orders, average_time / orders);
+	avg_usec = total_usec / orders;
+
+	fprintf(stdout, "Messages sent: %d\n", orders);
+	fprintf(stdout, "Round-trip time: min/avg/max = %.1lf/%.1lf/%.1lf μs\n", min_usec, avg_usec, max_usec);
 
 	if (session->active) {
 		ret = fix_session_logout(session, NULL);
