@@ -2,6 +2,8 @@
 
 #include "libtrading/read-write.h"
 
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -86,6 +88,27 @@ char *buffer_find(struct buffer *buf, u8 c)
 	}
 
 	return buffer_start(buf);
+}
+
+ssize_t buffer_recv(struct buffer *buf, int sockfd, size_t size)
+{
+	size_t count;
+	ssize_t len;
+	void *end;
+
+	end	= buffer_end(buf);
+	count	= buffer_remaining(buf);
+
+	if (count > size)
+		count = size;
+
+	len = recv(sockfd, end, count, MSG_DONTWAIT);
+	if (len < 0)
+		return len;
+
+	buf->end += len;
+
+	return len;
 }
 
 ssize_t buffer_read(struct buffer *buf, int fd)

@@ -128,9 +128,13 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 
 	size = buffer_remaining(buffer);
 	if (size > FIX_MAX_MESSAGE_SIZE) {
+		ssize_t nr;
+
 		size -= FIX_MAX_MESSAGE_SIZE;
 
-		buffer_nread(buffer, self->sockfd, size);
+		nr = buffer_recv(buffer, self->sockfd, size);
+		if (nr <= 0)
+			return NULL;
 	}
 
 	if (!fix_message_parse(msg, self->dialect, buffer)) {
