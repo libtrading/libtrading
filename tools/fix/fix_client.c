@@ -199,6 +199,8 @@ static int fix_client_session(struct fix_session_cfg *cfg, void *arg)
 
 		msg = fix_session_recv(session, 0);
 		if (msg) {
+			fprintmsg(stdout, msg);
+
 			if (fix_session_admin(session, msg))
 				continue;
 
