@@ -325,9 +325,7 @@ clean:
 
 tags: FORCE
 	$(E) "  TAGS"
-	$(Q) rm -f tags
-	$(Q) ctags-exuberant -a $(join lib lib/proto, /*.c /*.c)
-	$(Q) ctags-exuberant -a -R include
+	$(Q) find . -name "*.[ch]" | xargs ctags
 
 PHONY += FORCE
 
