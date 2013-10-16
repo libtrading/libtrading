@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <inttypes.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,7 +47,7 @@ static void signal_handler(int signum)
 		stop = true;
 }
 
-static int fix_client_script(struct fix_session_cfg *cfg, void *arg)
+static int fix_client_script(struct fix_session_cfg *cfg, struct fix_client_arg *arg)
 {
 	struct fcontainer *s_container = NULL;
 	struct fcontainer *c_container = NULL;
@@ -55,18 +56,17 @@ static int fix_client_script(struct fix_session_cfg *cfg, void *arg)
 	struct felem *tosend_elem;
 	struct fix_message *msg;
 	FILE *stream = NULL;
-	char *script;
 	int ret = -1;
 
-	script = arg;
-	if (!script) {
+	if (!arg->script) {
 		fprintf(stderr, "No script is specified\n");
 		goto exit;
 	}
 
-	stream = fopen(script, "r");
+	stream = fopen(arg->script, "r");
 	if (!stream) {
-		fprintf(stderr, "Opening %s failed: %s\n", script, strerror(errno));
+		fprintf(stderr, "Opening %s failed: %s\n",
+					arg->script, strerror(errno));
 		goto exit;
 	}
 
@@ -89,7 +89,7 @@ static int fix_client_script(struct fix_session_cfg *cfg, void *arg)
 	}
 
 	if (script_read(stream, s_container, c_container)) {
-		fprintf(stderr, "Invalid script: %s\n", script);
+		fprintf(stderr, "Invalid script: %s\n", arg->script);
 		goto exit;
 	}
 
@@ -155,7 +155,7 @@ exit:
 	return ret;
 }
 
-static int fix_client_session(struct fix_session_cfg *cfg, void *arg)
+static int fix_client_session(struct fix_session_cfg *cfg, struct fix_client_arg *arg)
 {
 	struct fix_session *session = NULL;
 	struct timespec cur, prev;
@@ -249,12 +249,13 @@ static unsigned long fix_new_order_single_fields(struct fix_field *fields)
 	return nr;
 }
 
-static int fix_client_order(struct fix_session_cfg *cfg, void *arg)
+static int fix_client_order(struct fix_session_cfg *cfg, struct fix_client_arg *arg)
 {
 	double min_usec, avg_usec, max_usec, total_usec;
 	struct fix_session *session = NULL;
 	struct fix_field *fields = NULL;
 	struct fix_message *msg;
+	FILE *file = NULL;
 	unsigned long nr;
 	int ret = -1;
 	int orders;
@@ -263,7 +264,16 @@ static int fix_client_order(struct fix_session_cfg *cfg, void *arg)
 	if (!arg)
 		goto exit;
 
-	orders = *(int *)arg;
+	orders = arg->orders;
+
+	if (arg->output) {
+		file = fopen(arg->output, "w");
+
+		if (!file) {
+			fprintf(stderr, "Cannot open a file %s\n", arg->output);
+			goto exit;
+		}
+	}
 
 	session	= fix_session_new(cfg);
 	if (!session) {
@@ -318,6 +328,9 @@ retry:
 
 		min_usec = fmin(min_usec, elapsed_usec);
 		max_usec = fmax(max_usec, elapsed_usec);
+
+		if (file)
+			fprintf(file, "%" PRIu64 "\n", elapsed_usec);
 	}
 
 	avg_usec = total_usec / orders;
@@ -338,6 +351,9 @@ retry:
 exit:
 	fix_session_free(session);
 	free(fields);
+
+	if (file)
+		fclose(file);
 
 	return ret;
 }
@@ -398,13 +414,12 @@ int main(int argc, char *argv[])
 	enum fix_version version = FIX_4_4;
 	const char *target_comp_id = NULL;
 	const char *sender_comp_id = NULL;
-	const char *filename = NULL;
+	struct fix_client_arg arg = {0};
 	struct fix_session_cfg cfg;
 	const char *host = NULL;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
 	struct hostent *he;
-	int orders = 0;
 	int port = 0;
 	int ret = 0;
 	char **ap;
@@ -412,10 +427,13 @@ int main(int argc, char *argv[])
 
 	program = basename(argv[0]);
 
-	while ((opt = getopt(argc, argv, "f:h:p:d:s:t:m:n:")) != -1) {
+	while ((opt = getopt(argc, argv, "f:h:p:d:s:t:m:n:o:")) != -1) {
 		switch (opt) {
 		case 'd':
 			version = strversion(optarg);
+			break;
+		case 'n':
+			arg.orders = atoi(optarg);
 			break;
 		case 's':
 			sender_comp_id = optarg;
@@ -426,14 +444,14 @@ int main(int argc, char *argv[])
 		case 'm':
 			mode = strmode(optarg);
 			break;
-		case 'n':
-			orders = atoi(optarg);
-			break;
 		case 'p':
 			port = atoi(optarg);
 			break;
 		case 'f':
-			filename = optarg;
+			arg.script = optarg;
+			break;
+		case 'o':
+			arg.output = optarg;
 			break;
 		case 'h':
 			host = optarg;
@@ -495,10 +513,10 @@ int main(int argc, char *argv[])
 
 	switch (mode) {
 	case FIX_CLIENT_SCRIPT:
-		ret = fix_client_functions[mode].fix_session_initiate(&cfg, (void *)filename);
+		ret = fix_client_functions[mode].fix_session_initiate(&cfg, &arg);
 		break;
 	case FIX_CLIENT_ORDER:
-		ret = fix_client_functions[mode].fix_session_initiate(&cfg, (void *)&orders);
+		ret = fix_client_functions[mode].fix_session_initiate(&cfg, &arg);
 		break;
 	case FIX_CLIENT_SESSION:
 		cfg.heartbtint = 15;
