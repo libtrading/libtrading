@@ -2,14 +2,24 @@
 
 [![Build Status](https://secure.travis-ci.org/penberg/libtrading.png?branch=master)](http://travis-ci.org/penberg/libtrading)
 
-Libtrading is an open source C library for high-speed, low latency electronic
-trading. It aims to support market data and market access to exchanges around
-the world and lower the barrier of entry to trading.
+Libtrading is an open source API that implements network protocols used for
+communicating with exchanges, dark pools, and other trading venues. It supports
+FIX, FIX/FAST, and many proprietary protocols such as ITCH and OUCH used by
+NASDAQ.
 
-The library is designed for high performance and robustness. Although latency
-is crucial in trading today's markets, reliability is also a top priority.
+## Features
 
-## Supported Protocols
+* C API
+* FIX engine has 25 μs average message round-trip times on Linux/x86
+* FIX dialect support
+
+### Exchange Coverage
+
+Exchange        | Market Data | Order Entry
+----------------|-------------|------------
+Moscow Exchange | FAST/FIX    | FIX
+
+### Protocols
 
  * [BATS BOE][] ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/boe_message.h))
 
@@ -53,19 +63,25 @@ is crucial in trading today's markets, reliability is also a top priority.
 
 ## Install
 
-### Fedora
-
 Install prerequisite packages:
 
-    yum install zlib-devel libxml2-devel glib2-devel vim-common
+**Fedora**
+
+```
+$ yum install zlib-devel libxml2-devel glib2-devel vim-common
+```
 
 Then run:
 
-    make install
+```
+$ make install
+```
 
 You can also run the test harness:
 
-    make check
+```
+$ make check
+```
 
 ## License
 
