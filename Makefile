@@ -19,6 +19,7 @@ CC	?= gcc
 LD	:= $(CC)
 AR	:= ar
 XXD	?= xxd
+DTRACE	?= dtrace
 
 ifneq ($(WERROR),0)
 	CFLAGS_WERROR = -Werror
@@ -33,6 +34,8 @@ prtdir		:= lib/proto
 srcdir		:= $(CURDIR)
 
 VPATH		:= $(srcdir)
+
+probes		:= no
 
 EXTRA_WARNINGS := -Wcast-align
 EXTRA_WARNINGS += -Wformat
@@ -185,6 +188,14 @@ LIB_OBJS	+= $(COMPAT_OBJS)
 
 LIB_DEPS	:= $(patsubst %.o,%.d,$(LIB_OBJS))
 
+LIB_GEN_HEADERS	=
+
+ifeq ($(probes),yes)
+	LIB_GEN_HEADERS	+= include/libtrading/probes.h
+	CFLAGS		+= -DCONFIG_PROBES
+	LIB_OBJS	+= lib/probes.o
+endif
+
 TEST_PROGRAM	:= test-trade
 TEST_SUITE_H	:= tools/test/test-suite.h
 TEST_RUNNER_C	:= tools/test/test-runner.c
@@ -254,6 +265,14 @@ install: all libtrading-config
 	$(Q) $(foreach f,$(LIB_H),$(call INSTALL_HEADER,$f,$(INCLUDEDIR)/libtrading))
 .PHONY: install
 
+%.h: %.dtrace
+	$(E) "  DTRACE  " $@
+	$(Q) $(DTRACE) -C -h -s $< -o $@
+
+lib/%.o: include/libtrading/%.dtrace
+	$(E) "  DTRACE  " $@
+	$(Q) $(DTRACE) -C -G -s $< -o $@
+
 %.d: %.c
 	$(Q) $(CC) -M -MT $(patsubst %.d,%.o,$@) $(CFLAGS) $< -o $@
 
@@ -273,6 +292,8 @@ $(PROGRAMS): % : %.o
 $(LIB_FILE): $(LIB_DEPS) $(LIB_OBJS)
 	$(E) "  AR      " $@
 	$(Q) rm -f $@ && $(AR) rcs $@ $(LIB_OBJS)
+
+$(LIB_DEPS): $(LIB_GEN_HEADERS)
 
 test: $(TEST_PROGRAM)
 	$(E) "  TEST"
@@ -317,7 +338,7 @@ check: $(TEST_PROGRAM) $(PROGRAMS)
 clean:
 	$(E) "  CLEAN"
 	$(Q) find . -name "*.o" | xargs rm -f
-	$(Q) rm -f $(LIB_FILE) $(LIB_OBJS) $(LIB_DEPS)
+	$(Q) rm -f $(LIB_FILE) $(LIB_OBJS) $(LIB_GEN_HEADERS) $(LIB_DEPS)
 	$(Q) rm -f $(PROGRAMS) $(INST_PROGRAMS) $(OBJS) $(DEPS) $(TEST_PROGRAM) $(TEST_SUITE_H) $(TEST_OBJS) $(TEST_DEPS) $(TEST_RUNNER_C) $(TEST_RUNNER_OBJ)
 	$(Q) rm -f $(BOE_TEST_DATA)
 	$(Q) rm -f lib/proto/iex_fix.c

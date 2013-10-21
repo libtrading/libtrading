@@ -2,6 +2,7 @@
 
 #include "libtrading/compat.h"
 #include "libtrading/array.h"
+#include "libtrading/trace.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -114,10 +115,12 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 	struct buffer *buffer = self->rx_buffer;
 	size_t size;
 
+	TRACE(LIBTRADING_FIX_MESSAGE_RECV(msg, flags));
+
 	if (!fix_message_parse(msg, self->dialect, buffer)) {
 		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
 		self->in_msg_seq_num++;
-		return msg;
+		goto parsed;
 	}
 
 	if (fix_session_buffer_full(self))
@@ -133,9 +136,17 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 	if (!fix_message_parse(msg, self->dialect, buffer)) {
 		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
 		self->in_msg_seq_num++;
-		return msg;
-	} else
-		return NULL;
+		goto parsed;
+	}
+
+	TRACE(LIBTRADING_FIX_MESSAGE_RECV_ERR());
+
+	return NULL;
+
+parsed:
+	TRACE(LIBTRADING_FIX_MESSAGE_RECV_RET());
+
+	return msg;
 }
 
 bool fix_session_keepalive(struct fix_session *session, struct timespec *now)

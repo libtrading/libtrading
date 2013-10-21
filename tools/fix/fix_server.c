@@ -235,8 +235,6 @@ static int fix_server_session(struct fix_session_cfg *cfg, void *arg)
 	for (;;) {
 		struct fix_message logout_msg;
 
-		fix_session_test_request(session);
-
 		msg = fix_session_recv(session, 0);
 		if (!msg)
 			continue;

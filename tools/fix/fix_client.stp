@@ -1,0 +1,27 @@
+global start
+
+function timestamp:long()
+{
+	return gettimeofday_us() - start;
+}
+
+probe begin
+{
+	printf("thread id, cpu, timestamp, function, arguments\n");
+
+	start = gettimeofday_us();
+}
+
+probe process("tools/fix/fix_client").mark("fix_message_parse"),
+      process("tools/fix/fix_client").mark("fix_message_parse_ret"),
+      process("tools/fix/fix_client").mark("fix_message_parse_err"),
+      process("tools/fix/fix_client").mark("fix_message_unparse"),
+      process("tools/fix/fix_client").mark("fix_message_unparse_ret"),
+      process("tools/fix/fix_client").mark("fix_message_send"),
+      process("tools/fix/fix_client").mark("fix_message_send_ret"),
+      process("tools/fix/fix_client").mark("fix_message_recv"),
+      process("tools/fix/fix_client").mark("fix_message_recv_ret"),
+      process("tools/fix/fix_client").mark("fix_message_recv_err")
+{
+	printf ("%d %d %d %s %s\n", tid(), cpu(), timestamp(), $$name, $$parms);
+}

@@ -1,0 +1,12 @@
+provider libtrading {
+	probe fix_message_parse(struct fix_message *, struct fix_dialect *, struct buffer *);
+	probe fix_message_parse_ret();
+	probe fix_message_parse_err();
+	probe fix_message_unparse(struct fix_message *);
+	probe fix_message_unparse_ret();
+	probe fix_message_send(struct fix_message *, int, int);
+	probe fix_message_send_ret();
+	probe fix_message_recv(struct fix_message *, int)
+	probe fix_message_recv_ret();
+	probe fix_message_recv_err();
+};

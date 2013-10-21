@@ -4,6 +4,7 @@
 #include "libtrading/read-write.h"
 #include "libtrading/buffer.h"
 #include "libtrading/array.h"
+#include "libtrading/trace.h"
 
 #include <inttypes.h>
 #include <sys/time.h>
@@ -362,6 +363,7 @@ int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, str
 
 	self->head_buf = buffer;
 
+	TRACE(LIBTRADING_FIX_MESSAGE_PARSE(self, dialect, buffer));
 retry:
 	start	= buffer_start(buffer);
 	size	= buffer_size(buffer);
@@ -379,6 +381,8 @@ retry:
 
 	rest_of_message(self, dialect, buffer);
 
+	TRACE(LIBTRADING_FIX_MESSAGE_PARSE_RET());
+
 	return 0;
 
 fail:
@@ -386,6 +390,8 @@ fail:
 		goto retry;
 
 	buffer_advance(buffer, start - buffer_start(buffer));
+
+	TRACE(LIBTRADING_FIX_MESSAGE_PARSE_ERR());
 
 	return -1;
 }
@@ -516,6 +522,8 @@ static void fix_message_unparse(struct fix_message *self)
 	char buf[64];
 	int i;
 
+	TRACE(LIBTRADING_FIX_MESSAGE_UNPARSE(self));
+
 	fix_timestamp_now(buf, sizeof buf);
 
 	/* standard header */
@@ -546,12 +554,16 @@ static void fix_message_unparse(struct fix_message *self)
 	cksum		= buffer_sum(self->head_buf) + buffer_sum(self->body_buf);
 	check_sum	= FIX_CHECKSUM_FIELD(CheckSum, cksum % 256);
 	fix_field_unparse(&check_sum, self->body_buf);
+
+	TRACE(LIBTRADING_FIX_MESSAGE_UNPARSE_RET());
 }
 
 int fix_message_send(struct fix_message *self, int sockfd, int flags)
 {
 	struct iovec iov[2];
 	int ret = 0;
+
+	TRACE(LIBTRADING_FIX_MESSAGE_SEND(self, sockfd, flags));
 
 	fix_message_unparse(self);
 
@@ -565,6 +577,8 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 
 error_out:
 	self->head_buf = self->body_buf = NULL;
+
+	TRACE(LIBTRADING_FIX_MESSAGE_SEND_RET());
 
 	return ret;
 }

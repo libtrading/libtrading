@@ -18,4 +18,5 @@
 /tools/test/test-suite.h
 /LIBTRADING-VERSION-FILE
 /include/libtrading/proto/iex_fix.h
+/include/libtrading/probes.h
 /lib/proto/iex_fix.c
