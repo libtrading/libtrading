@@ -2,6 +2,7 @@
 #include "libtrading/proto/fix_session.h"
 
 #include "libtrading/array.h"
+#include "libtrading/time.h"
 #include "libtrading/die.h"
 
 #include <netinet/tcp.h>
@@ -321,8 +322,7 @@ retry:
 
 		clock_gettime(CLOCK_MONOTONIC, &after);
 
-		elapsed_usec = 1000000 * (after.tv_sec - before.tv_sec) +
-						(after.tv_nsec - before.tv_nsec) / 1000;
+		elapsed_usec = timespec_delta(&before, &after) / 1000;
 
 		total_usec += elapsed_usec;
 
