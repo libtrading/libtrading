@@ -467,25 +467,65 @@ bool fix_message_type_is(struct fix_message *self, enum fix_msg_type type)
 	return self->type == type;
 }
 
+/* unsigned ints, no zero terminator */
+static int uitoa_unsafe(unsigned int n, char *s)
+{
+	char *p = s;
+	int i, j;
+
+	while (n) {
+		*p++ = n % 10 + '0';
+		n /= 10;
+	}
+	i = 0;
+	j = p - s - 1;
+	while (i < j) {
+		char tmp = s[i];
+		s[i] = s[j];
+		s[j] = tmp;
+		i++; j--;
+	}
+	return p - s;
+}
+
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 {
+	buffer->end += uitoa_unsafe(self->tag, buffer_end(buffer));
+
+	buffer_put(buffer, '=');
+
 	switch (self->type) {
-	case FIX_TYPE_STRING:
-		return buffer_printf(buffer, "%d=%s\x01", self->tag, self->string_value);
-	case FIX_TYPE_CHAR:
-		return buffer_printf(buffer, "%d=%c\x01", self->tag, self->char_value);
-	case FIX_TYPE_FLOAT:
-		return buffer_printf(buffer, "%d=%f\x01", self->tag, self->float_value);
-	case FIX_TYPE_INT:
-		return buffer_printf(buffer, "%d=%" PRId64 "\x01", self->tag, self->int_value);
-	case FIX_TYPE_CHECKSUM:
-		return buffer_printf(buffer, "%d=%03" PRId64 "\x01", self->tag, self->int_value);
+	case FIX_TYPE_STRING: {
+		const char *p = self->string_value;
+
+		while (*p) {
+			buffer_put(buffer, *p++);
+		}
+		break;
+	}
+	case FIX_TYPE_CHAR: {
+		buffer_put(buffer, self->char_value);
+		break;
+	}
+	case FIX_TYPE_FLOAT: {
+		buffer->end += sprintf(buffer_end(buffer), "%f", self->float_value);
+		break;
+	}
+	case FIX_TYPE_INT: {
+		buffer->end += sprintf(buffer_end(buffer), "%" PRId64, self->int_value);
+		break;
+	}
+	case FIX_TYPE_CHECKSUM: {
+		buffer->end += sprintf(buffer_end(buffer), "%03" PRId64, self->int_value);
+		break;
+	}
 	default:
-		/* unknown type */
 		break;
 	};
 
-	return false;
+	buffer_put(buffer, 0x01);
+
+	return true;
 }
 
 char *fix_timestamp_now(char *buf, size_t len)
