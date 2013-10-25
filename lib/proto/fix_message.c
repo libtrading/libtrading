@@ -6,6 +6,7 @@
 #include "libtrading/array.h"
 #include "libtrading/trace.h"
 
+#include <sys/socket.h>
 #include <inttypes.h>
 #include <sys/time.h>
 #include <sys/uio.h>
@@ -601,6 +602,7 @@ static void fix_message_unparse(struct fix_message *self)
 int fix_message_send(struct fix_message *self, int sockfd, int flags)
 {
 	struct iovec iov[2];
+	struct msghdr msg;
 	int ret = 0;
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND(self, sockfd, flags));
@@ -610,7 +612,12 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 	buffer_to_iovec(self->head_buf, &iov[0]);
 	buffer_to_iovec(self->body_buf, &iov[1]);
 
-	if (xwritev(sockfd, iov, ARRAY_SIZE(iov)) < 0) {
+	msg = (struct msghdr) {
+		.msg_iov	= iov,
+		.msg_iovlen	= 2,
+	};
+
+	if (sendmsg(sockfd, &msg, 0) < 0) {
 		ret = -1;
 		goto error_out;
 	}
