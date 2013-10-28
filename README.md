@@ -10,7 +10,7 @@ NASDAQ.
 ## Features
 
 * C API
-* FIX engine has 20 μs average message round-trip times on Linux/x86
+* FIX engine has 16 μs average message round-trip times on Linux/x86
 * FIX dialect support
 * SystemTap/DTrace probes
 
