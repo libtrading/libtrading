@@ -5,6 +5,7 @@
 #include "libtrading/buffer.h"
 #include "libtrading/array.h"
 #include "libtrading/trace.h"
+#include "libtrading/itoa.h"
 
 #include <sys/socket.h>
 #include <inttypes.h>
@@ -466,30 +467,9 @@ bool fix_message_type_is(struct fix_message *self, enum fix_msg_type type)
 	return self->type == type;
 }
 
-/* unsigned ints, no zero terminator */
-static int uitoa_unsafe(unsigned int n, char *s)
-{
-	char *p = s;
-	int i, j;
-
-	while (n) {
-		*p++ = n % 10 + '0';
-		n /= 10;
-	}
-	i = 0;
-	j = p - s - 1;
-	while (i < j) {
-		char tmp = s[i];
-		s[i] = s[j];
-		s[j] = tmp;
-		i++; j--;
-	}
-	return p - s;
-}
-
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 {
-	buffer->end += uitoa_unsafe(self->tag, buffer_end(buffer));
+	buffer->end += uitoa(self->tag, buffer_end(buffer));
 
 	buffer_put(buffer, '=');
 
@@ -511,11 +491,11 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 		break;
 	}
 	case FIX_TYPE_INT: {
-		buffer->end += sprintf(buffer_end(buffer), "%" PRId64, self->int_value);
+		buffer->end += i64toa(self->int_value, buffer_end(buffer));
 		break;
 	}
 	case FIX_TYPE_CHECKSUM: {
-		buffer->end += sprintf(buffer_end(buffer), "%03" PRId64, self->int_value);
+		buffer->end += checksumtoa(self->int_value, buffer_end(buffer));
 		break;
 	}
 	default:

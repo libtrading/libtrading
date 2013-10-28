@@ -132,6 +132,7 @@ LIB_FILE := libtrading.a
 
 LIBS := $(LIB_FILE)
 
+LIB_H += itoa.h
 LIB_H += array.h
 LIB_H += buffer.h
 LIB_H += byte-order.h
@@ -158,6 +159,7 @@ LIB_H += proto/xdp_message.h
 LIB_H += read-write.h
 LIB_H += types.h
 
+LIB_OBJS	+= lib/itoa.o
 LIB_OBJS	+= lib/buffer.o
 LIB_OBJS	+= lib/order_book.o
 LIB_OBJS	+= lib/mmap-buffer.o
