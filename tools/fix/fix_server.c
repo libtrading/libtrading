@@ -187,9 +187,6 @@ exit:
 static unsigned long fix_execution_report_fields(struct fix_field *fields)
 {
 	unsigned long nr = 0;
-	char buf[64];
-
-	fix_timestamp_now(buf, sizeof(buf));
 
 	fields[nr++] = FIX_STRING_FIELD(OrderID, "OrderID");
 	fields[nr++] = FIX_STRING_FIELD(Symbol, "Symbol");

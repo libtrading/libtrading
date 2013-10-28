@@ -4,6 +4,7 @@
 #include "libtrading/array.h"
 #include "libtrading/trace.h"
 
+#include <sys/time.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,15 +52,13 @@ struct fix_session *fix_session_new(struct fix_session_cfg *cfg)
 		return NULL;
 	}
 
-	if (clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp)) {
+	if (fix_session_time_update(self)) {
 		fix_session_free(self);
 		return NULL;
 	}
 
-	if (clock_gettime(CLOCK_MONOTONIC, &self->tx_timestamp)) {
-		fix_session_free(self);
-		return NULL;
-	}
+	self->rx_timestamp = self->now;
+	self->tx_timestamp = self->now;
 
 	self->begin_string	= begin_strings[cfg->dialect->version];
 	self->sender_comp_id	= cfg->sender_comp_id;
@@ -85,6 +84,31 @@ void fix_session_free(struct fix_session *self)
 	free(self);
 }
 
+int fix_session_time_update(struct fix_session *self)
+{
+	struct timeval tv;
+	struct tm *tm;
+	char fmt[64];
+
+	if (clock_gettime(CLOCK_MONOTONIC, &self->now))
+		goto fail;
+
+	gettimeofday(&tv, NULL);
+
+	tm = gmtime(&tv.tv_sec);
+	if (!tm)
+		goto fail;
+
+	strftime(fmt, sizeof(fmt), "%Y%m%d-%H:%M:%S", tm);
+	snprintf(self->str_now, sizeof(self->str_now), "%s.%03ld",
+					fmt, (long)tv.tv_usec / 1000);
+
+	return 0;
+
+fail:
+	return -1;
+}
+
 int fix_session_send(struct fix_session *self, struct fix_message *msg, int flags)
 {
 	msg->begin_string	= self->begin_string;
@@ -99,7 +123,8 @@ int fix_session_send(struct fix_session *self, struct fix_message *msg, int flag
 	msg->body_buf = self->tx_body_buffer;
 	buffer_reset(msg->body_buf);
 
-	clock_gettime(CLOCK_MONOTONIC, &self->tx_timestamp);
+	self->tx_timestamp = self->now;
+	msg->str_now = self->str_now;
 
 	return fix_message_send(msg, self->sockfd, flags);
 }
@@ -118,7 +143,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 	TRACE(LIBTRADING_FIX_MESSAGE_RECV(msg, flags));
 
 	if (!fix_message_parse(msg, self->dialect, buffer)) {
-		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
+		self->rx_timestamp = self->now;
 		self->in_msg_seq_num++;
 		goto parsed;
 	}
@@ -138,7 +163,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 	}
 
 	if (!fix_message_parse(msg, self->dialect, buffer)) {
-		clock_gettime(CLOCK_MONOTONIC, &self->rx_timestamp);
+		self->rx_timestamp = self->now;
 		self->in_msg_seq_num++;
 		goto parsed;
 	}
@@ -445,10 +470,11 @@ int fix_session_test_request(struct fix_session *session)
 {
 	struct fix_message test_req_msg;
 	struct fix_field fields[] = {
-		FIX_STRING_FIELD(TestReqID,
-			fix_timestamp_now(session->testreqid,
-					sizeof session->testreqid)),
+		FIX_STRING_FIELD(TestReqID, session->str_now),
 	};
+
+	strncpy(session->testreqid, session->str_now,
+				sizeof(session->testreqid));
 
 	test_req_msg	= (struct fix_message) {
 		.type		= FIX_MSG_TYPE_TEST_REQUEST,
@@ -456,7 +482,7 @@ int fix_session_test_request(struct fix_session *session)
 		.fields		= fields,
 	};
 
-	clock_gettime(CLOCK_MONOTONIC, &session->tr_timestamp);
+	session->tr_timestamp = session->now;
 	session->tr_pending = 1;
 
 	return fix_session_send(session, &test_req_msg, 0);

@@ -8,7 +8,6 @@
 
 #include <sys/socket.h>
 #include <inttypes.h>
-#include <sys/time.h>
 #include <sys/uio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -16,7 +15,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdio.h>
-#include <time.h>
 
 static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
 	[FIX_MSG_TYPE_HEARTBEAT]		= "0",
@@ -529,26 +527,6 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 	return true;
 }
 
-char *fix_timestamp_now(char *buf, size_t len)
-{
-	struct timeval tv;
-	struct tm *tm;
-	char fmt[64];
-
-	gettimeofday(&tv, NULL);
-
-	tm = gmtime(&tv.tv_sec);
-	if (!tm)
-		return NULL;
-
-	/* YYYYMMDD-HH:MM:SS.sss */
-	strftime(fmt, sizeof fmt, "%Y%m%d-%H:%M:%S", tm);
-
-	snprintf(buf, len, "%s.%03ld", fmt, (long)tv.tv_usec / 1000);
-
-	return buf;
-}
-
 static void fix_message_unparse(struct fix_message *self)
 {
 	struct fix_field sender_comp_id;
@@ -565,7 +543,7 @@ static void fix_message_unparse(struct fix_message *self)
 
 	TRACE(LIBTRADING_FIX_MESSAGE_UNPARSE(self));
 
-	fix_timestamp_now(buf, sizeof buf);
+	strncpy(buf, self->str_now, sizeof(buf));
 
 	/* standard header */
 	msg_type	= FIX_STRING_FIELD(MsgType, fix_msg_types[self->type]);

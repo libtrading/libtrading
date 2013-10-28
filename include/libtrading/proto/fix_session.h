@@ -55,6 +55,10 @@ struct fix_session {
 	struct fix_message		*rx_message;
 
 	int				heartbtint;
+
+	struct timespec			now;
+	char				str_now[64];
+
 	struct timespec			rx_timestamp;
 	struct timespec			tx_timestamp;
 
@@ -70,6 +74,7 @@ static inline bool fix_msg_expected(struct fix_session *session, struct fix_mess
 
 struct fix_session *fix_session_new(struct fix_session_cfg *cfg);
 void fix_session_free(struct fix_session *self);
+int fix_session_time_update(struct fix_session *self);
 int fix_session_send(struct fix_session *self, struct fix_message *msg, int flags);
 struct fix_message *fix_session_recv(struct fix_session *self, int flags);
 bool fix_session_keepalive(struct fix_session *session, struct timespec *now);

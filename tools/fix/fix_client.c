@@ -198,6 +198,11 @@ static int fix_client_session(struct fix_session_cfg *cfg, struct fix_client_arg
 			}
 		}
 
+		if (fix_session_time_update(session)) {
+			stop = true;
+			break;
+		}
+
 		msg = fix_session_recv(session, 0);
 		if (msg) {
 			fprintmsg(stdout, msg);
@@ -232,15 +237,12 @@ exit:
 	return ret;
 }
 
-static unsigned long fix_new_order_single_fields(struct fix_field *fields)
+static unsigned long fix_new_order_single_fields(struct fix_session *session, struct fix_field *fields)
 {
 	unsigned long nr = 0;
-	char buf[64];
 
-	fix_timestamp_now(buf, sizeof(buf));
-
+	fields[nr++] = FIX_STRING_FIELD(TransactTime, session->str_now);
 	fields[nr++] = FIX_STRING_FIELD(ClOrdID, "ClOrdID");
-	fields[nr++] = FIX_STRING_FIELD(TransactTime, buf);
 	fields[nr++] = FIX_STRING_FIELD(Symbol, "Symbol");
 	fields[nr++] = FIX_FLOAT_FIELD(OrderQty, 100);
 	fields[nr++] = FIX_STRING_FIELD(OrdType, "2");
@@ -298,7 +300,7 @@ static int fix_client_order(struct fix_session_cfg *cfg, struct fix_client_arg *
 		goto exit;
 	}
 
-	nr = fix_new_order_single_fields(fields);
+	nr = fix_new_order_single_fields(session, fields);
 
 	min_usec	= DBL_MAX;
 	max_usec	= 0;
