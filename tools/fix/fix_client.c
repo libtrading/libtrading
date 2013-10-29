@@ -1,6 +1,7 @@
 #include "libtrading/proto/fix_message.h"
 #include "libtrading/proto/fix_session.h"
 
+#include "libtrading/compat.h"
 #include "libtrading/array.h"
 #include "libtrading/time.h"
 #include "libtrading/die.h"
@@ -11,6 +12,7 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <inttypes.h>
+#include <libgen.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
@@ -372,7 +374,7 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
-static enum fix_client_mode strmode(const char *mode)
+static enum fix_client_mode strclientmode(const char *mode)
 {
 	enum fix_client_mode m;
 
@@ -444,7 +446,7 @@ int main(int argc, char *argv[])
 			target_comp_id = optarg;
 			break;
 		case 'm':
-			mode = strmode(optarg);
+			mode = strclientmode(optarg);
 			break;
 		case 'p':
 			port = atoi(optarg);

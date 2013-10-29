@@ -269,7 +269,7 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
-static enum fix_server_mode strmode(const char *mode)
+static enum fix_server_mode strservermode(const char *mode)
 {
 	enum fix_server_mode m;
 
@@ -332,7 +332,7 @@ int main(int argc, char *argv[])
 			target_comp_id = optarg;
 			break;
 		case 'm':
-			mode = strmode(optarg);
+			mode = strservermode(optarg);
 			break;
 		case 'p':
 			port = atoi(optarg);
