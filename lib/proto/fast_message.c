@@ -3,6 +3,7 @@
 #include "libtrading/read-write.h"
 #include "libtrading/array.h"
 
+#include <sys/socket.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -2603,6 +2604,7 @@ fail:
 int fast_message_send(struct fast_message *self, int sockfd, int flags)
 {
 	struct iovec iov[2];
+	struct msghdr msg;
 	int ret = 0;
 
 	ret = fast_message_encode(self);
@@ -2612,7 +2614,12 @@ int fast_message_send(struct fast_message *self, int sockfd, int flags)
 	buffer_to_iovec(self->pmap_buf, &iov[0]);
 	buffer_to_iovec(self->msg_buf, &iov[1]);
 
-	if (xwritev(sockfd, iov, ARRAY_SIZE(iov)) < 0) {
+	msg = (struct msghdr) {
+		.msg_iov	= iov,
+		.msg_iovlen	= 2,
+	};
+
+	if (sendmsg(sockfd, &msg, 0) < 0) {
 		ret = -1;
 		goto exit;
 	}
