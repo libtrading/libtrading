@@ -65,6 +65,7 @@ struct fast_message *fast_session_recv(struct fast_session *self, int flags)
 	struct buffer *buffer = self->rx_buffer;
 	struct fast_message *msg;
 	size_t size;
+	ssize_t nr;
 
 	msg = fast_message_decode(self);
 	if (msg)
@@ -79,7 +80,9 @@ struct fast_message *fast_session_recv(struct fast_session *self, int flags)
 	* 2 times FAST_MESSAGE_MAX_SIZE then,
 	* remaining > FAST_MESSAGE_MAX_SIZE
 	*/
-	buffer_nread(buffer, self->sockfd, FAST_MESSAGE_MAX_SIZE);
+	nr = buffer_recv(buffer, self->sockfd, FAST_MESSAGE_MAX_SIZE);
+	if (nr <= 0)
+		return NULL;
 
 	return fast_message_decode(self);
 }
