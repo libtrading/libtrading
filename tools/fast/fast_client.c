@@ -17,25 +17,36 @@
 #include <netdb.h>
 #include <stdio.h>
 
+#include "fast_client.h"
 #include "test.h"
 
-struct protocol_info {
-	const char		*name;
-	int			(*session_initiate)(struct fast_session_cfg *, const char *, const char *);
+static const char *program;
+
+static struct fast_client_function fast_client_functions[] = {
+	[FAST_CLIENT_SCRIPT] = {
+		.fast_session_initiate	= fast_client_script,
+		.mode			= FAST_CLIENT_SCRIPT,
+	},
 };
 
-static int fast_session_initiate(struct fast_session_cfg *cfg, const char *xml, const char *script)
+static int fast_client_script(struct fast_session_cfg *cfg, struct fast_client_arg *arg)
 {
 	struct fcontainer *container = NULL;
 	struct fast_session *session = NULL;
 	struct felem *expected_elem;
 	struct fast_message *msg;
-	FILE *stream;
+	FILE *stream = NULL;
 	int ret = 1;
 
-	stream = fopen(script, "r");
+	if (!arg->script) {
+		fprintf(stderr, "No script is specified\n");
+		goto exit;
+	}
+
+	stream = fopen(arg->script, "r");
 	if (!stream) {
-		fprintf(stderr, "Opening %s failed: %s\n", script, strerror(errno));
+		fprintf(stderr, "Opening %s failed: %s\n",
+				arg->script, strerror(errno));
 		goto exit;
 	}
 
@@ -51,7 +62,7 @@ static int fast_session_initiate(struct fast_session_cfg *cfg, const char *xml, 
 		goto exit;
 	}
 
-	if (fast_parse_template(session, xml)) {
+	if (fast_parse_template(session, arg->xml)) {
 		fprintf(stderr, "Cannot read template xml file\n");
 		goto exit;
 	}
@@ -59,7 +70,7 @@ static int fast_session_initiate(struct fast_session_cfg *cfg, const char *xml, 
 	fcontainer_init(container, session->rx_messages);
 
 	if (script_read(stream, container)) {
-		fprintf(stderr, "Invalid script: %s\n", script);
+		fprintf(stderr, "Invalid script: %s\n", arg->script);
 		goto exit;
 	}
 
@@ -94,26 +105,10 @@ exit:
 	return ret;
 }
 
-static const struct protocol_info protocols[] = {
-	{ "fast",		fast_session_initiate },
-};
-
-static const struct protocol_info *lookup_protocol_info(const char *name)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(protocols); i++) {
-		const struct protocol_info *proto_info = &protocols[i];
-
-		if (!strcmp(proto_info->name, name))
-			return proto_info;
-	}
-	return NULL;
-}
-
 static void usage(void)
 {
-	printf("\n  usage: trade client -t [template] -f [filename] -h [hostname] -p [port] -c [protocol]\n\n");
+	printf("\n usage: %s [-m mode] [-f filename] -t template -h hostname -p port\n\n", program);
+
 	exit(EXIT_FAILURE);
 }
 
@@ -122,39 +117,58 @@ static int socket_setopt(int sockfd, int level, int optname, int optval)
 	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
 }
 
+static enum fast_client_mode strclientmode(const char *mode)
+{
+	enum fast_client_mode m;
+
+	if (!strcmp(mode, "script"))
+		return FAST_CLIENT_SCRIPT;
+
+	if (sscanf(mode, "%u", &m) != 1)
+		return FAST_CLIENT_SCRIPT;
+
+	switch (m) {
+	case FAST_CLIENT_SCRIPT:
+		return m;
+	default:
+		break;
+	}
+
+	return FAST_CLIENT_SCRIPT;
+}
+
 int main(int argc, char *argv[])
 {
-	const struct protocol_info *proto_info;
+	enum fast_client_mode mode = FAST_CLIENT_SCRIPT;
+	struct fast_client_arg arg = {0};
 	struct fast_session_cfg cfg;
-	const char *filename = NULL;
-	const char *proto = NULL;
 	const char *host = NULL;
-	const char *xml = NULL;
 	struct sockaddr_in sa;
 	int saved_errno = 0;
 	struct hostent *he;
-	int sockfd = -1;
 	int port = 0;
-	int retval;
 	char **ap;
 	int opt;
+	int ret;
 
-	while ((opt = getopt(argc, argv, "f:h:p:c:t:")) != -1) {
+	program = basename(argv[0]);
+
+	while ((opt = getopt(argc, argv, "f:h:p:t:")) != -1) {
 		switch (opt) {
+		case 'm':
+			mode = strclientmode(optarg);
+			break;
 		case 'p':
 			port = atoi(optarg);
 			break;
 		case 'f':
-			filename = optarg;
+			arg.script = optarg;
 			break;
-		case 'c':
-			proto = optarg;
+		case 't':
+			arg.xml = optarg;
 			break;
 		case 'h':
 			host = optarg;
-			break;
-		case 't':
-			xml = optarg;
 			break;
 		default: /* '?' */
 			usage();
@@ -162,24 +176,16 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (!port || !proto || !filename || !host || !xml) {
+	if (!port || !host || !arg.xml)
 		usage();
-		exit(EXIT_FAILURE);
-	}
-
-	proto_info = lookup_protocol_info(proto);
-	if (!proto_info) {
-		printf("Unsupported protocol '%s'\n", proto);
-		exit(EXIT_FAILURE);
-	}
 
 	he = gethostbyname(host);
 	if (!he)
 		error("Unable to look up %s (%s)", host, hstrerror(h_errno));
 
 	for (ap = he->h_addr_list; *ap; ap++) {
-		sockfd = socket(he->h_addrtype, SOCK_STREAM, IPPROTO_TCP);
-		if (sockfd < 0) {
+		cfg.sockfd = socket(he->h_addrtype, SOCK_STREAM, IPPROTO_TCP);
+		if (cfg.sockfd < 0) {
 			saved_errno = errno;
 			continue;
 		}
@@ -190,31 +196,36 @@ int main(int argc, char *argv[])
 		};
 		memcpy(&sa.sin_addr, *ap, he->h_length);
 
-		if (connect(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0) {
+		if (connect(cfg.sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0) {
 			saved_errno = errno;
-			close(sockfd);
-			sockfd = -1;
+			close(cfg.sockfd);
+			cfg.sockfd = -1;
 			continue;
 		}
 		break;
 	}
 
-	if (sockfd < 0)
+	if (cfg.sockfd < 0)
 		error("Unable to connect to a socket (%s)", strerror(saved_errno));
 
-	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
+	if (socket_setopt(cfg.sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
 	cfg.preamble_bytes = 0;
-	cfg.sockfd = sockfd;
 	cfg.reset = false;
 
-	retval = proto_info->session_initiate(&cfg, xml, filename);
+	switch (mode) {
+	case FAST_CLIENT_SCRIPT:
+		ret = fast_client_functions[mode].fast_session_initiate(&cfg, &arg);
+		break;
+	default:
+		error("Invalid mode");
+	}
 
-	shutdown(sockfd, SHUT_RDWR);
+	shutdown(cfg.sockfd, SHUT_RDWR);
 
-	if (close(sockfd) < 0)
+	if (close(cfg.sockfd) < 0)
 		die("close");
 
-	return retval;
+	return ret;
 }

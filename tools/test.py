@@ -118,7 +118,6 @@ def popen_fast_server():
     args = [
       "./tools/fast/fast_server",
       "-p", "9000",
-      "-c", "fast",
       "-f", "./tools/fast/scripts/%s" % test,
       "-t", "./tools/fast/scripts/%s.xml" % test]
     return subprocess.Popen(args, stderr = err, stdout = out)
@@ -128,7 +127,6 @@ def popen_fast_client():
       "./tools/fast/fast_client",
       "-h", "localhost",
       "-p", "9000",
-      "-c", "fast",
       "-f", "./tools/fast/scripts/%s" % test,
       "-t", "./tools/fast/scripts/%s.xml" % test]
     return subprocess.Popen(args, stderr = err, stdout = out)
