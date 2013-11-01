@@ -1892,6 +1892,8 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 
 		goto transfer;
 	case FAST_OP_COPY:
+		pmap->pmap_bit++;
+
 		if (!field_is_mandatory(field)) {
 			tmp = tmp >= 0 ? tmp + 1 : tmp;
 
@@ -1919,6 +1921,8 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 
 		break;
 	case FAST_OP_INCR:
+		pmap->pmap_bit++;
+
 		if (!field_is_mandatory(field)) {
 			tmp = tmp >= 0 ? tmp + 1 : tmp;
 
@@ -1962,6 +1966,8 @@ static int fast_encode_int(struct buffer *buffer, struct fast_pmap *pmap, struct
 
 		goto transfer;
 	case FAST_OP_DEFAULT:
+		pmap->pmap_bit++;
+
 		if (!field_is_mandatory(field)) {
 			tmp = tmp >= 0 ? tmp + 1 : tmp;
 
@@ -2012,7 +2018,7 @@ transfer:
 		goto fail;
 
 	if (pset)
-		pmap_set(pmap, ++pmap->pmap_bit);
+		pmap_set(pmap, pmap->pmap_bit);
 
 	return 0;
 
@@ -2075,6 +2081,8 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 		goto transfer;
 	case FAST_OP_COPY:
+		pmap->pmap_bit++;
+
 		if (!field_is_mandatory(field)) {
 			tmp += 1;
 
@@ -2102,6 +2110,8 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 		break;
 	case FAST_OP_INCR:
+		pmap->pmap_bit++;
+
 		if (!field_is_mandatory(field)) {
 			tmp += 1;
 
@@ -2146,6 +2156,8 @@ static int fast_encode_uint(struct buffer *buffer, struct fast_pmap *pmap, struc
 
 		goto transfer;
 	case FAST_OP_DEFAULT:
+		pmap->pmap_bit++;
+
 		if (!field_is_mandatory(field)) {
 			tmp += 1;
 
@@ -2201,7 +2213,7 @@ transfer:
 	}
 
 	if (pset)
-		pmap_set(pmap, ++pmap->pmap_bit);
+		pmap_set(pmap, pmap->pmap_bit);
 
 	return 0;
 
@@ -2258,6 +2270,8 @@ static int fast_encode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 
 		goto transfer;
 	case FAST_OP_COPY:
+		pmap->pmap_bit++;
+
 		if (!field_is_mandatory(field)) {
 			if (field_state_empty(field))
 				goto empty;
@@ -2287,6 +2301,8 @@ static int fast_encode_string(struct buffer *buffer, struct fast_pmap *pmap, str
 	case FAST_OP_DELTA:
 		goto fail;
 	case FAST_OP_DEFAULT:
+		pmap->pmap_bit++;
+
 		if (!field_is_mandatory(field)) {
 			if (field_state_empty(field))
 				goto empty;
@@ -2335,7 +2351,7 @@ transfer:
 		goto fail;
 
 	if (pset)
-		pmap_set(pmap, ++pmap->pmap_bit);
+		pmap_set(pmap, pmap->pmap_bit);
 
 	return 0;
 
@@ -2366,6 +2382,8 @@ static int fast_encode_decimal_atomic(struct buffer *buffer, struct fast_pmap *p
 
 		goto transfer;
 	case FAST_OP_COPY:
+		pmap->pmap_bit++;
+
 		if (!field_is_mandatory(field)) {
 			exp = exp >= 0 ? exp + 1 : exp;
 
@@ -2412,6 +2430,8 @@ static int fast_encode_decimal_atomic(struct buffer *buffer, struct fast_pmap *p
 
 		goto transfer;
 	case FAST_OP_DEFAULT:
+		pmap->pmap_bit++;
+
 		if (!field_is_mandatory(field)) {
 			exp = exp >= 0 ? exp + 1 : exp;
 
@@ -2468,7 +2488,7 @@ transfer:
 		goto fail;
 
 	if (pset)
-		pmap_set(pmap, ++pmap->pmap_bit);
+		pmap_set(pmap, pmap->pmap_bit);
 
 	return 0;
 
