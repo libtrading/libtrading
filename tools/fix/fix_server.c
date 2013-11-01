@@ -77,7 +77,7 @@ retry:
 	return ret;
 }
 
-static int fix_server_script(struct fix_session_cfg *cfg, void *arg)
+static int fix_server_script(struct fix_session_cfg *cfg, struct fix_server_arg *arg)
 {
 	struct fcontainer *s_container = NULL;
 	struct fcontainer *c_container = NULL;
@@ -85,18 +85,17 @@ static int fix_server_script(struct fix_session_cfg *cfg, void *arg)
 	struct felem *expected_elem;
 	struct fix_message *msg;
 	FILE *stream = NULL;
-	char *script;
 	int ret = -1;
 
-	script = arg;
-	if (!script) {
+	if (!arg->script) {
 		fprintf(stderr, "No script is specified\n");
 		goto exit;
 	}
 
-	stream = fopen(script, "r");
+	stream = fopen(arg->script, "r");
 	if (!stream) {
-		fprintf(stderr, "Opening %s failed: %s\n", script, strerror(errno));
+		fprintf(stderr, "Opening %s failed: %s\n",
+				arg->script, strerror(errno));
 		goto exit;
 	}
 
@@ -119,7 +118,7 @@ static int fix_server_script(struct fix_session_cfg *cfg, void *arg)
 	}
 
 	if (script_read(stream, s_container, c_container)) {
-		fprintf(stderr, "Invalid script: %s\n", script);
+		fprintf(stderr, "Invalid script: %s\n", arg->script);
 		goto exit;
 	}
 
@@ -202,7 +201,7 @@ static unsigned long fix_execution_report_fields(struct fix_field *fields)
 
 }
 
-static int fix_server_session(struct fix_session_cfg *cfg, void *arg)
+static int fix_server_session(struct fix_session_cfg *cfg, struct fix_server_arg *arg)
 {
 	struct fix_session *session = NULL;
 	struct fix_field *fields = NULL;
@@ -310,7 +309,7 @@ int main(int argc, char *argv[])
 	enum fix_version version = FIX_4_4;
 	const char *target_comp_id = NULL;
 	const char *sender_comp_id = NULL;
-	const char *filename = NULL;
+	struct fix_server_arg arg = {0};
 	struct fix_session_cfg cfg;
 	struct sockaddr_in sa;
 	int port = 0;
@@ -338,7 +337,7 @@ int main(int argc, char *argv[])
 			port = atoi(optarg);
 			break;
 		case 'f':
-			filename = optarg;
+			arg.script = optarg;
 			break;
 		default: /* '?' */
 			usage();
@@ -398,10 +397,10 @@ int main(int argc, char *argv[])
 
 	switch (mode) {
 	case FIX_SERVER_SCRIPT:
-		ret = fix_server_functions[mode].fix_session_accept(&cfg, (void *)filename);
+		ret = fix_server_functions[mode].fix_session_accept(&cfg, &arg);
 		break;
 	case FIX_SERVER_SESSION:
-		ret = fix_server_functions[mode].fix_session_accept(&cfg, NULL);
+		ret = fix_server_functions[mode].fix_session_accept(&cfg, &arg);
 		break;
 	default:
 		error("Invalid mode");
