@@ -25,6 +25,10 @@ static struct fast_server_function fast_server_functions[] = {
 		.fast_session_accept	= fast_server_script,
 		.mode			= FAST_SERVER_SCRIPT,
 	},
+	[FAST_SERVER_PONG] = {
+		.fast_session_accept	= fast_server_pong,
+		.mode			= FAST_SERVER_PONG,
+	},
 };
 
 static void fast_send_prepare(struct fast_message *msg, struct felem *elem)
@@ -141,9 +145,121 @@ exit:
 	return ret;
 }
 
+static int fast_pong_prepare(struct fast_message *tx_msg)
+{
+	struct fast_field *tx_field;
+	int ret = -1;
+	int i;
+
+	if (!tx_msg)
+		goto exit;
+
+	for (i = 0; i < tx_msg->nr_fields; i++) {
+		tx_field = tx_msg->fields + i;
+
+		tx_field->state = FAST_STATE_ASSIGNED;
+		if (tx_field->op == FAST_OP_CONSTANT)
+			continue;
+
+		switch (tx_field->type) {
+		case FAST_TYPE_STRING:
+			strcpy(tx_field->string_value, "Forty two");
+			break;
+		case FAST_TYPE_DECIMAL:
+			tx_field->decimal_value.mnt = -42;
+			tx_field->decimal_value.exp = 42;
+			break;
+		case FAST_TYPE_UINT:
+			tx_field->uint_value = 42;
+			break;
+		case FAST_TYPE_INT:
+			tx_field->int_value = -42;
+			break;
+		case FAST_TYPE_VECTOR:
+			break;
+		case FAST_TYPE_SEQUENCE:
+			break;
+		default:
+			break;
+		}
+	}
+
+	ret = 0;
+
+exit:
+	return ret;
+}
+
+static int fast_server_pong(struct fast_session_cfg *cfg, struct fast_server_arg *arg)
+{
+	struct fast_session *session = NULL;
+	struct fast_message *tx_msg = NULL;
+	struct fast_message *rx_msg = NULL;
+	struct fast_session *aux = NULL;
+	int ret = -1;
+	int i;
+
+	session = fast_session_new(cfg);
+	if (!session) {
+		fprintf(stderr, "FAST session cannot be created\n");
+		goto exit;
+	}
+
+	if (fast_parse_template(session, arg->xml)) {
+		fprintf(stderr, "Cannot read template xml file\n");
+		goto exit;
+	}
+
+	aux = fast_session_new(cfg);
+	if (!aux) {
+		fprintf(stderr, "FAST session cannot be created\n");
+		goto exit;
+	}
+
+	if (fast_parse_template(aux, arg->xml)) {
+		fprintf(stderr, "Cannot read template xml file\n");
+		goto exit;
+	}
+
+	rx_msg = session->rx_messages;
+	if (!rx_msg) {
+		fprintf(stderr, "Message cannot be found\n");
+		goto exit;
+	}
+
+	tx_msg = aux->rx_messages;
+	if (!tx_msg) {
+		fprintf(stderr, "Message cannot be found\n");
+		goto exit;
+	}
+
+	if (fast_pong_prepare(tx_msg)) {
+		fprintf(stderr, "Cannot initialize tx_msg\n");
+		goto exit;
+	}
+
+	for (i = 0; i < arg->pongs; i++) {
+		rx_msg = fast_session_recv(session, 0);
+
+		if (!rx_msg)
+			continue;
+
+		if (fast_session_send(session, tx_msg, 0))
+			goto exit;
+	}
+
+	ret = 0;
+
+exit:
+	fast_session_free(session);
+	fast_session_free(aux);
+
+	return ret;
+}
+
 static void usage(void)
 {
-	printf("\n usage: %s [-m mode] [-f filename] -p port -t template\n\n", program);
+	printf("\n usage: %s [-m mode] [-f filename] [-n pongs] -p port -t template\n\n", program);
 
 	exit(EXIT_FAILURE);
 }
@@ -159,12 +275,15 @@ static enum fast_server_mode strservermode(const char *mode)
 
 	if (!strcmp(mode, "script"))
 		return FAST_SERVER_SCRIPT;
+	else if (!strcmp(mode, "pong"))
+		return FAST_SERVER_PONG;
 
 	if (sscanf(mode, "%u", &m) != 1)
 		return FAST_SERVER_SCRIPT;
 
 	switch (m) {
 	case FAST_SERVER_SCRIPT:
+	case FAST_SERVER_PONG:
 		return m;
 	default:
 		break;
@@ -186,10 +305,13 @@ int main(int argc, char *argv[])
 
 	program = basename(argv[0]);
 
-	while ((opt = getopt(argc, argv, "p:f:t:m:")) != -1) {
+	while ((opt = getopt(argc, argv, "p:f:t:m:n:")) != -1) {
 		switch (opt) {
 		case 'm':
 			mode = strservermode(optarg);
+			break;
+		case 'n':
+			arg.pongs = atoi(optarg);
 			break;
 		case 'p':
 			port = atoi(optarg);
@@ -247,6 +369,7 @@ int main(int argc, char *argv[])
 
 	switch (mode) {
 	case FAST_SERVER_SCRIPT:
+	case FAST_SERVER_PONG:
 		ret = fast_server_functions[mode].fast_session_accept(&cfg, &arg);
 		break;
 	default:

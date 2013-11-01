@@ -1,0 +1,124 @@
+<templates>
+   <template>
+      <int32>
+         <constant value="1" />
+      </int32>
+      <int32 presence="optional">
+         <constant value="-1" />
+      </int32>
+      <uInt32>
+         <constant value="2" />
+      </uInt32>
+      <uInt32 presence="optional">
+         <constant value="2" />
+      </uInt32>
+      <string>
+         <constant value="one" />
+      </string>
+      <string presence="optional">
+         <constant value="four" />
+      </string>
+      <int32>
+         <copy />
+      </int32>
+      <int32 presence="optional">
+         <copy />
+      </int32>
+      <uInt32>
+         <copy />
+      </uInt32>
+      <uInt32 presence="optional">
+         <copy />
+      </uInt32>
+      <decimal>
+         <copy />
+      </decimal>
+      <decimal presence="optional">
+         <copy />
+      </decimal>
+      <decimal>
+         <exponent>
+            <copy />
+         </exponent>
+         <mantissa>
+            <copy />
+         </mantissa>
+      </decimal>
+      <decimal presence="optional">
+         <exponent>
+            <copy />
+         </exponent>
+         <mantissa>
+            <copy />
+         </mantissa>
+      </decimal>
+      <string>
+         <copy />
+      </string>
+      <string presence="optional">
+         <copy />
+      </string>
+      <int32>
+         <default value="-1" />
+      </int32>
+      <int32 presence="optional">
+         <default />
+      </int32>
+      <uInt32>
+         <default value="1" />
+      </uInt32>
+      <uInt32 presence="optional">
+         <default />
+      </uInt32>
+      <string>
+         <default value="Test" />
+      </string>
+      <string presence="optional">
+         <default />
+      </string>
+      <int32>
+         <delta value="1" />
+      </int32>
+      <int32 presence="optional">
+         <delta value="-1" />
+      </int32>
+      <uInt32>
+         <delta value="1" />
+      </uInt32>
+      <uInt32 presence="optional">
+         <delta />
+      </uInt32>
+      <int32>
+         <increment />
+      </int32>
+      <int32 presence="optional">
+         <increment />
+      </int32>
+      <uInt32>
+         <increment />
+      </uInt32>
+      <uInt32 presence="optional">
+         <increment />
+      </uInt32>
+      <int32 />
+      <int32 presence="optional" />
+      <uInt32 />
+      <uInt32 presence="optional" />
+      <decimal />
+      <decimal presence="optional" />
+      <decimal>
+         <exponent>
+         </exponent>
+         <mantissa>
+         </mantissa>
+      </decimal>
+      <decimal presence="optional">
+         <exponent>
+         </exponent>
+         <mantissa>
+         </mantissa>
+      </decimal>
+      <string />
+      <string presence="optional" />
+   </template>
+</templates>

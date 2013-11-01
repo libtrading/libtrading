@@ -2,6 +2,7 @@
 #include "libtrading/proto/fast_session.h"
 
 #include "libtrading/array.h"
+#include "libtrading/time.h"
 #include "libtrading/die.h"
 
 #include <netinet/tcp.h>
@@ -9,6 +10,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <inttypes.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +18,7 @@
 #include <errno.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "fast_client.h"
 #include "test.h"
@@ -26,6 +29,10 @@ static struct fast_client_function fast_client_functions[] = {
 	[FAST_CLIENT_SCRIPT] = {
 		.fast_session_initiate	= fast_client_script,
 		.mode			= FAST_CLIENT_SCRIPT,
+	},
+	[FAST_CLIENT_PING] = {
+		.fast_session_initiate	= fast_client_ping,
+		.mode			= FAST_CLIENT_PING,
 	},
 };
 
@@ -105,9 +112,165 @@ exit:
 	return ret;
 }
 
+static int fast_ping_prepare(struct fast_message *tx_msg)
+{
+	struct fast_field *tx_field;
+	int ret = -1;
+	int i;
+
+	if (!tx_msg)
+		goto exit;
+
+	for (i = 0; i < tx_msg->nr_fields; i++) {
+		tx_field = tx_msg->fields + i;
+
+		tx_field->state = FAST_STATE_ASSIGNED;
+		if (tx_field->op == FAST_OP_CONSTANT)
+			continue;
+
+		switch (tx_field->type) {
+		case FAST_TYPE_STRING:
+			strcpy(tx_field->string_value, "Forty two");
+			break;
+		case FAST_TYPE_DECIMAL:
+			tx_field->decimal_value.mnt = -42;
+			tx_field->decimal_value.exp = 42;
+			break;
+		case FAST_TYPE_UINT:
+			tx_field->uint_value = 42;
+			break;
+		case FAST_TYPE_INT:
+			tx_field->int_value = -42;
+			break;
+		case FAST_TYPE_VECTOR:
+			break;
+		case FAST_TYPE_SEQUENCE:
+			break;
+		default:
+			break;
+		}
+	}
+
+	ret = 0;
+
+exit:
+	return ret;
+}
+
+static int fast_client_ping(struct fast_session_cfg *cfg, struct fast_client_arg *arg)
+{
+	double min_usec, avg_usec, max_usec, total_usec;
+	struct fast_session *session = NULL;
+	struct fast_message *tx_msg = NULL;
+	struct fast_message *rx_msg = NULL;
+	struct fast_session *aux = NULL;
+	FILE *file = NULL;
+	int ret = -1;
+	int i;
+
+	if (arg->output) {
+		file = fopen(arg->output, "w");
+
+		if (!file) {
+			fprintf(stderr, "Cannot open a file %s\n", arg->output);
+			goto exit;
+		}
+	}
+
+	session = fast_session_new(cfg);
+	if (!session) {
+		fprintf(stderr, "FAST session cannot be created\n");
+		goto exit;
+	}
+
+	if (fast_parse_template(session, arg->xml)) {
+		fprintf(stderr, "Cannot read template xml file\n");
+		goto exit;
+	}
+
+	aux = fast_session_new(cfg);
+	if (!aux) {
+		fprintf(stderr, "FAST session cannot be created\n");
+		goto exit;
+	}
+
+	if (fast_parse_template(aux, arg->xml)) {
+		fprintf(stderr, "Cannot read template xml file\n");
+		goto exit;
+	}
+
+	rx_msg = session->rx_messages;
+	if (!rx_msg) {
+		fprintf(stderr, "Message cannot be found\n");
+		goto exit;
+	}
+
+	tx_msg = aux->rx_messages;
+	if (!tx_msg) {
+		fprintf(stderr, "Message cannot be found\n");
+		goto exit;
+	}
+
+	if (fast_ping_prepare(tx_msg)) {
+		fprintf(stderr, "Cannot initialize tx_msg\n");
+		goto exit;
+	}
+
+	min_usec	= DBL_MAX;
+	max_usec	= 0;
+	total_usec	= 0;
+
+	for (i = 0; i < arg->pings; i++) {
+		struct timespec before, after;
+		uint64_t elapsed_usec;
+
+		clock_gettime(CLOCK_MONOTONIC, &before);
+
+		if (fast_session_send(session, tx_msg, 0))
+			goto exit;
+
+retry:
+		rx_msg = fast_session_recv(session, 0);
+
+		if (!rx_msg)
+			goto retry;
+
+		clock_gettime(CLOCK_MONOTONIC, &after);
+
+		elapsed_usec = timespec_delta(&before, &after) / 1000;
+
+		total_usec += elapsed_usec;
+
+		min_usec = fmin(min_usec, elapsed_usec);
+		max_usec = fmax(max_usec, elapsed_usec);
+
+		if (file)
+			fprintf(file, "%" PRIu64 "\n", elapsed_usec);
+	}
+
+	if (arg->pings)
+		avg_usec = total_usec / arg->pings;
+	else
+		avg_usec = 0.0;
+
+	fprintf(stdout, "Messages sent: %d\n", arg->pings);
+	fprintf(stdout, "Round-trip time: min/avg/max = %.1lf/%.1lf/%.1lf μs\n", min_usec, avg_usec, max_usec);
+
+	ret = 0;
+
+exit:
+	fast_session_free(session);
+	fast_session_free(aux);
+
+	if (file)
+		fclose(file);
+
+	return ret;
+}
+
 static void usage(void)
 {
-	printf("\n usage: %s [-m mode] [-f filename] -t template -h hostname -p port\n\n", program);
+	printf("\n usage: %s [-m mode] [-f filename] [-n pings] -t template -h hostname -p port\n\n", program);
 
 	exit(EXIT_FAILURE);
 }
@@ -123,12 +286,15 @@ static enum fast_client_mode strclientmode(const char *mode)
 
 	if (!strcmp(mode, "script"))
 		return FAST_CLIENT_SCRIPT;
+	else if (!strcmp(mode, "ping"))
+		return FAST_CLIENT_PING;
 
 	if (sscanf(mode, "%u", &m) != 1)
 		return FAST_CLIENT_SCRIPT;
 
 	switch (m) {
 	case FAST_CLIENT_SCRIPT:
+	case FAST_CLIENT_PING:
 		return m;
 	default:
 		break;
@@ -153,16 +319,22 @@ int main(int argc, char *argv[])
 
 	program = basename(argv[0]);
 
-	while ((opt = getopt(argc, argv, "f:h:p:t:")) != -1) {
+	while ((opt = getopt(argc, argv, "f:h:p:t:n:m:o:")) != -1) {
 		switch (opt) {
 		case 'm':
 			mode = strclientmode(optarg);
+			break;
+		case 'n':
+			arg.pings = atoi(optarg);
 			break;
 		case 'p':
 			port = atoi(optarg);
 			break;
 		case 'f':
 			arg.script = optarg;
+			break;
+		case 'o':
+			arg.output = optarg;
 			break;
 		case 't':
 			arg.xml = optarg;
@@ -216,6 +388,7 @@ int main(int argc, char *argv[])
 
 	switch (mode) {
 	case FAST_CLIENT_SCRIPT:
+	case FAST_CLIENT_PING:
 		ret = fast_client_functions[mode].fast_session_initiate(&cfg, &arg);
 		break;
 	default:
