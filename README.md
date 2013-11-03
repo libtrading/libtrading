@@ -10,9 +10,21 @@ NASDAQ.
 ## Features
 
 * C API
-* FIX engine has 16 μs average message round-trip times on Linux/x86
+* High performance, low latency
 * FIX dialect support
 * SystemTap/DTrace probes
+
+### Performance
+
+Protocol | RTT (μs)
+---------|---------
+FAST     | 13
+FIX      | 16
+
+The following above were obtained by running Libtrading messaging
+ping-pong tests on a 2-way 2.7GHz Sandy Bridge i7 CPU running Fedora 19
+with Linux 3.11.6.  The processes were pinned to separate physical cores
+and the numbers include time spent in the Linux TCP/IP stack.
 
 ### Exchange Coverage
 
