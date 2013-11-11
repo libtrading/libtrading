@@ -81,7 +81,7 @@ Install prerequisite packages:
 **Fedora**
 
 ```
-$ yum install zlib-devel libxml2-devel glib2-devel vim-common
+$ yum install zlib-devel libxml2-devel glib2-devel vim-common ncurses-devel
 ```
 
 Then run:
