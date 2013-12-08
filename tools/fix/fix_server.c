@@ -178,7 +178,9 @@ exit:
 	fcontainer_free(c_container);
 	fcontainer_free(s_container);
 	fix_session_free(session);
-	fclose(stream);
+
+	if (stream)
+		fclose(stream);
 
 	return ret;
 }
