@@ -116,7 +116,7 @@ static void next_tag(struct buffer *self)
 	buffer_advance(self, 1);
 }
 
-static int parse_field(struct buffer *self, int tag, const char **value)
+static int match_field(struct buffer *self, int tag, const char **value)
 {
 	int ptag, ret;
 
@@ -136,7 +136,7 @@ fail:
 	return ret;
 }
 
-static int parse_field_promisc(struct buffer *self, int *tag, const char **value)
+static int parse_field(struct buffer *self, int *tag, const char **value)
 {
 	int ret;
 
@@ -204,7 +204,7 @@ static void rest_of_message(struct fix_message *self, struct fix_dialect *dialec
 	self->nr_fields = 0;
 
 retry:
-	if (parse_field_promisc(buffer, &tag, &tag_ptr))
+	if (parse_field(buffer, &tag, &tag_ptr))
 		return;
 
 	type = dialect->tag_type(tag);
@@ -273,7 +273,7 @@ static int checksum(struct fix_message *self, struct buffer *buffer)
 	/* Buffer's start will point to the CheckSum tag */
 	buffer_advance(buffer, self->body_length - offset);
 
-	ret = parse_field(buffer, CheckSum, &self->check_sum);
+	ret = match_field(buffer, CheckSum, &self->check_sum);
 	if (ret)
 		goto exit;
 
@@ -293,7 +293,7 @@ static int parse_msg_type(struct fix_message *self)
 {
 	int ret;
 
-	ret = parse_field(self->head_buf, MsgType, &self->msg_type);
+	ret = match_field(self->head_buf, MsgType, &self->msg_type);
 
 	if (ret)
 		goto exit;
@@ -314,7 +314,7 @@ static int parse_body_length(struct fix_message *self)
 	int len, ret;
 	const char *ptr;
 
-	ret = parse_field(self->head_buf, BodyLength, &ptr);
+	ret = match_field(self->head_buf, BodyLength, &ptr);
 
 	if (ret)
 		goto exit;
@@ -334,7 +334,7 @@ static int parse_begin_string(struct fix_message *self)
 	// if first field is not BeginString -> garbled
 	// if BeginString is invalid or empty -> garbled
 
-	return parse_field(self->head_buf, BeginString, &self->begin_string);
+	return match_field(self->head_buf, BeginString, &self->begin_string);
 }
 
 static int first_three_fields(struct fix_message *self)
