@@ -2,10 +2,10 @@
 
 [![Build Status](https://secure.travis-ci.org/penberg/libtrading.png?branch=master)](http://travis-ci.org/penberg/libtrading)
 
-Libtrading is an open source API that implements network protocols used for
-communicating with exchanges, dark pools, and other trading venues. It supports
-FIX, FIX/FAST, and many proprietary protocols such as ITCH and OUCH used by
-NASDAQ.
+Libtrading is an open source API for high-performance, low-latency trading
+applications. It implements network protocols used for communicating with
+exchanges, dark pools, and other trading venues. The API supports FIX,
+FIX/FAST, and many proprietary protocols such as ITCH and OUCH used by NASDAQ.
 
 ## Features
 
