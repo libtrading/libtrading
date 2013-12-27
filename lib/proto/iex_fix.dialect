@@ -2,8 +2,8 @@
 # The IEX FIX dialect is based on the following specification:
 #
 #   IEX FIX Specification
-#   Version 1.2
-#   Updated: September 27, 2013
+#   Version 1.3
+#   Updated: November 18, 2013
 #
 
 name: "iex"
@@ -167,7 +167,6 @@ messages:
     - TradeLiquidityIndicator
     # In addition, a Drop Copy will have the following tags:
     - ClientID
-    - OrigSendingTime
   # TODO: Add support for multi-character message types
   #TradeBust:
   #  MsgType: UCC
