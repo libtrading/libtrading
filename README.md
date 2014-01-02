@@ -68,6 +68,10 @@ Protocol              | API
 [NYSE Arca XDP]:     http://www.nyxdata.com/nysedata/Default.aspx?tabid=1084
 [NYSE Daily TAQ]:    http://www.nyxdata.com/data-products/daily-taq
 
+## Documentation
+
+* [Quick Start Guide](docs/quickstart.md)
+
 ## Install
 
 Install prerequisite packages:
