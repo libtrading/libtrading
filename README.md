@@ -96,12 +96,9 @@ $ make check
 
 ## License
 
-Copyright (C) 2011-2013 Pekka Enberg and contributors
+Copyright (C) 2011-2014 Pekka Enberg and contributors
 
-libtrading is available for use under the 3-clause (or "modified") BSD license.
-See the file [LICENSE][] for details.
-
-[LICENSE]:	https://github.com/penberg/libtrading/blob/master/LICENSE
+Libtrading is distributed under the 2-clause BSD license.
 
 ## Contributors
 
