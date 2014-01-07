@@ -301,7 +301,7 @@ void fast_message_free(struct fast_message *self, int nr_messages);
 void fast_message_reset(struct fast_message *msg);
 struct fast_field *fast_get_field(struct fast_message *msg, const char *name);
 struct fast_message *fast_message_decode(struct fast_session *session);
-int fast_message_send(struct fast_message *self, int sockfd, int flags);
+int fast_message_send(struct fast_message *self, struct fast_session *session, int flags);
 int fast_message_encode(struct fast_message *msg);
 
 #endif

@@ -1,10 +1,13 @@
 #include "libtrading/proto/fast_session.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdlib.h>
 
 struct fast_session *fast_session_new(struct fast_session_cfg *cfg)
 {
 	struct fast_session *self = calloc(1, sizeof *self);
+	struct stat statbuf;
 
 	if (!self)
 		return NULL;
@@ -38,6 +41,17 @@ struct fast_session *fast_session_new(struct fast_session_cfg *cfg)
 		return NULL;
 	} else
 		self->preamble.nr_bytes = cfg->preamble_bytes;
+
+	if (fstat(cfg->sockfd, &statbuf))
+		return NULL;
+
+	if (!S_ISSOCK(statbuf.st_mode)) {
+		self->send = buffer_xwritev;
+		self->recv = buffer_nread;
+	} else {
+		self->send = buffer_sendmsg;
+		self->recv = buffer_recv;
+	}
 
 	self->sockfd		= cfg->sockfd;
 	self->reset		= cfg->reset;
@@ -80,7 +94,7 @@ struct fast_message *fast_session_recv(struct fast_session *self, int flags)
 	* 2 times FAST_MESSAGE_MAX_SIZE then,
 	* remaining > FAST_MESSAGE_MAX_SIZE
 	*/
-	nr = buffer_recv(buffer, self->sockfd, FAST_MESSAGE_MAX_SIZE);
+	nr = self->recv(buffer, self->sockfd, FAST_MESSAGE_MAX_SIZE);
 	if (nr <= 0)
 		return NULL;
 
@@ -94,7 +108,7 @@ int fast_session_send(struct fast_session *self, struct fast_message *msg, int f
 	msg->msg_buf = self->tx_message_buffer;
 	buffer_reset(msg->msg_buf);
 
-	return fast_message_send(msg, self->sockfd, flags);
+	return fast_message_send(msg, self, flags);
 }
 
 void fast_session_reset(struct fast_session *self)

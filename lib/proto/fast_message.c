@@ -2601,7 +2601,7 @@ fail:
 	return -1;
 }
 
-int fast_message_send(struct fast_message *self, int sockfd, int flags)
+int fast_message_send(struct fast_message *self, struct fast_session *session, int flags)
 {
 	struct iovec iov[2];
 	struct msghdr msg;
@@ -2619,7 +2619,7 @@ int fast_message_send(struct fast_message *self, int sockfd, int flags)
 		.msg_iovlen	= 2,
 	};
 
-	if (sendmsg(sockfd, &msg, 0) < 0) {
+	if (session->send(session->sockfd, &msg, 0) < 0) {
 		ret = -1;
 		goto exit;
 	}
