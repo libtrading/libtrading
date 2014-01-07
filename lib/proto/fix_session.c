@@ -207,7 +207,7 @@ static int fix_do_unexpected(struct fix_session *session, struct fix_message *ms
 
 	if (msg->msg_seq_num > session->in_msg_seq_num) {
 		fix_session_resend_request(session,
-			session->in_msg_seq_num, msg->msg_seq_num);
+			session->in_msg_seq_num, 0);
 
 		session->in_msg_seq_num--;
 	} else if (msg->msg_seq_num < session->in_msg_seq_num) {
