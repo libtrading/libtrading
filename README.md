@@ -28,9 +28,9 @@ and the numbers include time spent in the Linux TCP/IP stack.
 
 ### Exchange Coverage
 
-Exchange              | Market Data   | Order Entry | Status
-----------------------|---------------|-------------|-----------
-Moscow Exchange       | FAST/FIX      | FIX         | certified
+Exchange              | Market Data   | Order Entry |
+----------------------|---------------|-------------|
+Moscow Exchange       | FAST/FIX      | FIX         |
 BATS BZX Exchange     | PITCH         | BOE, FIX    |
 IEX                   |               | FIX         |
 London Stock Exchange | ITCH          |             |
