@@ -36,6 +36,25 @@ You can also run the test harness:
 $ make check
 ```
 
+## Usage
+
+To measure FIX engine performance locally, start a FIX server:
+
+```
+$ ./tools/fix/fix_server -m 1 -p 7070
+Server is listening to port 7070...
+```
+
+and then run the FIX client latency tester against it:
+
+```
+$ ./tools/fix/fix_client -n 100000 -m order -p 7070 -h localhost
+Client Logon OK
+Messages sent: 100000
+Round-trip time: min/avg/max = 15.0/16.8/129.0 μs
+Client Logout OK
+```
+
 ## Documentation
 
 * [Quick Start Guide](docs/quickstart.md)
