@@ -1,6 +1,6 @@
 # Libtrading
 
-[![Build Status](https://secure.travis-ci.org/penberg/libtrading.png?branch=master)](http://travis-ci.org/penberg/libtrading)
+[![Build Status](https://secure.travis-ci.org/libtrading/libtrading.png?branch=master)](http://travis-ci.org/libtrading/libtrading)
 
 Libtrading is an open source API for high-performance, low-latency trading
 applications. It implements network protocols used for communicating with
@@ -72,17 +72,17 @@ NASDAQ OMX Nordic     | ITCH          | FIX         |
 
 Protocol              | API
 ----------------------|------
-[FAST][]              | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/fast_message.h))
-[FIX][]               | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/fix_message.h))
-[LSE ITCH][]          | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/lse_itch_message.h))
-[MBT Quote API][]     | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/mbt_quote_message.h))
-[NASDAQ ITCH 4.0][]   | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/nasdaq_itch40_message.h))
-[NASDAQ ITCH 4.1][]   | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/nasdaq_itch41_message.h))
-[NASDAQ Nordic Equity TotalView-ITCH 1.86][] | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/omx_itch186_message.h))
-[NASDAQ OUCH 4.2][]   | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/ouch42_message.h))
-[NASDAQ SoupBinTCP][] | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/soupbin3_session.h))
-[NYSE Arca XDP][]     | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/xdp_message.h))
-[NYSE Daily TAQ][]    | ([header](https://github.com/penberg/libtrading/blob/master/include/libtrading/proto/nyse_taq_message.h))
+[FAST][]              | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/fast_message.h))
+[FIX][]               | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/fix_message.h))
+[LSE ITCH][]          | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/lse_itch_message.h))
+[MBT Quote API][]     | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/mbt_quote_message.h))
+[NASDAQ ITCH 4.0][]   | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/nasdaq_itch40_message.h))
+[NASDAQ ITCH 4.1][]   | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/nasdaq_itch41_message.h))
+[NASDAQ Nordic Equity TotalView-ITCH 1.86][] | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/omx_itch186_message.h))
+[NASDAQ OUCH 4.2][]   | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/ouch42_message.h))
+[NASDAQ SoupBinTCP][] | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/soupbin3_session.h))
+[NYSE Arca XDP][]     | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/xdp_message.h))
+[NYSE Daily TAQ][]    | ([header](https://github.com/libtrading/libtrading/blob/master/include/libtrading/proto/nyse_taq_message.h))
 
 [BATS BOE]:          http://www.batstrading.co.uk/resources/participant_resources/BATS_Europe_Binary_Order_Entry_Specification.pdf
 [BATS PITCH]:        http://www.batstrading.com/resources/membership/BATS_PITCH_Specification.pdf
