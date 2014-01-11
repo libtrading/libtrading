@@ -40,7 +40,7 @@ $ make check
 
 * [Quick Start Guide](docs/quickstart.md)
 
-### Performance
+## Performance
 
 Protocol | RTT (μs)
 ---------|---------
@@ -56,7 +56,7 @@ FIX engine round-trip time frequency plot for the above looks as follows:
 
 <img src="http://libtrading.org/latency-frequency-plot.svg">
 
-### Exchange Coverage
+## Exchange Coverage
 
 Exchange              | Market Data   | Order Entry |
 ----------------------|---------------|-------------|
@@ -68,7 +68,7 @@ MB Trading            | MBT Quote API | FIX         |
 NASDAQ                | ITCH          | OUCH, FIX   |
 NASDAQ OMX Nordic     | ITCH          | FIX         |
 
-### Protocol Coverage
+## Protocol Coverage
 
 Protocol              | API
 ----------------------|------
