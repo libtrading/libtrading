@@ -14,6 +14,32 @@ FIX/FAST, and many proprietary protocols such as ITCH and OUCH used by NASDAQ.
 * FIX dialect support
 * SystemTap/DTrace probes
 
+## Install
+
+Install prerequisite packages:
+
+**Fedora**
+
+```
+$ yum install zlib-devel libxml2-devel glib2-devel vim-common ncurses-devel python-yaml
+```
+
+Then run:
+
+```
+$ make install
+```
+
+You can also run the test harness:
+
+```
+$ make check
+```
+
+## Documentation
+
+* [Quick Start Guide](docs/quickstart.md)
+
 ### Performance
 
 Protocol | RTT (μs)
@@ -71,32 +97,6 @@ Protocol              | API
 [NASDAQ SoupBinTCP]: http://www.nasdaqtrader.com/content/technicalsupport/specifications/dataproducts/soupbintcp.pdf
 [NYSE Arca XDP]:     http://www.nyxdata.com/nysedata/Default.aspx?tabid=1084
 [NYSE Daily TAQ]:    http://www.nyxdata.com/data-products/daily-taq
-
-## Documentation
-
-* [Quick Start Guide](docs/quickstart.md)
-
-## Install
-
-Install prerequisite packages:
-
-**Fedora**
-
-```
-$ yum install zlib-devel libxml2-devel glib2-devel vim-common ncurses-devel python-yaml
-```
-
-Then run:
-
-```
-$ make install
-```
-
-You can also run the test harness:
-
-```
-$ make check
-```
 
 ## License
 
