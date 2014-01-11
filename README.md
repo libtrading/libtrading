@@ -26,6 +26,10 @@ ping-pong tests on a 2-way 2.7GHz Sandy Bridge i7 CPU running Fedora 19
 with Linux 3.11.6.  The processes were pinned to separate physical cores
 and the numbers include time spent in the Linux TCP/IP stack.
 
+FIX engine round-trip time frequency plot for the above looks as follows:
+
+<img src="http://libtrading.org/latency-frequency-plot.svg">
+
 ### Exchange Coverage
 
 Exchange              | Market Data   | Order Entry |
