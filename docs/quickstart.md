@@ -1,17 +1,14 @@
 # Introduction
 
-## What **libtrading** is
-
 **Libtrading** is an open source API that implements network protocols used for
-communicating with exchanges, dark pools, and other trading venues. For the list
-of all supported protocols one may refer to the **Supported Protocols** section.
+communicating with exchanges, dark pools, and other trading venues. For a list
+of supported protocols, see the *Supported Protocols* section.
 
 ## Features
 
-* No memory allocation in RX and TX paths
-* Single-threaded philosophy
-* System Tap/DTrace probes
-* Non-blocking IO support
+* No memory allocation on the RX and TX paths
+* Single-threaded, non-blocking I/O philosophy
+* SystemTap/DTrace probes
 
 # Supported Protocols
 
