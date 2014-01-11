@@ -1,24 +1,24 @@
-### Introduction
+# Introduction
 
-#### What **libtrading** is
+## What **libtrading** is
 
 **Libtrading** is an open source API that implements network protocols used for
 communicating with exchanges, dark pools, and other trading venues. For the list
 of all supported protocols one may refer to the **Supported Protocols** section.
 
-#### Features
+## Features
 
 * No memory allocation in RX and TX paths
 * Single-threaded philosophy
 * System Tap/DTrace probes
 * Non-blocking IO support
 
-### Supported Protocols
+# Supported Protocols
 
 * [FAST][]
 * [FIX][]
 
-#### FIX
+## FIX
 
 It is pretty easy to start working with FIX. One just need to create and
 initialize a FIX session properly. Once session is initialized a user is
@@ -105,7 +105,7 @@ int fix_session_heartbeat(struct fix_session *session, const char *test_req_id);
 
 The functions above may be used to send Logon and Logout, HeartBeat and TestRequest messages.
 
-##### Dialects
+### Dialects
 
 FIX field is just a pair of Tag and Value which appears in the message as
 "Tag=Value" followed by the FIX standard trailer. In order to parse a Value
@@ -144,7 +144,7 @@ configuration parameters. Each time a FIX message is being received a tag_type
 function is invoked. Known fields are parsed in accordance with their datatypes,
 unknow fields are stored as strings.
 
-##### FIX client example
+### FIX client example
 
 In this section we will outline key fragments of a simple FIX-client implementation.
 The full code is available under the *tools/fix/* subdirectory.
@@ -222,7 +222,7 @@ if (session->active) {
 fix_session_free(session);
 ```
 
-#### FAST
+## FAST
 
 The are only subtle differences between the way one can deal with FAST and
 the way one can work with FIX protocol. Libtrading provides a single approach
@@ -275,7 +275,7 @@ struct fast_message *fast_session_recv(struct fast_session *self, int flags);
 int fast_session_send(struct fast_session *self, struct fast_message *msg, int flags);
 ```
 
-##### FAST parser
+### FAST parser
 
 In this section we will outline key fragments of a simple FAST parser implementation.
 The full code is available under the *tools/fast/* subdirectory.
@@ -334,7 +334,7 @@ while (!stop) {
 fast_session_free(session);
 ```
 
-### Contacts
+# Contacts
 
 Should you have any questions, feel free to contact Marat Stanichenko <mstanichenko@gmail.com>
 
