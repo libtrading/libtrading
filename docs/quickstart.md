@@ -105,6 +105,45 @@ int fix_session_heartbeat(struct fix_session *session, const char *test_req_id);
 
 The functions above may be used to send Logon and Logout, HeartBeat and TestRequest messages.
 
+##### Dialects
+
+FIX field is just a pair of Tag and Value which appears in the message as
+"Tag=Value" followed by the FIX standard trailer. In order to parse a Value
+properly we should know what type it belongs to. It could be one of the datatypes
+defined in the FIX specification i.e. char, int, float etc Once datatype is known
+the whole FIX field could be parsed.
+
+We would say that a particular Tag is known if we can parse the corresponding
+Value. A set of knows Tags is called a *dialect*. In other words, a dialect is
+the set of FIX fields we could parse properly.
+
+We need dialects to support different flavours of FIX that are used in real life.
+Trading venues could run various versions of FIX protocol. Moreover custom fields
+could also be used. Libtrading provides the way to handle this smoothly.
+
+```c
+	struct fix_dialect {
+		enum fix_version	version;
+		enum fix_type		(*tag_type)(int tag);
+	};
+```
+
+The structure above represents a dialect. Version is an indetification field e.g.
+FIX_4_4 is a FIX version 4.4 dialect. We have already discussed that in order to
+parse a FIX field we should know what datatype this field is. The function tag_type
+is intended to match the input Tag argument with the type of the FIX field i.e.
+the type of the Value. A user is free to develop its own dialect or use one of
+the already existed
+
+```c
+	struct fix_dialect fix_dialects[];
+```
+
+The choosen dialect is stored within a session structure and passed through
+configuration parameters. Each time a FIX message is being received a tag_type
+function is invoked. Known fields are parsed in accordance with their datatypes,
+unknow fields are stored as strings.
+
 ##### FIX client example
 
 In this section we will outline key fragments of a simple FIX-client implementation.
