@@ -507,7 +507,7 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 	return true;
 }
 
-static void fix_message_unparse(struct fix_message *self)
+void fix_message_unparse(struct fix_message *self)
 {
 	struct fix_field sender_comp_id;
 	struct fix_field target_comp_id;

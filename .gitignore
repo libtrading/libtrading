@@ -10,6 +10,7 @@
 /tools/fast/fast_parser
 /tools/fix/fix_client
 /tools/fix/fix_server
+/tools/fix/fix_perf
 /tools/tape/tape
 /tools/test-fix-client
 /tools/test-fix-server

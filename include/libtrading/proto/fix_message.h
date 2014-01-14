@@ -174,6 +174,7 @@ void fix_message_free(struct fix_message *self);
 
 void fix_message_add_field(struct fix_message *msg, struct fix_field *field);
 
+void fix_message_unparse(struct fix_message *self);
 int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer);
 struct fix_field *fix_get_field(struct fix_message *self, int tag);
 const char *fix_get_string(struct fix_field *field, char *buffer, unsigned long len);

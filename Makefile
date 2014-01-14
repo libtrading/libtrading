@@ -80,6 +80,7 @@ PROGRAMS += tools/fast/fast_parser
 PROGRAMS += tools/fast/fast_server
 PROGRAMS += tools/fix/fix_client
 PROGRAMS += tools/fix/fix_server
+PROGRAMS += tools/fix/fix_perf
 PROGRAMS += tools/tape/tape
 
 DEFINES =
