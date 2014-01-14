@@ -44,13 +44,7 @@ u8 buffer_sum_range(struct buffer *buf, const char *start, const char *end)
 
 u8 buffer_sum(struct buffer *buf)
 {
-	unsigned long sum = 0;
-	int i;
-
-	for (i = buf->start; i < buf->end; i++)
-		sum += buf->data[i];
-
-	return sum;
+	return buffer_sum_range(buf, buf->data + buf->start, buf->data + buf->end);
 }
 
 bool buffer_printf(struct buffer *buf, const char *format, ...)
