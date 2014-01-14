@@ -64,7 +64,7 @@ with open(source_filename, 'w') as file:
   #
   # Heading
   #
-  file.write("#include \"libtrading/proto/iex_fix.h\"\n")
+  file.write("#include \"libtrading/proto/%s_fix.h\"\n" % name)
   file.write("\n")
   file.write("#include \"libtrading/proto/fix_message.h\"\n")
   file.write("\n")

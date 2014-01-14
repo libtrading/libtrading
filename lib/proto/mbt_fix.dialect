@@ -1,0 +1,227 @@
+#
+# The MBT FIX dialect is based on the following specification:
+#
+#   MB Trading FIX
+#   Reference Number: Version 6.2.6
+#   Last Updated: 05/01/11
+#
+
+name: "mbt"
+base_protocol: "FIX_4_4"
+
+tags:
+  #
+  # Session:
+  #
+  SenderCompID(49):             { type: string }
+  SendingTime(52):              { type: string }
+  TargetCompID(56):             { type: string }
+  CheckSum(10):                 { type: checksum }
+  PossDupFlag(43):              { type: string }
+  EncryptMethod(98):            { type: string }
+  OnBehalfOfSubID(116):         { type: string }
+  DeliverToSubID(129):          { type: string }
+  ResetSeqNumFlag(141):         { type: string }
+  SenderLocationID(142):        { type: string }
+  MessageEncoding(347):         { type: string }
+  Password(554):                { type: string }
+  #
+  # Application:
+  #
+  LiquidityTag(9730):           { type: string }
+  PosPendBuy(10000):            { type: string }
+  PosPendSell(10001):           { type: string }
+  MorningBuyingPower(10002):    { type: string }
+  PosBuyPowerUsed(10003):       { type: string }
+  PosRealizedPNL(10004):        { type: string }
+  MBTAccountType(10005):        { type: string }
+  OvernightBuyingPower(10006):  { type: string }
+  RealizedPnL(10008):           { type: string }
+  MorningAccountValue(10009):   { type: string }
+  MorningExcessEquity(10010):   { type: string }
+  PosEquityUsed(10015):         { type: string }
+  MBTInternalOrderId(10017):    { type: string }
+  AccountCredit(10018):         { type: string }
+  MBTXAggressive(10022):        { type: string }
+  AccBasedPermsBitMap(10024):   { type: string }
+  MorningExcessEquity2(10040):  { type: string }
+  OptionStrategyCode(10047):    { type: string }
+  OvernightExcess(10048):       { type: string }
+  BODOOvernightExcessEq(10050): { type: string }
+  OrderGroupID1(10055):         { type: string }
+  UserQuote(10059):             { type: string }
+  PosRunAvgPrice(10060):        { type: string }
+  MultiSymbol(10065):           { type: string }
+  MultiPrice(10066):            { type: string }
+  MBTMultifunction(10068):      { type: string }
+  TodayRealizedPNL2(10069):     { type: string }
+  UserRoutePerm(10071):         { type: string }
+  TriggerFromOrderID(10073):    { type: string }
+  CompanyID(10076):             { type: string }
+  AccountBank(10077):           { type: string }
+  AccountBranch(10078):         { type: string }
+  FLID(10401):                  { type: string }
+  UserSessionID(10402):         { type: string }
+
+messages:
+  Logon:
+    MsgType: A
+    tags:
+    - EncryptMethod
+    - HeartBtInt
+    - ResetSeqNumFlag
+    - MessageEncoding
+    - Password
+  ResendRequest:
+    MsgType: 2
+    tags:
+    - BeginSeqNo
+    - EndSeqNo
+  SessionReject:
+    MsgType: 3
+    tags:
+    - RefSeqNum
+    - Text
+    - SessionRejectReason
+  Logout:
+    MsgType: 5
+    tags:
+    - Text
+  Heartbeat:
+    MsgType: 0
+    tags:
+    - HeartBtInt
+  TestRequest:
+    MsgType: 1
+    tags:
+    - TestReqID
+  TradingSessionStatusRequest:
+    MsgType: g
+    tags:
+    - SubscriptionRequestType
+    - TradSesReqID
+    - TradingSessionID
+  NewOrderSingle:
+    MsgType: D
+    tags:
+    - Account
+    - ClOrdID
+    - ExecInst
+    - HandlInst
+    - OrderQty
+    - OrdType
+    - Price
+    - SendingTime
+    - Side
+    - Symbol
+    - TimeInForce
+    - TransactTime
+    - StopPrice
+    - ExecDestination
+    - MaxFloor
+    - LocateReqd
+    - ExpireTime
+    - SecurityType
+    - EffectiveTime
+    - MaturityMonthYear
+    - PutOrCall
+    - StrikePrice
+    - PegDifference
+    - ComplianceID
+    - DiscretionInst
+    - DiscretionOffset
+    - SecondaryClOrdID
+    - OrderRestrictions
+    - Username
+    - LegPrice
+    - ClOrdLinkID
+    - Price2
+    - NoTrdRegTimestamps
+    - TrdRegTimestamp
+    - TrdRegTimeStampType
+    - TrdRegTimestampOrigin
+    - PeggedPrice
+    - TargetStrategy
+    - MBTXAggressive
+    - OrderGroupId1
+    - MultiSymbol
+    - MultiPrice
+    - MBTMultifunction
+    - TriggerFromOrderID
+  OrderCancelRequest:
+    MsgType: F
+    tags:
+    - Account
+    - ClOrdID
+    - OrigClOrdID
+    - Side
+    - Symbol
+    - TransactTime
+    - Username
+  OrderCancelReplaceRequest:
+    MsgType: G
+    tags:
+    - Account
+    - ClOrdID
+    - HandlInst
+    - OrderQty
+    - OrdType
+    - OrigClOrdID
+    - Price
+    - Side
+    - Symbol
+    - TimeInForce
+    - TransactTime
+    - Username
+#  NewOrderMultiLeg:
+#    MsgType: AB
+#    tags:
+#  OrderMassStatusRequest:
+#    MsgType: AF
+#    tags:
+#  CollateralRequest:
+#    MsgType: BB
+#    tags:
+#  RequestForPositions:
+#    MsgType: AN
+#    tags:
+  TradingSessionStatus:
+    MsgType: h
+    tags:
+    - TradeSesReqID
+    - TradingSessionID
+    - TradingSessionSubID
+#  NewsMessage:
+#    MsgType: B
+#    tags:
+#  BusinessMessageReject
+#    MsgType: j
+#    tags:
+  CancelReject:
+    MsgType: 9
+    tags:
+    - Account
+    - ClOrdID
+    - OrderID
+    - OrdStatus
+    - OrigClOrdID
+    - Text
+    - SymbolSfx
+    - Treasonable
+    - CxlRejResponseTo
+    - Text
+#  ExecutionReport:
+#    MsgType: 8
+#    tags:
+#  CollateralReport:
+#    MsgType: BA
+#    tags:
+#  CollateralInquiryAcknowledgement:
+#    MsgType: BG
+#    tags:
+#  PositionReport:
+#    MsgType: AP
+#    tags:
+#  RequestForPositionAcknowledgement:
+#    MsgType: AP
+#    tags:

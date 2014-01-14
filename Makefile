@@ -148,6 +148,7 @@ LIB_H += proto/fix_message.h
 LIB_H += proto/fix_message.h
 LIB_H += proto/iex_fix.h
 LIB_H += proto/lse_itch_message.h
+LIB_H += proto/mbt_fix.h
 LIB_H += proto/mbt_quote_message.h
 LIB_H += proto/nasdaq_itch40_message.h
 LIB_H += proto/nasdaq_itch41_message.h
@@ -174,6 +175,7 @@ LIB_OBJS	+= lib/proto/fast_message.o
 LIB_OBJS	+= lib/proto/fast_session.o
 LIB_OBJS	+= lib/proto/fast_template.o
 LIB_OBJS	+= lib/proto/iex_fix.o
+LIB_OBJS	+= lib/proto/mbt_fix.o
 LIB_OBJS	+= lib/proto/mbt_quote_message.o
 LIB_OBJS	+= lib/proto/nasdaq_itch40_message.o
 LIB_OBJS	+= lib/proto/nasdaq_itch41_message.o
@@ -185,6 +187,7 @@ LIB_OBJS	+= lib/proto/xdp_message.o
 LIB_OBJS	+= lib/proto/lse_itch_message.o
 
 LIB_GEN_SRC	+= lib/proto/iex_fix.c
+LIB_GEN_SRC	+= lib/proto/mbt_fix.c
 
 LIB_OBJS	+= $(COMPAT_OBJS)
 
@@ -343,7 +346,7 @@ clean:
 	$(Q) rm -f $(LIB_FILE) $(LIB_OBJS) $(LIB_GEN_HEADERS) $(LIB_DEPS)
 	$(Q) rm -f $(PROGRAMS) $(INST_PROGRAMS) $(OBJS) $(DEPS) $(TEST_PROGRAM) $(TEST_SUITE_H) $(TEST_OBJS) $(TEST_DEPS) $(TEST_RUNNER_C) $(TEST_RUNNER_OBJ)
 	$(Q) rm -f $(BOE_TEST_DATA)
-	$(Q) rm -f lib/proto/iex_fix.c
+	$(Q) rm -f $(LIB_GEN_SRC)
 .PHONY: clean
 
 tags: FORCE

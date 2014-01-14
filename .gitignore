@@ -17,6 +17,10 @@
 /tools/test/test-runner.c
 /tools/test/test-suite.h
 /LIBTRADING-VERSION-FILE
-/include/libtrading/proto/iex_fix.h
 /include/libtrading/probes.h
+
+# Generated FIX dialects:
+/include/libtrading/proto/iex_fix.h
+/include/libtrading/proto/mbt_fix.h
 /lib/proto/iex_fix.c
+/lib/proto/mbt_fix.c
