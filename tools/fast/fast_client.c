@@ -1,6 +1,7 @@
 #include "libtrading/proto/fast_message.h"
 #include "libtrading/proto/fast_session.h"
 
+#include "libtrading/compat.h"
 #include "libtrading/array.h"
 #include "libtrading/time.h"
 #include "libtrading/die.h"
