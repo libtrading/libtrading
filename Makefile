@@ -288,7 +288,7 @@ lib/%.o: include/libtrading/%.dtrace
 
 %.c: %.dialect tools/fix/fixdialectc
 	$(E) "  FIXC    " $@
-	$(Q) $(shell tools/fix/fixdialectc --input $< --header-path include/libtrading/proto/ --source-path lib/proto/)
+	$(Q) $(shell $(PYTHON) tools/fix/fixdialectc --input $< --header-path include/libtrading/proto/ --source-path lib/proto/)
 
 $(foreach p,$(PROGRAMS),$(eval $(p): $($(notdir $p)_EXTRA_DEPS) $(LIBS)))
 $(PROGRAMS): % : %.o
