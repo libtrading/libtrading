@@ -12,6 +12,7 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <inttypes.h>
+#include <libgen.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
