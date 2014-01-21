@@ -1,5 +1,6 @@
 #include <libtrading/proto/fix_message.h>
 #include <libtrading/buffer.h>
+#include <libtrading/compat.h>
 #include <libtrading/time.h>
 
 #include <libgen.h>
