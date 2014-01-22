@@ -1,0 +1,32 @@
+#ifndef LIBTRADING_OMX_MOLDUDP_MESSAGE_H
+#define LIBTRADING_OMX_MOLDUDP_MESSAGE_H
+
+#include "libtrading/types.h"
+
+struct omx_moldudp_header {
+	char			Session[10];
+	le32			SequenceNumber;
+	le16			MessageCount;
+} packed;
+
+struct omx_moldudp_message {
+	le16			MessageLength;
+} packed;
+
+struct omx_moldudp_request {
+	char			Session[10];
+	le32			SequenceNumber;
+	le16			RequestedMessageCount;
+} packed;
+
+static inline struct omx_moldudp_message *omx_moldudp_payload(struct omx_moldudp_header *msg)
+{
+	return (void *) msg + sizeof(struct omx_moldudp_header);
+}
+
+static inline void *omx_moldudp_message_payload(struct omx_moldudp_message *msg)
+{
+	return (void *) msg + sizeof(struct omx_moldudp_message);
+}
+
+#endif
