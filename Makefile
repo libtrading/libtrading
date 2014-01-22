@@ -155,6 +155,7 @@ LIB_H += proto/nasdaq_itch40_message.h
 LIB_H += proto/nasdaq_itch41_message.h
 LIB_H += proto/nyse_taq_message.h
 LIB_H += proto/omx_itch186_message.h
+LIB_H += proto/omx_moldudp_message.h
 LIB_H += proto/ouch42_message.h
 LIB_H += proto/soupbin3_session.h
 LIB_H += proto/xdp_message.h
