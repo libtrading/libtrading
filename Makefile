@@ -81,6 +81,8 @@ PROGRAMS += tools/fast/fast_server
 PROGRAMS += tools/fix/fix_client
 PROGRAMS += tools/fix/fix_server
 PROGRAMS += tools/fix/fix_perf
+PROGRAMS += tools/sim/market
+PROGRAMS += tools/sim/trader
 PROGRAMS += tools/tape/tape
 
 DEFINES =
@@ -104,6 +106,12 @@ ifeq ($(uname_S),Darwin)
 	CONFIG_OPTS += -DCONFIG_NEED_CLOCK_GETTIME=1
 	COMPAT_OBJS += lib/compat/clock_gettime.o
 endif
+
+market_EXTRA_DEPS += lib/die.o
+market_EXTRA_DEPS += tools/sim/engine.o
+market_EXTRA_LIBS += -lm
+
+trader_EXTRA_DEPS += lib/die.o
 
 fix_client_EXTRA_DEPS += lib/die.o
 fix_client_EXTRA_DEPS += tools/fix/test.o
