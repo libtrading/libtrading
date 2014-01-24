@@ -27,7 +27,7 @@ enum omx_itch186_msg_type {
 	OMX_ITCH186_MSG_NOII				= 'I', /* Section 4.8 */
 };
 
-struct omx_itch186_msg_message {
+struct omx_itch186_message {
 	u8			MessageType;
 } packed;
 
