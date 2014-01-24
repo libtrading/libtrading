@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static unsigned long omx_itch186_message_size(u8 type)
+unsigned long omx_itch186_message_size(u8 type)
 {
 	switch (type) {
         case OMX_ITCH186_MSG_SECONDS:

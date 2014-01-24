@@ -164,6 +164,8 @@ struct omx_itch186_msg_noii {
 	char			BestAskQuantity[9];
 } packed;
 
+unsigned long omx_itch186_message_size(u8 type);
+
 struct omx_itch186_message *omx_itch186_message_decode(struct buffer *buf);
 
 #endif
