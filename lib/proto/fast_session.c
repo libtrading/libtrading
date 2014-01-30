@@ -4,6 +4,11 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
+static ssize_t buffer_nread0(struct buffer *buf, int fd, size_t size, int flags)
+{
+	return buffer_nread(buf, fd, size);
+}
+
 struct fast_session *fast_session_new(struct fast_session_cfg *cfg)
 {
 	struct fast_session *self = calloc(1, sizeof *self);
@@ -47,7 +52,7 @@ struct fast_session *fast_session_new(struct fast_session_cfg *cfg)
 
 	if (!S_ISSOCK(statbuf.st_mode)) {
 		self->send = buffer_xwritev;
-		self->recv = buffer_nread;
+		self->recv = buffer_nread0;
 	} else {
 		self->send = buffer_sendmsg;
 		self->recv = buffer_recv;
@@ -94,7 +99,7 @@ struct fast_message *fast_session_recv(struct fast_session *self, int flags)
 	* 2 times FAST_MESSAGE_MAX_SIZE then,
 	* remaining > FAST_MESSAGE_MAX_SIZE
 	*/
-	nr = self->recv(buffer, self->sockfd, FAST_MESSAGE_MAX_SIZE);
+	nr = self->recv(buffer, self->sockfd, FAST_MESSAGE_MAX_SIZE, flags);
 	if (nr <= 0)
 		return NULL;
 

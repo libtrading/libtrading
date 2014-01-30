@@ -35,7 +35,7 @@ struct fast_session {
 
 	bool			reset;
 
-	ssize_t			(*recv)(struct buffer*, int, size_t);
+	ssize_t			(*recv)(struct buffer*, int, size_t, int);
 	ssize_t			(*send)(int, struct msghdr *, int);
 };
 

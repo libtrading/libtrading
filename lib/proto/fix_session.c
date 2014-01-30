@@ -157,7 +157,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 
 		size -= FIX_MAX_MESSAGE_SIZE;
 
-		nr = buffer_recv(buffer, self->sockfd, size);
+		nr = buffer_recv(buffer, self->sockfd, size, flags);
 		if (nr <= 0)
 			return NULL;
 	}
