@@ -50,6 +50,43 @@ static void signal_handler(int signum)
 		stop = true;
 }
 
+static int fix_logout_send(struct fix_session *session, const char *text)
+{
+	struct fix_field fields[] = {
+		FIX_STRING_FIELD(Text, text),
+	};
+	long nr_fields = ARRAY_SIZE(fields);
+	struct fix_message logout_msg;
+
+	if (!text)
+		nr_fields--;
+
+	logout_msg	= (struct fix_message) {
+		.type		= FIX_MSG_TYPE_LOGOUT,
+		.nr_fields	= nr_fields,
+		.fields		= fields,
+	};
+
+	return fix_session_send(session, &logout_msg, 0);
+}
+
+static int fix_client_logout(struct fix_session *session, const char *text, bool grace)
+{
+	int ret;
+
+	if (grace)
+		ret = fix_session_logout(session, text);
+	else
+		ret = fix_logout_send(session, text);
+
+	if (ret)
+		fprintf(stderr, "Client Logout FAILED\n");
+	else
+		fprintf(stdout, "Client Logout OK\n");
+
+	return ret;
+}
+
 static int fix_client_script(struct fix_session_cfg *cfg, struct fix_client_arg *arg)
 {
 	struct fcontainer *s_container = NULL;
@@ -132,6 +169,11 @@ retry:
 			break;
 		}
 
+		if (fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT)) {
+			ret = fix_client_logout(session, NULL, false);
+			goto exit;
+		}
+
 next:
 		expected_elem = next_elem(s_container);
 		tosend_elem = next_elem(c_container);
@@ -141,13 +183,7 @@ next:
 	if (ret)
 		goto exit;
 
-	ret = fix_session_logout(session, NULL);
-	if (ret) {
-		fprintf(stderr, "Client Logout FAILED\n");
-		goto exit;
-	}
-
-	fprintf(stdout, "Client Logout OK\n");
+	ret = fix_client_logout(session, NULL, true);
 
 exit:
 	fcontainer_free(c_container);

@@ -50,6 +50,7 @@ retry:
 	};
 
 	fix_session_send(session, &logon_msg, 0);
+	session->active = true;
 
 	return true;
 }
@@ -61,6 +62,9 @@ static bool fix_server_logout(struct fix_session *session)
 	bool ret = true;
 
 retry:
+	if (!session->active)
+		goto exit;
+
 	msg = fix_session_recv(session, 0);
 	if (!msg)
 		goto retry;
@@ -74,6 +78,7 @@ retry:
 
 	fix_session_send(session, &logout_msg, 0);
 
+exit:
 	return ret;
 }
 

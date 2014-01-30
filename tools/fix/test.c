@@ -94,6 +94,7 @@ int init_elem(struct felem *elem, char *line)
 			case GapFillFlag:
 			case SendingTime:
 			case TestReqID:
+			case Text:
 				elem->msg.fields[elem->msg.nr_fields++] = FIX_STRING_FIELD(tag, end);
 				break;
 			case MsgSeqNum:

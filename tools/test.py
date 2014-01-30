@@ -14,6 +14,7 @@ fix_tests = [
   # details.
   #
   "2b_MsgSeqNumHigherThanExpected",
+  "2c_MsgSeqNumLowerThanExpected",
   "4b_TestRequestMessageIsReceived"
 ]
 
