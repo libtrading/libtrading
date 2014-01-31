@@ -86,7 +86,7 @@ static int fast_client_script(struct fast_session_cfg *cfg, struct fast_client_a
 	expected_elem = next_elem(container);
 
 	while (expected_elem) {
-		msg = fast_session_recv(session, 0);
+		msg = fast_session_recv(session, MSG_DONTWAIT);
 
 		if (!msg)
 			continue;
@@ -232,7 +232,7 @@ static int fast_client_ping(struct fast_session_cfg *cfg, struct fast_client_arg
 			goto exit;
 
 retry:
-		rx_msg = fast_session_recv(session, 0);
+		rx_msg = fast_session_recv(session, MSG_DONTWAIT);
 
 		if (!rx_msg)
 			goto retry;

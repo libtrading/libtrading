@@ -241,7 +241,7 @@ static int fast_server_pong(struct fast_session_cfg *cfg, struct fast_server_arg
 
 	for (i = 0; i < arg->pongs; i++) {
 retry:
-		rx_msg = fast_session_recv(session, 0);
+		rx_msg = fast_session_recv(session, MSG_DONTWAIT);
 
 		if (!rx_msg)
 			goto retry;
