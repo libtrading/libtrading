@@ -18,6 +18,12 @@ FIX/FAST, and many proprietary protocols such as ITCH and OUCH used by NASDAQ.
 
 Install prerequisite packages:
 
+**Debian**
+
+```
+$ apt-get install pkg-config libxml2-dev libglib2.0-dev libncurses5-dev python-yaml
+```
+
 **Fedora**
 
 ```
