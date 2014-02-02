@@ -36,7 +36,7 @@ struct fast_session {
 	bool			reset;
 
 	ssize_t			(*recv)(struct buffer*, int, size_t, int);
-	ssize_t			(*send)(int, struct msghdr *, int);
+	ssize_t			(*send)(int, const struct msghdr *, int);
 };
 
 static inline struct fast_message *fast_msg_by_name(struct fast_session *session, const char *name)

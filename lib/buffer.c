@@ -205,16 +205,6 @@ ssize_t buffer_xwrite(struct buffer *buf, int fd)
 	return xwrite(fd, start, count);
 }
 
-ssize_t buffer_xwritev(int fd, struct msghdr *msg, int flags)
-{
-	return xwritev(fd, msg->msg_iov, msg->msg_iovlen);
-}
-
-ssize_t buffer_sendmsg(int fd, struct msghdr *msg, int flags)
-{
-	return sendmsg(fd, msg, flags);
-}
-
 void buffer_compact(struct buffer *buf)
 {
 	size_t count;

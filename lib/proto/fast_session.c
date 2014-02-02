@@ -1,8 +1,14 @@
 #include "libtrading/proto/fast_session.h"
+#include "libtrading/read-write.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+
+static ssize_t xwritev0(int fd, const struct msghdr *msg, int flags)
+{
+	return xwritev(fd, msg->msg_iov, msg->msg_iovlen);
+}
 
 static ssize_t buffer_nread0(struct buffer *buf, int fd, size_t size, int flags)
 {
@@ -51,10 +57,10 @@ struct fast_session *fast_session_new(struct fast_session_cfg *cfg)
 		return NULL;
 
 	if (!S_ISSOCK(statbuf.st_mode)) {
-		self->send = buffer_xwritev;
+		self->send = xwritev0;
 		self->recv = buffer_nread0;
 	} else {
-		self->send = buffer_sendmsg;
+		self->send = sendmsg;
 		self->recv = buffer_recv;
 	}
 
