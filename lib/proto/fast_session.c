@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
-static ssize_t xwritev0(int fd, struct msghdr *msg, int flags)
+static ssize_t xwritev0(int fd, const struct msghdr *msg, int flags)
 {
 	return xwritev(fd, msg->msg_iov, msg->msg_iovlen);
 }
@@ -60,7 +60,7 @@ struct fast_session *fast_session_new(struct fast_session_cfg *cfg)
 		self->send = xwritev0;
 		self->recv = buffer_nread0;
 	} else {
-		self->send = buffer_sendmsg;
+		self->send = sendmsg;
 		self->recv = buffer_recv;
 	}
 
