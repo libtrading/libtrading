@@ -12,6 +12,7 @@
 /tools/fix/fix_server
 /tools/fix/fix_perf
 /tools/sim/market
+/tools/sim/trader
 /tools/tape/tape
 /tools/test-fix-client
 /tools/test-fix-server
