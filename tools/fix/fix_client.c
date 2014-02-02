@@ -154,7 +154,7 @@ static int fix_client_script(struct fix_session_cfg *cfg, struct fix_client_arg 
 			goto next;
 
 retry:
-		msg = fix_session_recv(session, 0);
+		msg = fix_session_recv(session, MSG_DONTWAIT);
 
 		if (!msg)
 			goto retry;
@@ -243,7 +243,7 @@ static int fix_client_session(struct fix_session_cfg *cfg, struct fix_client_arg
 			break;
 		}
 
-		msg = fix_session_recv(session, 0);
+		msg = fix_session_recv(session, MSG_DONTWAIT);
 		if (msg) {
 			fprintmsg(stdout, msg);
 
@@ -355,7 +355,7 @@ static int fix_client_order(struct fix_session_cfg *cfg, struct fix_client_arg *
 		fix_session_new_order_single(session, fields, nr);
 
 retry:
-		msg = fix_session_recv(session, 0);
+		msg = fix_session_recv(session, MSG_DONTWAIT);
 		if (!msg)
 			goto retry;
 

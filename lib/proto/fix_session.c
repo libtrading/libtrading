@@ -4,6 +4,7 @@
 #include "libtrading/array.h"
 #include "libtrading/trace.h"
 
+#include <sys/socket.h>
 #include <sys/time.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -157,7 +158,7 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 
 		size -= FIX_MAX_MESSAGE_SIZE;
 
-		nr = buffer_recv(buffer, self->sockfd, size);
+		nr = buffer_recv(buffer, self->sockfd, size, flags);
 		if (nr <= 0)
 			return NULL;
 	}
@@ -385,7 +386,7 @@ int fix_session_logon(struct fix_session *session)
 	session->active = true;
 
 retry:
-	response = fix_session_recv(session, 0);
+	response = fix_session_recv(session, MSG_DONTWAIT);
 	if (!response)
 		goto retry;
 
@@ -435,7 +436,7 @@ retry:
 	if (end.tv_sec - start.tv_sec > 2)
 		return 0;
 
-	response = fix_session_recv(session, 0);
+	response = fix_session_recv(session, MSG_DONTWAIT);
 	if (!response)
 		goto retry;
 

@@ -26,7 +26,7 @@ char *buffer_find(struct buffer *self, u8 c);
 u8 buffer_sum_range(struct buffer *buf, const char *start, const char *end);
 u8 buffer_sum(struct buffer *self);
 
-ssize_t buffer_recv(struct buffer *self, int sockfd, size_t size);
+ssize_t buffer_recv(struct buffer *self, int sockfd, size_t size, int flags);
 ssize_t buffer_xwritev(int fd, struct msghdr *msg, int flags);
 ssize_t buffer_sendmsg(int fd, struct msghdr *msg, int flags);
 ssize_t buffer_xread(struct buffer *self, int fd);

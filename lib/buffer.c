@@ -84,7 +84,7 @@ char *buffer_find(struct buffer *buf, u8 c)
 	return buffer_start(buf);
 }
 
-ssize_t buffer_recv(struct buffer *buf, int sockfd, size_t size)
+ssize_t buffer_recv(struct buffer *buf, int sockfd, size_t size, int flags)
 {
 	size_t count;
 	ssize_t len;
@@ -96,7 +96,7 @@ ssize_t buffer_recv(struct buffer *buf, int sockfd, size_t size)
 	if (count > size)
 		count = size;
 
-	len = recv(sockfd, end, count, MSG_DONTWAIT);
+	len = recv(sockfd, end, count, flags);
 	if (len < 0)
 		return len;
 

@@ -4,6 +4,7 @@
 #include "libtrading/array.h"
 #include "libtrading/die.h"
 
+#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -88,7 +89,7 @@ static int fast_session_initiate(struct fast_session_cfg *cfg, const char *xml)
 	}
 
 	while (!stop) {
-		msg = fast_session_recv(session, 0);
+		msg = fast_session_recv(session, MSG_DONTWAIT);
 
 		if (!msg) {
 			continue;
