@@ -57,7 +57,7 @@ EXTRA_WARNINGS += -Wstrict-prototypes
 EXTRA_WARNINGS += -Wdeclaration-after-statement
 
 # Compile flags
-CFLAGS		:= -I$(CURDIR)/include -Wall $(EXTRA_WARNINGS) $(CFLAGS_WERROR) -g -O3 -std=gnu99
+CFLAGS		:= -I$(CURDIR)/include -Wall $(EXTRA_WARNINGS) $(CFLAGS_WERROR) -g -O3 -std=gnu99 -fPIC
 
 # Output to current directory by default
 O =
@@ -137,7 +137,17 @@ CFLAGS += $(CONFIG_OPTS)
 
 DEPS		:= $(patsubst %.o,%.d,$(OBJS))
 
+ifeq ($(uname_S),Darwin)
+	SHARED_LIB_EXT := dylib
+else
+	SHARED_LIB_EXT := so
+endif
+
+SHARED_LIB_FILE := libtrading.$(SHARED_LIB_EXT)
+
 LIB_FILE := libtrading.a
+
+INST_LIBS := $(SHARED_LIB_FILE) $(LIB_FILE)
 
 LIBS := $(LIB_FILE)
 
@@ -252,7 +262,7 @@ else
 sub-make: _all
 endif
 
-_all: $(LIB_FILE) $(PROGRAMS)
+_all: $(SHARED_LIB_FILE) $(LIB_FILE) $(PROGRAMS)
 .PHONY: _all
 
 $(O):
@@ -276,7 +286,7 @@ install: all libtrading-config
 	$(Q) install -d $(DESTDIR)$(LIBDIR)
 	$(Q) install -d $(DESTDIR)$(INCLUDEDIR)/libtrading/proto
 	$(Q) $(foreach f,$(INST_PROGRAMS),$(call INSTALL_EXEC,$f,$(BINDIR)))
-	$(Q) $(foreach f,$(LIBS),$(call INSTALL_FILE,$f,$(LIBDIR)))
+	$(Q) $(foreach f,$(INST_LIBS),$(call INSTALL_FILE,$f,$(LIBDIR)))
 	$(Q) $(foreach f,$(LIB_H),$(call INSTALL_HEADER,$f,$(INCLUDEDIR)/libtrading))
 .PHONY: install
 
@@ -303,6 +313,11 @@ $(foreach p,$(PROGRAMS),$(eval $(p): $($(notdir $p)_EXTRA_DEPS) $(LIBS)))
 $(PROGRAMS): % : %.o
 	$(E) "  LINK    " $@
 	$(Q) $(LD) $(LDFLAGS) -o $@ $^ $($(notdir $@)_EXTRA_LIBS) $(EXTRA_LIBS)
+
+$(SHARED_LIB_FILE): $(LIB_DEPS) $(LIB_OBJS)
+	$(E) "  LINK    " $@
+	$(Q) $(CC) $(CFLAGS) -shared -o $@ $(LIB_OBJS)
+
 
 $(LIB_FILE): $(LIB_DEPS) $(LIB_OBJS)
 	$(E) "  AR      " $@
@@ -353,7 +368,7 @@ check: $(TEST_PROGRAM) $(PROGRAMS)
 clean:
 	$(E) "  CLEAN"
 	$(Q) find . -name "*.o" | xargs rm -f
-	$(Q) rm -f $(LIB_FILE) $(LIB_OBJS) $(LIB_GEN_HEADERS) $(LIB_DEPS)
+	$(Q) rm -f $(SHARED_LIB_FILE) $(LIB_FILE) $(LIB_OBJS) $(LIB_GEN_HEADERS) $(LIB_DEPS)
 	$(Q) rm -f $(PROGRAMS) $(INST_PROGRAMS) $(OBJS) $(DEPS) $(TEST_PROGRAM) $(TEST_SUITE_H) $(TEST_OBJS) $(TEST_DEPS) $(TEST_RUNNER_C) $(TEST_RUNNER_OBJ)
 	$(Q) rm -f $(BOE_TEST_DATA)
 	$(Q) rm -f $(LIB_GEN_SRC)
