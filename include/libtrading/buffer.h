@@ -34,12 +34,12 @@ ssize_t buffer_read(struct buffer *self, int fd);
 ssize_t buffer_nread(struct buffer *buf, int fd, size_t size);
 ssize_t buffer_write(struct buffer *self, int fd);
 
-static inline u8 buffer_peek_8(struct buffer *self)
+static inline u8 buffer_peek_8(const struct buffer *self)
 {
 	return self->data[self->start];
 }
 
-static inline u8 buffer_peek_le16(struct buffer *self)
+static inline u8 buffer_peek_le16(const struct buffer *self)
 {
 	return (self->data[self->start + 1] << 8) | (self->data[self->start]);
 }
