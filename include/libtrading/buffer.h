@@ -112,12 +112,12 @@ static inline void buffer_advance(struct buffer *self, long n)
 	self->start += n;
 }
 
-static inline unsigned long buffer_size(struct buffer *self)
+static inline unsigned long buffer_size(const struct buffer *self)
 {
 	return self->end - self->start;
 }
 
-static inline unsigned long buffer_remaining(struct buffer *self)
+static inline unsigned long buffer_remaining(const struct buffer *self)
 {
 	return self->capacity - self->end;
 }
