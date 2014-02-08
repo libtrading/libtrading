@@ -97,12 +97,12 @@ static inline void buffer_put(struct buffer *self, char byte)
 	self->data[self->end++] = byte;
 }
 
-static inline char *buffer_start(struct buffer *self)
+static inline char *buffer_start(const struct buffer *self)
 {
 	return &self->data[self->start];
 }
 
-static inline char *buffer_end(struct buffer *self)
+static inline char *buffer_end(const struct buffer *self)
 {
 	return &self->data[self->end];
 }
