@@ -2,6 +2,8 @@
 *.o
 /libtrading-config
 /libtrading.a
+/libtrading.dylib
+/libtrading.so
 /tags
 /test-trade
 /tools/fast/fast_client
