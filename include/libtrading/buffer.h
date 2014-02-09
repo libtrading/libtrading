@@ -34,12 +34,12 @@ ssize_t buffer_read(struct buffer *self, int fd);
 ssize_t buffer_nread(struct buffer *buf, int fd, size_t size);
 ssize_t buffer_write(struct buffer *self, int fd);
 
-static inline u8 buffer_peek_8(struct buffer *self)
+static inline u8 buffer_peek_8(const struct buffer *self)
 {
 	return self->data[self->start];
 }
 
-static inline u8 buffer_peek_le16(struct buffer *self)
+static inline u8 buffer_peek_le16(const struct buffer *self)
 {
 	return (self->data[self->start + 1] << 8) | (self->data[self->start]);
 }
@@ -97,12 +97,12 @@ static inline void buffer_put(struct buffer *self, char byte)
 	self->data[self->end++] = byte;
 }
 
-static inline char *buffer_start(struct buffer *self)
+static inline char *buffer_start(const struct buffer *self)
 {
 	return &self->data[self->start];
 }
 
-static inline char *buffer_end(struct buffer *self)
+static inline char *buffer_end(const struct buffer *self)
 {
 	return &self->data[self->end];
 }
@@ -112,12 +112,12 @@ static inline void buffer_advance(struct buffer *self, long n)
 	self->start += n;
 }
 
-static inline unsigned long buffer_size(struct buffer *self)
+static inline unsigned long buffer_size(const struct buffer *self)
 {
 	return self->end - self->start;
 }
 
-static inline unsigned long buffer_remaining(struct buffer *self)
+static inline unsigned long buffer_remaining(const struct buffer *self)
 {
 	return self->capacity - self->end;
 }
