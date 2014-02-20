@@ -75,6 +75,7 @@ enum fix_tag {
 	OrderQty		= 38,
 	OrdStatus		= 39,
 	OrdType			= 40,
+	OrigClOrdID		= 41,
 	PossDupFlag		= 43,
 	Price			= 44,
 	RefSeqNum		= 45,
