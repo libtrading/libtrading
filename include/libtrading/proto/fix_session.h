@@ -86,6 +86,7 @@ int fix_session_test_request(struct fix_session *session);
 int fix_session_resend_request(struct fix_session *session, unsigned long bgn, unsigned long end);
 int fix_session_reject(struct fix_session *session, unsigned long refseqnum, char *text);
 int fix_session_sequence_reset(struct fix_session *session, unsigned long msg_seq_num, unsigned long new_seq_num, bool gap_fill);
+int fix_session_order_cancel_replace(struct fix_session *session, struct fix_field *fields, long nr_fields);
 int fix_session_new_order_single(struct fix_session *session, struct fix_field* fields, long nr_fields);
 int fix_session_execution_report(struct fix_session *session, struct fix_field *fields, long nr_fields);
 
