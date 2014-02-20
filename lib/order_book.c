@@ -24,6 +24,9 @@ int ob_init(struct order_book *ob)
 	if (!ob->gtbids)
 		goto fail;
 
+	ob->glasks = NULL;
+	ob->glbids = NULL;
+
 	return 0;
 
 fail:

@@ -27,6 +27,8 @@ enum fix_msg_type {
 	FIX_MSG_TYPE_INCREMENT_REFRESH	= 10,
 	FIX_MSG_TYPE_SESSION_STATUS	= 11,
 	FIX_MSG_TYPE_SECURITY_STATUS	= 12,
+	FIX_MSG_ORDER_CANCEL_REPLACE	= 13,
+	FIX_MSG_ORDER_CANCEL_REJECT	= 14,
 
 	FIX_MSG_TYPE_MAX,		/* non-API */
 
@@ -36,8 +38,8 @@ enum fix_msg_type {
 /*
  * Maximum FIX message size
  */
-#define FIX_MAX_HEAD_LEN	64UL
-#define FIX_MAX_BODY_LEN	256UL
+#define FIX_MAX_HEAD_LEN	256UL
+#define FIX_MAX_BODY_LEN	1024UL
 #define FIX_MAX_MESSAGE_SIZE	(FIX_MAX_HEAD_LEN + FIX_MAX_BODY_LEN)
 
 /* Total number of elements of fix_tag type*/
@@ -73,6 +75,7 @@ enum fix_tag {
 	OrderQty		= 38,
 	OrdStatus		= 39,
 	OrdType			= 40,
+	OrigClOrdID		= 41,
 	PossDupFlag		= 43,
 	Price			= 44,
 	RefSeqNum		= 45,

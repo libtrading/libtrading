@@ -25,8 +25,10 @@ static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
 	[FIX_MSG_TYPE_SEQUENCE_RESET]		= "4",
 	[FIX_MSG_TYPE_LOGOUT]			= "5",
 	[FIX_MSG_TYPE_EXECUTION_REPORT]		= "8",
+	[FIX_MSG_ORDER_CANCEL_REJECT]		= "9",
 	[FIX_MSG_TYPE_LOGON]			= "A",
 	[FIX_MSG_TYPE_NEW_ORDER_SINGLE]		= "D",
+	[FIX_MSG_ORDER_CANCEL_REPLACE]		= "G",
 	[FIX_MSG_TYPE_SNAPSHOT_REFRESH]		= "W",
 	[FIX_MSG_TYPE_INCREMENT_REFRESH]	= "X",
 	[FIX_MSG_TYPE_SESSION_STATUS]		= "h",
@@ -49,9 +51,11 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 	case '4': return FIX_MSG_TYPE_SEQUENCE_RESET;
 	case '5': return FIX_MSG_TYPE_LOGOUT;
 	case '8': return FIX_MSG_TYPE_EXECUTION_REPORT;
+	case '9': return FIX_MSG_ORDER_CANCEL_REJECT;
 	case 'A': return FIX_MSG_TYPE_LOGON;
 	case 'D': return FIX_MSG_TYPE_NEW_ORDER_SINGLE;
 	case 'W': return FIX_MSG_TYPE_SNAPSHOT_REFRESH;
+	case 'G': return FIX_MSG_ORDER_CANCEL_REPLACE;
 	case 'X': return FIX_MSG_TYPE_INCREMENT_REFRESH;
 	case 'h': return FIX_MSG_TYPE_SESSION_STATUS;
 	case 'f': return FIX_MSG_TYPE_SECURITY_STATUS;
@@ -178,6 +182,7 @@ static enum fix_type fix_tag_type(int tag)
 	case TradingSessionID:		return FIX_TYPE_STRING;
 	case MDUpdateAction:		return FIX_TYPE_STRING;
 	case TransactTime:		return FIX_TYPE_STRING;
+	case OrigClOrdID:		return FIX_TYPE_STRING;
 	case MDEntryType:		return FIX_TYPE_STRING;
 	case OrdStatus:			return FIX_TYPE_STRING;
 	case ExecType:			return FIX_TYPE_STRING;
