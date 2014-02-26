@@ -20,6 +20,36 @@ static const char *begin_strings[] = {
 	[FIX_4_0]	= "FIX.4.0",
 };
 
+struct fix_session_cfg *fix_session_cfg_new(
+	const char *sender_comp_id,
+	const char *target_comp_id,
+	int heartbtint,
+	const char *dialect,
+	int sockfd
+) {
+	struct fix_session_cfg *cfg;
+	enum fix_version version;
+
+	cfg = calloc(1, sizeof(struct fix_session_cfg));
+
+	strncpy(cfg->sender_comp_id, sender_comp_id, sizeof(cfg->sender_comp_id));
+	strncpy(cfg->target_comp_id, target_comp_id, sizeof(cfg->target_comp_id));
+
+	cfg->heartbtint = heartbtint;
+
+	version =
+		!strcmp(dialect, "fixt-1.1") ? FIXT_1_1 :
+		!strcmp(dialect, "fix-4.0")  ? FIX_4_0 :
+		!strcmp(dialect, "fix-4.1")  ? FIX_4_1 :
+		!strcmp(dialect, "fix-4.2")  ? FIX_4_2 :
+		!strcmp(dialect, "fix-4.3")  ? FIX_4_3 : FIX_4_4;
+	cfg->dialect = &fix_dialects[version];
+
+	cfg->sockfd = sockfd;
+
+	return cfg;
+}
+
 struct fix_session *fix_session_new(struct fix_session_cfg *cfg)
 {
 	struct fix_session *self = calloc(1, sizeof *self);
