@@ -5,6 +5,7 @@
 #include "libtrading/die.h"
 
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -35,7 +36,11 @@ static int raw_session_initiate(struct fast_session_cfg *cfg, const char *out)
 {
 	unsigned char buf[FAST_MESSAGE_MAX_SIZE];
 	int ret = 1;
+	fd_set fds;
 	int outfd;
+
+	FD_ZERO(&fds);
+	FD_SET(cfg->sockfd, &fds);
 
 	outfd = open(out, O_RDWR | O_CREAT | O_TRUNC, 0644);
 	if (outfd < 0) {
@@ -44,6 +49,12 @@ static int raw_session_initiate(struct fast_session_cfg *cfg, const char *out)
 	}
 
 	while (!stop) {
+		ret = select(cfg->sockfd + 1, &fds, NULL, NULL, NULL);
+		if (ret < 0)
+			fprintf(stderr, "Parser: Select failed (%s)\n", strerror(errno));
+		else if (ret < 1)
+			continue;
+
 		ret = read(cfg->sockfd, buf, FAST_MESSAGE_MAX_SIZE);
 		if (ret < 0) {
 			fprintf(stderr, "Parser: Cannot read data (%s)\n", strerror(errno));
