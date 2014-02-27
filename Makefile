@@ -316,7 +316,7 @@ $(PROGRAMS): % : %.o
 
 $(SHARED_LIB_FILE): $(LIB_DEPS) $(LIB_OBJS)
 	$(E) "  LINK    " $@
-	$(Q) $(CC) $(CFLAGS) -shared -o $@ $(LIB_OBJS)
+	$(Q) $(CC) $(CFLAGS) -shared -o $@ $(LIB_OBJS) $(EXTRA_LIBS)
 
 
 $(LIB_FILE): $(LIB_DEPS) $(LIB_OBJS)
