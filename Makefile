@@ -74,6 +74,7 @@ endif
 export E Q
 
 # Project files
+PROGRAMS += tools/cert/micex/forts
 PROGRAMS += tools/fast/fast_client
 PROGRAMS += tools/fast/fast_orderbook
 PROGRAMS += tools/fast/fast_parser
@@ -128,6 +129,8 @@ fast_server_EXTRA_DEPS += tools/fast/test.o
 
 fast_parser_EXTRA_DEPS += lib/die.o
 fast_parser_EXTRA_DEPS += tools/fast/test.o
+
+forts_EXTRA_DEPS += lib/die.o
 
 tape_EXTRA_DEPS += tools/tape/builtin-check.o
 
