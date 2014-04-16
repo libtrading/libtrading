@@ -28,6 +28,7 @@ static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
 	[FIX_MSG_ORDER_CANCEL_REJECT]		= "9",
 	[FIX_MSG_TYPE_LOGON]			= "A",
 	[FIX_MSG_TYPE_NEW_ORDER_SINGLE]		= "D",
+	[FIX_MSG_ORDER_CANCEL_REQUEST]		= "F",
 	[FIX_MSG_ORDER_CANCEL_REPLACE]		= "G",
 	[FIX_MSG_TYPE_SNAPSHOT_REFRESH]		= "W",
 	[FIX_MSG_TYPE_INCREMENT_REFRESH]	= "X",
@@ -54,8 +55,9 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 	case '9': return FIX_MSG_ORDER_CANCEL_REJECT;
 	case 'A': return FIX_MSG_TYPE_LOGON;
 	case 'D': return FIX_MSG_TYPE_NEW_ORDER_SINGLE;
-	case 'W': return FIX_MSG_TYPE_SNAPSHOT_REFRESH;
+	case 'F': return FIX_MSG_ORDER_CANCEL_REQUEST;
 	case 'G': return FIX_MSG_ORDER_CANCEL_REPLACE;
+	case 'W': return FIX_MSG_TYPE_SNAPSHOT_REFRESH;
 	case 'X': return FIX_MSG_TYPE_INCREMENT_REFRESH;
 	case 'h': return FIX_MSG_TYPE_SESSION_STATUS;
 	case 'f': return FIX_MSG_TYPE_SECURITY_STATUS;
@@ -173,15 +175,18 @@ static enum fix_type fix_tag_type(int tag)
 	case TestReqID:			return FIX_TYPE_STRING;
 	case MsgSeqNum:			return FIX_TYPE_MSGSEQNUM;
 	case MDEntrySize:		return FIX_TYPE_FLOAT;
+	case LastShares:		return FIX_TYPE_FLOAT;
 	case LeavesQty:			return FIX_TYPE_FLOAT;
 	case MDEntryPx:			return FIX_TYPE_FLOAT;
 	case OrderQty:			return FIX_TYPE_FLOAT;
 	case CumQty:			return FIX_TYPE_FLOAT;
+	case LastPx:			return FIX_TYPE_FLOAT;
 	case AvgPx:			return FIX_TYPE_FLOAT;
 	case Price:			return FIX_TYPE_FLOAT;
 	case TradingSessionID:		return FIX_TYPE_STRING;
 	case MDUpdateAction:		return FIX_TYPE_STRING;
 	case TransactTime:		return FIX_TYPE_STRING;
+	case ExecTransType:		return FIX_TYPE_STRING;
 	case OrigClOrdID:		return FIX_TYPE_STRING;
 	case MDEntryType:		return FIX_TYPE_STRING;
 	case OrdStatus:			return FIX_TYPE_STRING;

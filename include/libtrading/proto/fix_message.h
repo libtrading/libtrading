@@ -29,6 +29,7 @@ enum fix_msg_type {
 	FIX_MSG_TYPE_SECURITY_STATUS	= 12,
 	FIX_MSG_ORDER_CANCEL_REPLACE	= 13,
 	FIX_MSG_ORDER_CANCEL_REJECT	= 14,
+	FIX_MSG_ORDER_CANCEL_REQUEST	= 15,
 
 	FIX_MSG_TYPE_MAX,		/* non-API */
 
@@ -68,6 +69,9 @@ enum fix_tag {
 	CumQty			= 14,
 	EndSeqNo		= 16,
 	ExecID			= 17,
+	ExecTransType		= 20,
+	LastPx			= 31,
+	LastShares		= 32,
 	MsgSeqNum		= 34,
 	MsgType			= 35,
 	NewSeqNo		= 36,
