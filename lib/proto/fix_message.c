@@ -367,14 +367,16 @@ exit:
 
 int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer)
 {
-	int ret = FIX_MSG_STATE_PARTIAL;
 	unsigned long size;
 	const char *start;
+	int ret;
 
 	self->head_buf = buffer;
 
 	TRACE(LIBTRADING_FIX_MESSAGE_PARSE(self, dialect, buffer));
 retry:
+	ret = FIX_MSG_STATE_PARTIAL;
+
 	start	= buffer_start(buffer);
 	size	= buffer_size(buffer);
 
