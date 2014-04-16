@@ -96,7 +96,7 @@ ssize_t buffer_recv(struct buffer *buf, int sockfd, size_t size, int flags)
 	if (count > size)
 		count = size;
 
-	len = recv(sockfd, end, count, flags);
+	len = io_recv(sockfd, end, count, flags);
 	if (len < 0)
 		return len;
 

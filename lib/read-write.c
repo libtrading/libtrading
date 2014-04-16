@@ -1,9 +1,27 @@
 #include "libtrading/read-write.h"
 
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
 #include <errno.h>
+
+ssize_t sys_recv(int fd, void *buffer, size_t length, int flags)
+{
+	return recv(fd, buffer, length, flags);
+}
+
+ssize_t sys_sendmsg(int fd, struct iovec *iov, size_t length, int flags)
+{
+	struct msghdr msg = (struct msghdr) {
+		.msg_iov	= iov,
+		.msg_iovlen	= length,
+	};
+	return sendmsg(fd, &msg, flags);
+}
+
+io_recv_t io_recv = &sys_recv;
+io_sendmsg_t io_sendmsg = &sys_sendmsg;
 
 /* Same as read(2) except that this function never returns EAGAIN or EINTR. */
 ssize_t xread(int fd, void *buf, size_t count)
