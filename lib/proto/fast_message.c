@@ -46,7 +46,6 @@ static int parse_int(struct buffer *buffer, i64 *value)
 	u8 c;
 
 	result = 0;
-	i = 0;
 
 	if (!buffer_size(buffer))
 		goto partial;
