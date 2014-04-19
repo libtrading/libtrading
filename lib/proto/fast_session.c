@@ -53,8 +53,10 @@ struct fast_session *fast_session_new(struct fast_session_cfg *cfg)
 	} else
 		self->preamble.nr_bytes = cfg->preamble_bytes;
 
-	if (fstat(cfg->sockfd, &statbuf))
+	if (fstat(cfg->sockfd, &statbuf)) {
+		fast_session_free(self);
 		return NULL;
+	}
 
 	if (!S_ISSOCK(statbuf.st_mode)) {
 		self->send = xwritev0;
