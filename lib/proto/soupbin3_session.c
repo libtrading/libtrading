@@ -18,6 +18,7 @@ struct soupbin3_session *soupbin3_session_new(int sockfd)
 	self->rx_buffer = buffer_new(SOUPBIN3_RX_BUFFER_SIZE);
 	if (!self->rx_buffer) {
 		free(self->rx_buffer);
+		free(self);
 		return NULL;
 	}
 
