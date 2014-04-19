@@ -252,7 +252,7 @@ static void usage(void)
 
 int main(int argc, char *argv[])
 {
-	struct fast_book_set *book_set;
+	struct fast_book_set *book_set = NULL;
 	const char *template = NULL;
 	const char *config = NULL;
 	struct fast_book *book;
@@ -343,8 +343,12 @@ int main(int argc, char *argv[])
 
 	endwin();
 
+	free(book_set);
+
 	return 0;
 
 fail:
+	free(book_set);
+
 	return -1;
 }
