@@ -6,6 +6,7 @@
 /libtrading.so
 /tags
 /test-trade
+/tools/cert/micex/forts
 /tools/fast/fast_client
 /tools/fast/fast_server
 /tools/fast/fast_orderbook
