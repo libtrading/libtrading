@@ -95,6 +95,8 @@ EXTRA_LIBS += $(shell sh -c 'pkg-config --libs glib-2.0')$
 
 EXTRA_LIBS += -lz
 
+EXTRA_LIBS += -levent
+
 EXTRA_LIBS += -lncurses
 
 ifeq ($(uname_S),Linux)
