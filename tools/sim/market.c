@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <libgen.h>
 #include <stdlib.h>
 #include <event.h>
 #include <errno.h>

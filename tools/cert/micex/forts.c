@@ -2,6 +2,7 @@
 #include "libtrading/proto/fix_session.h"
 #include "libtrading/proto/fast_book.h"
 
+#include "libtrading/compat.h"
 #include "libtrading/array.h"
 #include "libtrading/die.h"
 
