@@ -4,23 +4,21 @@
 #include "libtrading/die.h"
 #include "market.h"
 
+#include <event2/listener.h>
+#include <event2/event.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/epoll.h>
 #include <sys/types.h>
 #include <stdlib.h>
+#include <event.h>
+#include <errno.h>
 #include <stdio.h>
 #include <math.h>
 
 #define	EPOLL_MAXEVENTS	100
 
 static const char *program;
-
-static int socket_setopt(int sockfd, int level, int optname, int optval)
-{
-	return setsockopt(sockfd, level, optname, (void *) &optval, sizeof(optval));
-}
 
 static void usage(void)
 {
@@ -53,21 +51,29 @@ static inline struct fix_field *fix_field_by_tag(struct fix_message *msg, enum f
 	return NULL;
 }
 
-static int do_income(struct market *market, struct fix_session_cfg *cfg)
+static int do_income(struct market *market, int sockfd)
 {
 	struct fix_message *recv_msg;
 	struct fix_message send_msg;
+	struct fix_session_cfg cfg;
 	struct fix_field *field;
 	struct trader *trader;
 	struct order order;
 
-	trader = trader_by_sock(market, cfg->sockfd);
+	trader = trader_by_sock(market, sockfd);
 	if (!trader) {
 		trader = trader_new(market);
 		if (!trader)
 			goto fail;
 
-		trader->session = fix_session_new(cfg);
+		strncpy(cfg.sender_comp_id, "SELLSIDE",
+				ARRAY_SIZE(cfg.sender_comp_id));
+		strncpy(cfg.target_comp_id, "BUYSIDE",
+				ARRAY_SIZE(cfg.target_comp_id));
+		cfg.dialect = &fix_dialects[FIX_4_4];
+		cfg.sockfd = sockfd;
+
+		trader->session = fix_session_new(&cfg);
 		if (!trader->session)
 			goto fail;
 	}
@@ -142,25 +148,53 @@ logout:
 	fix_session_send(trader->session, &send_msg, 0);
 
 	trader_free(trader);
-	close(cfg->sockfd);
+	close(sockfd);
 
 	return 0;
 }
 
+static void ev_cb(evutil_socket_t sockfd, short events, void *arg)
+{
+	if (do_income(arg, sockfd))
+		close(sockfd);
+
+	return;
+}
+
+static void accept_conn_cb(struct evconnlistener *listener, evutil_socket_t fd,
+				struct sockaddr *address, int socklen, void *arg)
+{
+	struct event_base *base = evconnlistener_get_base(listener);
+	struct event *ev = event_new(base, fd, EV_READ | EV_PERSIST, ev_cb, arg);
+
+	event_add(ev, NULL);
+
+	return;
+}
+
+static void accept_error_cb(struct evconnlistener *listener, void *arg)
+{
+	struct event_base *base = evconnlistener_get_base(listener);
+	int err = EVUTIL_SOCKET_ERROR();
+
+	fprintf(stderr, "Listener error (%d) %s\n",
+			err, evutil_socket_error_to_string(err));
+
+	event_base_loopexit(base, NULL);
+
+	return;
+}
+
 int main(int argc, char *argv[])
 {
-	struct epoll_event *events = NULL;
+	struct evconnlistener *listener;
 	struct market *market = NULL;
-	struct fix_session_cfg cfg;
-	struct epoll_event event;
+	struct event_base *base;
 	struct sockaddr_in sa;
 	int sockfd = -1;
 	int port = 0;
-	int efd = -1;
 	int ret = -1;
-	int num;
 	int opt;
-	int i;
 
 	program = basename(argv[0]);
 
@@ -182,15 +216,8 @@ int main(int argc, char *argv[])
 		die("couldn't create a market");
 
 	market_init(market);
-	sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sockfd < 0)
-		die("cannot create a socket");
 
-	if (socket_setopt(sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
-		die("cannot set a socket option: TCP_NODELAY");
-
-	if (socket_setopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 1) < 0)
-		die("cannot set a socket option: SO_REUSEADDR");
+	memset(&sa, 0, sizeof(sa));
 
 	sa = (struct sockaddr_in) {
 		.sin_family		= AF_INET,
@@ -200,84 +227,32 @@ int main(int argc, char *argv[])
 		},
 	};
 
-	if (bind(sockfd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in)) < 0)
-		die("bind failed");
-
 	fprintf(stdout, "Market is running on port %d...\n", port);
 
-	if (listen(sockfd, 10) < 0)
-		die("listen failed");
+	base = event_base_new();
+	if (!base) {
+		perror("Couldn't create a base");
 
-	efd = epoll_create1(0);
-	if (efd < 0)
-		die("epoll_create1 failed");
-
-	events = calloc(EPOLL_MAXEVENTS, sizeof(struct epoll_event));
-	if (!events)
-		die("calloc failed");
-
-	memset(&event, 0, sizeof(struct epoll_event));
-
-	event.data.fd = sockfd;
-	event.events = EPOLLIN | EPOLLRDHUP;
-	if (epoll_ctl(efd, EPOLL_CTL_ADD, sockfd, &event)) {
-		fprintf(stderr, "epoll_ctl failed\n");
 		goto exit;
 	}
 
-	strncpy(cfg.sender_comp_id, "SELLSIDE", ARRAY_SIZE(cfg.sender_comp_id));
-	strncpy(cfg.target_comp_id, "BUYSIDE", ARRAY_SIZE(cfg.target_comp_id));
-	cfg.dialect = &fix_dialects[FIX_4_4];
+	listener = evconnlistener_new_bind(base, accept_conn_cb, market,
+			LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE,
+			-1, (struct sockaddr *)&sa, sizeof(sa));
 
-	while (true) {
-		num = epoll_wait(efd, events, EPOLL_MAXEVENTS, -1);
-		if (num < 0) {
-			fprintf(stderr, "epoll_wait failed\n");
-			goto exit;
-		}
+	if (!listener) {
+		perror("Couldn't create a listener");
 
-		for (i = 0; i < num; i++) {
-			if (events[i].data.fd == sockfd) {
-				if (events[i].events & EPOLLERR ||
-					events[i].events & EPOLLHUP ||
-						events[i].events & EPOLLRDHUP) {
-					fprintf(stderr, "listening socket error\n");
-					goto exit;
-				}
-
-				cfg.sockfd = accept(sockfd, NULL, NULL);
-				if (cfg.sockfd < 0) {
-					fprintf(stderr, "accept failed\n");
-					goto exit;
-				}
-
-				event.data.fd = cfg.sockfd;
-				event.events = EPOLLIN | EPOLLRDHUP;
-				if (epoll_ctl(efd, EPOLL_CTL_ADD, cfg.sockfd, &event) < 0) {
-					fprintf(stderr, "epoll_ctl failed\n");
-					goto exit;
-				}
-			} else {
-				cfg.sockfd = events[i].data.fd;
-
-				if (events[i].events & EPOLLERR ||
-					events[i].events & EPOLLHUP ||
-						events[i].events & EPOLLRDHUP) {
-					trader_free(trader_by_sock(market, cfg.sockfd));
-					close(cfg.sockfd);
-
-					continue;
-				}
-
-				if (do_income(market, &cfg))
-					close(cfg.sockfd);
-			}
-		}
+		goto exit;
 	}
+	evconnlistener_set_error_cb(listener, accept_error_cb);
+
+	event_base_dispatch(base);
+
+	ret = 0;
 
 exit:
 	close(sockfd);
-	free(events);
 	free(market);
 
 	return ret;
