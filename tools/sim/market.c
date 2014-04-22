@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
+#include <libgen.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
