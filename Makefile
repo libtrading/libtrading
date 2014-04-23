@@ -169,7 +169,6 @@ LIB_H += proto/fast_feed.h
 LIB_H += proto/fast_message.h
 LIB_H += proto/fast_session.h
 LIB_H += proto/fix_message.h
-LIB_H += proto/fix_message.h
 LIB_H += proto/iex_fix.h
 LIB_H += proto/lse_itch_message.h
 LIB_H += proto/mbt_fix.h
