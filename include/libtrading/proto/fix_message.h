@@ -183,8 +183,13 @@ void fix_message_add_field(struct fix_message *msg, struct fix_field *field);
 
 void fix_message_unparse(struct fix_message *self);
 int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer);
+
+int fix_get_field_count(struct fix_message *self);
+struct fix_field *fix_get_field_at(struct fix_message *self, int index);
 struct fix_field *fix_get_field(struct fix_message *self, int tag);
+
 const char *fix_get_string(struct fix_field *field, char *buffer, unsigned long len);
+
 void fix_message_validate(struct fix_message *self);
 int fix_message_send(struct fix_message *self, int sockfd, int flags);
 

@@ -408,6 +408,15 @@ fail:
 	return -1;
 }
 
+int fix_get_field_count(struct fix_message *self) {
+	return self->nr_fields;
+}
+
+struct fix_field *fix_get_field_at(struct fix_message *self, int i)
+{
+	return i < self->nr_fields ? &self->fields[i] : NULL;
+}
+
 struct fix_field *fix_get_field(struct fix_message *self, int tag)
 {
 	unsigned long i;
@@ -472,6 +481,14 @@ void fix_message_free(struct fix_message *self)
 
 	free(self->fields);
 	free(self);
+}
+
+void fix_message_add_field(struct fix_message *self, struct fix_field *field)
+{
+	if (self->nr_fields < FIX_MAX_FIELD_NUMBER) {
+		self->fields[self->nr_fields] = *field;
+		self->nr_fields++;
+	}
 }
 
 bool fix_message_type_is(struct fix_message *self, enum fix_msg_type type)
