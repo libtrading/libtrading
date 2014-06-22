@@ -65,11 +65,22 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 	}
 }
 
+static int fix_uatoi(const char *p, const char **end)
+{
+	int ret = 0;
+	while (*p >= '0' && *p <= '9') {
+		ret = (ret*10) + (*p - '0');
+		p++;
+	}
+	*end = p;
+	return ret;
+}
+
 static int parse_tag(struct buffer *self, int *tag)
 {
 	const char *delim;
 	const char *start;
-	char *end;
+	const char *end;
 	int ret;
 
 	start = buffer_start(self);
@@ -77,8 +88,7 @@ static int parse_tag(struct buffer *self, int *tag)
 
 	if (!delim || *delim != '=')
 		return FIX_MSG_STATE_PARTIAL;
-
-	ret = strtol(start, &end, 10);
+	ret = fix_uatoi(start, &end);
 	if (end != delim)
 		return FIX_MSG_STATE_GARBLED;
 
