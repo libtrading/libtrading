@@ -69,21 +69,6 @@ bool buffer_printf(struct buffer *buf, const char *format, ...)
 	return true;
 }
 
-char *buffer_find(struct buffer *buf, u8 c)
-{
-	while (true) {
-		if (!buffer_size(buf))
-			return NULL;
-
-		if (buffer_peek_8(buf) == c)
-			break;
-
-		buffer_advance(buf, 1);
-	}
-
-	return buffer_start(buf);
-}
-
 ssize_t buffer_recv(struct buffer *buf, int sockfd, size_t size, int flags)
 {
 	size_t count;

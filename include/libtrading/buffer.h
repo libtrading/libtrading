@@ -22,7 +22,6 @@ struct buffer {
 struct buffer *buffer_new(unsigned long capacity);
 void buffer_delete(struct buffer *self);
 bool buffer_printf(struct buffer *self, const char *format, ...);
-char *buffer_find(struct buffer *self, u8 c);
 u8 buffer_sum_range(struct buffer *buf, const char *start, const char *end);
 u8 buffer_sum(struct buffer *self);
 
@@ -131,6 +130,17 @@ static inline void buffer_to_iovec(struct buffer *b, struct iovec *iov)
 static inline void buffer_reset(struct buffer *buf)
 {
 	buf->start = buf->end = 0;
+}
+
+static inline char *buffer_find(struct buffer *buf, u8 c)
+{
+	while (buffer_size(buf)) {
+		if (buffer_peek_8(buf) == c) {
+			return buffer_start(buf);
+		}
+		buffer_advance(buf, 1);
+	}
+	return NULL;
 }
 
 void buffer_compact(struct buffer *buf);
