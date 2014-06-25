@@ -65,14 +65,37 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 	}
 }
 
-static int fix_uatoi(const char *p, const char **end)
+static int fix_atoi(const char *p, const char **end)
+{
+	int ret = 0;
+	bool neg = false;
+	if (*p == '-') {
+		neg = true;
+		p++;
+	}
+	while (*p >= '0' && *p <= '9') {
+		ret = (ret*10) + (*p - '0');
+		p++;
+	}
+	if (neg) {
+		ret = -ret;
+	}
+	if (end) {
+		*end = p;
+	}
+	return ret;
+}
+
+static inline int fix_uatoi(const char *p, const char **end)
 {
 	int ret = 0;
 	while (*p >= '0' && *p <= '9') {
 		ret = (ret*10) + (*p - '0');
 		p++;
 	}
-	*end = p;
+	if (end) {
+		*end = p;
+	}
 	return ret;
 }
 
@@ -231,7 +254,7 @@ retry:
 
 	switch (type) {
 	case FIX_TYPE_INT:
-		self->fields[nr_fields++] = FIX_INT_FIELD(tag, strtol(tag_ptr, NULL, 10));
+		self->fields[nr_fields++] = FIX_INT_FIELD(tag, fix_atoi(tag_ptr, NULL));
 		goto retry;
 	case FIX_TYPE_FLOAT:
 		self->fields[nr_fields++] = FIX_FLOAT_FIELD(tag, strtod(tag_ptr, NULL));
@@ -244,7 +267,7 @@ retry:
 	case FIX_TYPE_CHECKSUM:
 		break;
 	case FIX_TYPE_MSGSEQNUM:
-		self->msg_seq_num = strtol(tag_ptr, NULL, 10);
+		self->msg_seq_num = fix_uatoi(tag_ptr, NULL);
 		goto retry;
 	default:
 		goto retry;
@@ -257,7 +280,7 @@ static bool verify_checksum(struct fix_message *self, struct buffer *buffer)
 {
 	u8 cksum, actual;
 
-	cksum	= strtol(self->check_sum, NULL, 10);
+	cksum	= fix_uatoi(self->check_sum, NULL);
 
 	actual	= buffer_sum_range(buffer, self->begin_string - 2, self->check_sum - 3);
 
@@ -339,7 +362,7 @@ static int parse_body_length(struct fix_message *self)
 	if (ret)
 		goto exit;
 
-	len = strtol(ptr, NULL, 10);
+	len = fix_uatoi(ptr, NULL);
 	self->body_length = len;
 
 	if (len <= 0 || len > FIX_MAX_MESSAGE_SIZE)
