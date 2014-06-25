@@ -72,7 +72,7 @@ Client Logout OK
 Protocol | RTT (μs)
 ---------|---------
 FAST     | 13
-FIX      | 16
+FIX      | 15
 
 The following above were obtained by running Libtrading messaging
 ping-pong tests on a 2-way 2.7GHz Sandy Bridge i7 CPU running Fedora 19
