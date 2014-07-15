@@ -402,7 +402,7 @@ exit:
 
 static void usage(void)
 {
-	printf("\n usage: %s [-m mode] [-d dialect] [-f filename] [-n orders] [-s sender-comp-id] [-t target-comp-id] -h hostname -p port\n\n", program);
+	printf("\n usage: %s [-m mode] [-d dialect] [-f filename] [-n orders] [-s sender-comp-id] [-t target-comp-id] [-r password] -h hostname -p port\n\n", program);
 
 	exit(EXIT_FAILURE);
 }
@@ -457,6 +457,7 @@ int main(int argc, char *argv[])
 	const char *target_comp_id = NULL;
 	const char *sender_comp_id = NULL;
 	struct fix_client_arg arg = {0};
+	const char *password = NULL;
 	struct fix_session_cfg cfg;
 	const char *host = NULL;
 	struct sockaddr_in sa;
@@ -469,7 +470,7 @@ int main(int argc, char *argv[])
 
 	program = basename(argv[0]);
 
-	while ((opt = getopt(argc, argv, "f:h:p:d:s:t:m:n:o:")) != -1) {
+	while ((opt = getopt(argc, argv, "f:h:p:d:s:t:m:n:o:r:")) != -1) {
 		switch (opt) {
 		case 'd':
 			version = strversion(optarg);
@@ -482,6 +483,9 @@ int main(int argc, char *argv[])
 			break;
 		case 't':
 			target_comp_id = optarg;
+			break;
+		case 'r':
+			password = optarg;
 			break;
 		case 'm':
 			mode = strclientmode(optarg);
@@ -508,6 +512,12 @@ int main(int argc, char *argv[])
 		usage();
 
 	cfg.dialect	= &fix_dialects[version];
+
+	if (!password) {
+		memset(cfg.password, 0, ARRAY_SIZE(cfg.password));
+	} else {
+		strncpy(cfg.password, password, ARRAY_SIZE(cfg.password));
+	}
 
 	if (!sender_comp_id) {
 		strncpy(cfg.sender_comp_id, "BUYSIDE", ARRAY_SIZE(cfg.sender_comp_id));

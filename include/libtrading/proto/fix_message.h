@@ -105,6 +105,7 @@ enum fix_tag {
 	MDUpdateAction		= 279,
 	TradingSessionID	= 336,
 	LastMsgSeqNumProcessed	= 369,
+	Password		= 554,
 	MDPriceLevel		= 1023,
 };
 

@@ -95,6 +95,7 @@ struct fix_session *fix_session_new(struct fix_session_cfg *cfg)
 	self->sender_comp_id	= cfg->sender_comp_id;
 	self->target_comp_id	= cfg->target_comp_id;
 	self->heartbtint	= cfg->heartbtint;
+	self->password		= cfg->password;
 	self->sockfd		= cfg->sockfd;
 	self->tr_pending	= 0;
 	self->in_msg_seq_num	= 0;
@@ -404,6 +405,7 @@ int fix_session_logon(struct fix_session *session)
 		FIX_INT_FIELD(EncryptMethod, 0),
 		FIX_STRING_FIELD(ResetSeqNumFlag, "Y"),
 		FIX_INT_FIELD(HeartBtInt, session->heartbtint),
+		FIX_STRING_FIELD(Password, session->password),
 	};
 
 	logon_msg	= (struct fix_message) {
@@ -411,6 +413,9 @@ int fix_session_logon(struct fix_session *session)
 		.nr_fields	= ARRAY_SIZE(fields),
 		.fields		= fields,
 	};
+
+	if (!session->password || !strlen(session->password))
+		logon_msg.nr_fields--;
 
 	fix_session_send(session, &logon_msg, 0);
 	session->active = true;

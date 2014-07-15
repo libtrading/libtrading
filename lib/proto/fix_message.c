@@ -224,6 +224,7 @@ static enum fix_type fix_tag_type(int tag)
 	case MDEntryType:		return FIX_TYPE_STRING;
 	case OrdStatus:			return FIX_TYPE_STRING;
 	case ExecType:			return FIX_TYPE_STRING;
+	case Password:			return FIX_TYPE_STRING;
 	case Account:			return FIX_TYPE_STRING;
 	case ClOrdID:			return FIX_TYPE_STRING;
 	case OrderID:			return FIX_TYPE_STRING;
