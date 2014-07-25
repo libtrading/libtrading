@@ -600,6 +600,20 @@ int fix_session_new_order_single(struct fix_session *session,
 	return fix_session_send(session, &new_order_single_msg, 0);
 }
 
+int fix_session_order_cancel_request(struct fix_session *session,
+					struct fix_field *fields, long nr_fields)
+{
+	struct fix_message order_cancel_request;
+
+	order_cancel_request	= (struct fix_message) {
+		.type		= FIX_MSG_ORDER_CANCEL_REQUEST,
+		.nr_fields	= nr_fields,
+		.fields		= fields,
+	};
+
+	return fix_session_send(session, &order_cancel_request, 0);
+}
+
 int fix_session_order_cancel_replace(struct fix_session *session,
 					struct fix_field *fields, long nr_fields)
 {
