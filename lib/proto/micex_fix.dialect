@@ -1,0 +1,447 @@
+#
+# The MICEX FIX dialect is based on the following specification:
+#
+#   Moscow Exchange public FIX 4.4 interface specification for Securities and FX markets
+#   Revision 3.3.4
+#   Updated: May 13, 2014
+#
+
+name: "micex"
+base_protocol: "FIX_4_4"
+
+tags:
+  #
+  # 2 FIX components blocks:
+  #
+  # 2.1 Standard Message Header:
+  BeginString(8):                     { type: string }
+  BodyLength(9):                      { type: int }
+  MsgType(35):                        { type: string}
+  SenderCompID(49):                   { type: string }
+  TargetCompID(56):                   { type: string }
+  MsgSeqNum(34):                      { type: msgseqnum }
+  PossDupFlag(43):                    { type: string }
+  PossResend(97):                     { type: string }
+  SendingTime(52):                    { type: string }
+  OrigSendingTime(122):               { type: string }
+  #
+  # 2.2 Standard Message Trailer:
+  #
+  CheckSum(10):                       { type: checksum }
+  #
+  # 2.3 Instrument:
+  #
+  Symbol(55):                         { type: string }
+  Product(460):                       { type: int }
+  CFICode(461):                       { type: string }
+  SecurityType(167):                  { type: string }
+  #
+  # 2.4 Yield Data:
+  #
+  Yield(236):                         { type: float }
+  #
+  # 2.5 Parties:
+  #
+  NoPartyID(453):                     { type: int }
+  PartyID(448):                       { type: string }
+  PartyIDSource(447):                 { type: string }
+  PartyRole(452):                     { type: int }
+  #
+  # 2.6 Commission Data:
+  #
+  Commission(12):                     { type: float }
+  CommType(13):                       { type: string }
+  #
+  # 2.7 Order Qty Data:
+  #
+  OrderQty(38):                       { type: float }
+  CashOrderQty(152):                  { type: float }
+  #
+  # 2.8 TrdRegTimestamps:
+  #
+  NoTrdRegTimestamps(768):            { type: int }
+  TrdRegTimestamp(769):               { type: string }
+  TrdRegTimestampType(770):           { type: int }
+  #
+  # 2.9 Financing Details:
+  #
+  StartDate(916):                     { type: string }
+  EndDate(917):                       { type: string }
+  DeliveryType(919):                  { type: int }
+  #
+  # 2.10 Underlying Instrument:
+  #
+  UnderlyingSymbol(311):              { type: string }
+  #
+  # 2.10 Underlying Stipulations:
+  #
+  NoUnderlyingStips(887):             { type: int }
+  UnderlyingStipType(888):            { type: string }
+  UnderlyingStipValue(889):           { type: string }
+  #
+  # 3 FIX session-level messages:
+  #
+  # 3.1 Logon (MsgType = 'A')
+  #
+  # <Standard Message Header>
+  EncryptMethod(98):                  { type: int }
+  HeartBtInt(108):                    { type: int }
+  ResetSeqNumFlag(141):               { type: string }
+  Password(554):                      { type: string }
+  NewPassword(925):                   { type: string }
+  SessionStatus(1409):                { type: int }
+  CancelOnDisconnect(6867):           { type: int }
+  # <Standard Message Trailer>
+  #
+  # 3.2 Logout (MsgType = '5')
+  #
+  # <Standard Message Header>
+  Text(58):                           { type: string }
+  # <Standard Message Trailer>
+  #
+  # 3.3 Heartbeat (MsgType = '0')
+  #
+  # <Standard Message Header>
+  TestReqID(112):                     { type: string }
+  # <Standard Message Trailer>
+  #
+  # 3.4 Test Request (MsgType = '1')
+  #
+  #TestReqID(112):                     { type: string }
+  #
+  # 3.5 Resend Request (MsgType = '2')
+  #
+  # <Standard Message Header>
+  BeginSeqNo(7):                      { type: int }
+  EndSeqNo(16):                       { type: int }
+  # <Standard Message Trailer>
+  #
+  # 3.6 Sequence Reset (MsgType = '4')
+  #
+  # <Standard Message Header>
+  GapFillFlag(123):                   { type: string }
+  NewSeqNo(36):                       { type: int }
+  # <Standard Message Trailer>
+  #
+  # 3.7 Reject (MsgType = '3')
+  #
+  # <Standard Message Header>
+  RefSeqNum(45):                      { type: int }
+  RefTagID(371):                      { type: int }
+  RefMsgType(372):                    { type: string }
+  SessionRejectReason(373):           { type: int }
+  #Text(58):                           { type: string }
+  # <Standard Message Trailer>
+  #
+  # 4 MFIX Trade
+  #
+  # 4.2 Messages from Client to Server
+  #
+  # 4.2.1 Order Status Request (MsgType = 'H')
+  #
+  # <Standard Message Header>
+  OrderID(37):                        { type: string }
+  ClOrdID(11):                        { type: string }
+  # <Standard Message Trailer>
+  #
+  # 4.2.2 New Order-Single (MsgType = 'D')
+  #
+  # <Standard Message Header>
+  #ClOrdID(11):                        { type: string }
+  # <Parties>
+  Account(1):                         { type: string }
+  MaxFloor(111):                      { type: float }
+  SecondaryClOrdID(526):              { type: string }
+  NoTradingSessions(386):             { type: int }
+  TradingSessionID(336):              { type: string }
+  # <Instrument>
+  Side(54):                           { type: string }
+  TransactTime(60):                   { type: string }
+  # <Order Qty Data>
+  OrdType(40):                        { type: string }
+  PriceType(423):                     { type: int }
+  Price(44):                          { type: float }
+  TradeThruTime(5202):                { type: string }
+  TimeInForce(59):                    { type: string }
+  EffectiveTime(168):                 { type: string }
+  OrderCapacity(528):                 { type: string }
+  OrderRestrictions(529):             { type: string }
+  MaxPriceLevels(1090):               { type: int }
+  # <Standard Message Trailer>
+  #
+  # 4.2.3 Order Cancel Request (MsgType = 'F')
+  #
+  # <Standard Message Header>
+  OrigClOrdID(41):                    { type: string }
+  #OrderID(37):                        { type: string }
+  #ClOrdID(11):                        { type: string }
+  #Side(54):                           { type: string }
+  #TransactTime(60):                   { type: string }
+  # <Standard Message Trailer>
+  #
+  # 4.2.4 Order Cancel/Replace Request (MsgType = 'G')
+  #
+  # <Standard Message Header>
+  #ClOrdID(11):                        { type: string }
+  #OrigClOrdID(41):                    { type: string }
+  #OrderID(37):                        { type: string }
+  #Account(1):                         { type: string }
+  # <Parties>
+  # <Instrument>
+  #Price(44):                          { type: float }
+  #OrderQty(38):                       { type: float }
+  #SecondaryClOrdID(526):              { type: string }
+  CancelOrigOnReject(9619):           { type: string }
+  #NoTradingSessions(386):             { type: int }
+  #TradingSessionID(336):              { type: string }
+  #OrdType(40):                        { type: string }
+  #Side(54):                           { type: string }
+  #TransactTime(60):                   { type: string }
+  # <Standard Message Trailer>
+  #
+  # 4.2.5 Order Mass Cancel Request (MsgType = 'q')
+  #
+  # <Standard Message Header>
+  #ClOrdID(11):                        { type: string }
+  MassCancelRequestType(530):         { type: string }
+  #TradingSessionID(336):              { type: string }
+  # <Instrument>
+  #Side(54):                           { type: string }
+  #TransactTime(60):                   { type: string }
+  #Account(1):                         { type: string }
+  #SecondaryClOrdID(526):              { type: string }
+  # <Parties>
+  # <Standard Message Trailer>
+  # 4.3 Messages from Server to Client
+  #
+  # 4.3.1 Trading Session Status (MsgType = 'h')
+  #
+  # <Standard Message Header>
+  #TradingSessionID(336):              { type: string }
+  UnsolicitedIndicator(325):          { type: string }
+  TradSesStatus(340):                 { type: int }
+  #Text(58):                           { type: string }
+  # <Standard Message Trailer>
+  #
+  # 4.3.2 Execution Report (MsgType = '8')
+  #
+  # <Standard Message Header>
+  #OrderID(37):                        { type: string }
+  #SecondaryClOrdID(526):              { type: string }
+  #ClOrdID(11):                        { type: string }
+  #OrigClOrdID(41):                    { type: string }
+  # <Parties>
+  ExecID(17):                         { type: string }
+  ExecType(150):                      { type: string }
+  OrdStatus(39):                      { type: string }
+  WorkingIndicator(636):              { type: string }
+  #TradeThruTime(5202):                { type: string }
+  OrdRejReason(103):                  { type: int }
+  ExecRestatementReason(378):         { type: int }
+  #Account(1):                         { type: string }
+  SettDate(64):                       { type: string }
+  OptionSettDate(5020):               { type: string }
+  #OptionSettlType(5459):              { type: string }
+  # <Instrument>
+  #Side(54):                           { type: string }
+  # <Order Qty Data>
+  #OrdType(40):                        { type: string }
+  #PriceType(423):                     { type: int }
+  #Price(44):                          { type: float }
+  #TimeInForce(59):                    { type: string }
+  #EffectiveTime(168):                 { type: string }
+  #OrderCapacity(528):                 { type: string }
+  #OrderRestrictions(529):             { type: string }
+  LastQty(32):                        { type: float }
+  LastPx(31):                         { type: float }
+  #TradingSessionID(336):              { type: string }
+  TradingSessionSubID(625):           { type: string }
+  LeavesQty(151):                     { type: float }
+  CumQty(14):                         { type: float }
+  AvgPx(6):                           { type: float }
+  #TransactTime(60):                   { type: string }
+  OrigTime(9412):                     { type: string }
+  StipulationValue(6636):             { type: string }
+  CurrencyCode(6029):                 { type: string }
+  InstitutionID(5155):                { type: string }
+  CoverID(7695):                      { type: string }
+  ClientAccID(7693):                  { type: string }
+  TradeIssueDate(9173):               { type: string }
+  OrigOrderID(9945):                  { type: string }
+  # <Commission Data>
+  # <Yield Data>
+  AccruedInterestAmt(159):            { type: float }
+  #Text(58):                           { type: string }
+  NoMiscFees(136):                    { type: int }
+  MiscFeeAmt(137):                    { type: float }
+  MiscFeeType(139):                   { type: int }
+  # <TrdReg Timestamps>
+  #MaxPriceLevels(1090):               { type: int }
+  MDEntryID(278):                     { type: string }
+  # <Standard Message Trailer>
+  #
+  # 4.3.3 Order Mass Cancel Report (MsgType = 'r')
+  #
+  # <Standard Message Header>
+  #ClOrdID(11):                        { type: string }
+  #SecondaryClOrdID(526):              { type: string }
+  #OrderID(37):                        { type: string }
+  #MassCancelRequestType(530):         { type: string }
+  MassCancelResponse(531):            { type: string }
+  MassCancelRejectReason(532):        { type: int }
+  #TradingSessionID(336):              { type: string }
+  # <Instrument>
+  #Side(54):                           { type: string }
+  #Account(1):                         { type: string }
+  # <Parties>
+  #Text(58):                           { type: string }
+  #TransactTime(60):                   { type: string }
+  #OrigTime(9412):                     { type: string }
+  # <Standard Message Trailer>
+  #
+  # 4.3.4 Order Cancel Reject (MsgType = '9')
+  #
+  # <Standard Message Header>
+  #OrderID(37):                        { type: string }
+  #ClOrdID(11):                        { type: string }
+  #OrigClOrdID(41):                    { type: string }
+  #OrdStatus(39):                      { type: string }
+  CxlRejResponseTo(434):              { type: string }
+  CxlRejReason(102):                  { type: int }
+  #Text(58):                           { type: string }
+  #TransactTime(60):                   { type: string }
+  #OrigTime(9412):                     { type: string }
+  # <Standard Message Trailer>
+  #
+  # 5 MFIX Trade Capture
+  #
+  # 5.1 Messages from Server to Client
+  #
+  # 5.1.1 Trading Session Status (MsgType = 'h')
+  #
+  # <Standard Message Header>
+  #TradingSessionID(336):              { type: string }
+  #UnsolicitedIndicator(325):          { type: string }
+  #TradSesStatus(340):                 { type: int }
+  #Text(58):                           { type: string }
+  # <Standard Message Trailer>
+  #
+  # 5.1.2 Trading Capture Report (MsgType = 'AE')
+  #
+  # <Standard Message Header>
+  TradeReportID(571):                 { type: string }
+  TrdType(828):                       { type: int }
+  TrdSubType(829):                    { type: int }
+  SecondaryTradeReportID(818):        { type: string }
+  #ExecType(150):                      { type: string }
+  #ExecID(17):                         { type: string }
+  PreviouslyReported(570):            { type: string }
+  # <Instrument>
+  # <Financing Details>
+  # <Yield Data>
+  NoUnderlyings(711):                 { type: int }
+  # <Underlying Instrument>
+  #LastQty(32):                        { type: float }
+  #LastPx(31):                         { type: float }
+  CalculatedCcyLastQty(1056):         { type: float }
+  TradeDate(75):                      { type: string }
+  #TransactTime(60):                   { type: string }
+  SettlType(63):                      { type: string }
+  #SettDate(64):                       { type: string }
+  OptionSettlType(5459):              { type: string }
+  NoSides(552):                       { type: int }
+  #Side(54):                           { type: string }
+  #OrderID(37):                        { type: string }
+  #ClOrdID(11):                        { type: string }
+  #SecondaryClOrdID(526):              { type: string }
+  # <Parties>
+  #Account(1):                         { type: string }
+  #TradingSessionID(336):              { type: string }
+  #TradingSessionSubID(625):           { type: string }
+  # <Commission Data>
+  GrossTradeAmt(381):                 { type: float }
+  #AccruedInterestAmt(159):            { type: float }
+  EndAccruedInterestAmt(920):         { type: float }
+  StartCash(921):                     { type: float }
+  EndCash(922):                       { type: float }
+  #NoMiscFees(136):                    { type: int }
+  #MiscFeeAmt(137):                    { type: float }
+  #MiscFeeType(139):                   { type: int }
+  SettlInstID(162):                   { type: string }
+  Price2(640):                        { type: float }
+  #Price(44):                          { type: float }
+  #PriceType(423):                     { type: int }
+  ClearingStatus(5440):               { type: string }
+  ClearingRefNo(5934):                { type: string }
+  ClearingHandlingType(9938):         { type: string }
+  OperationType(10103):               { type: int }
+  Price1(10104):                      { type: float }
+  CurrentRepoValue(10105):            { type: float }
+  CurrentRepoBackValue(10106):        { type: float }
+  TradeBalance(10110):                { type: float }
+  TotalAmount(10111):                 { type: float }
+  LastCouponPaymentValue(10117):      { type: float }
+  LastCouponPaymentDate(10118):       { type: string }
+  LastPrincipalPaymentValue(10119):   { type: float }
+  LastPrincipalPaymentDate(10120):    { type: string }
+  ExpectedDiscount(10121):            { type: float }
+  ExpectedQty(10122):                 { type: float }
+  ExpectedRepoValue(10123):           { type: float }
+  ExpectedRepoBackValue(10124):       { type: float }
+  ExpectedReturnValue(10125):         { type: float }
+  PreciseBalance(10126):              { type: float }
+  # <Standard Message Trailer>
+  #
+  # 6 MFIX Drop Copy
+  #
+  #
+  # <Standard Message Header>
+  #OrderID(37):                        { type: string }
+  #SecondaryClOrdID(526):              { type: string }
+  #ClOrdID(11):                        { type: string }
+  #OrigClOrdID(41):                    { type: string }
+  # <Parties>
+  #ExecID(17):                         { type: string }
+  #ExecType(150):                      { type: string }
+  #OrdStatus(39):                      { type: string }
+  #WorkingIndicator(636):              { type: string }
+  #TradeThruTime(5202):                { type: string }
+  #ExecRestatementReason(378):         { type: int }
+  #Account(1):                         { type: string }
+  #SettDate(64):                       { type: string }
+  # <Instrument>
+  #Side(54):                           { type: string }
+  # <Order Qty Data>
+  #OrdType(40):                        { type: string }
+  #PriceType(423):                     { type: int }
+  #Price(44):                          { type: float }
+  #TimeInForce(59):                    { type: string }
+  #EffectiveTime(168):                 { type: string }
+  #OrderCapacity(528):                 { type: string }
+  #OrderRestrictions(529):             { type: string }
+  #LastQty(32):                        { type: float }
+  #LastPx(31):                         { type: float }
+  #TradingSessionID(336):              { type: string }
+  #TradingSessionSubID(625):           { type: string }
+  #LeavesQty(151):                     { type: float }
+  #CumQty(14):                         { type: float }
+  #AvgPx(6):                           { type: float }
+  #TransactTime(60):                   { type: string }
+  #OrigTime(9412):                     { type: string }
+  #StipulationValue(6636):             { type: string }
+  # <Commission Data>
+  # <Yield Data>
+  #CurrencyCode(6029):                 { type: string }
+  #InstitutionID(5155):                { type: string }
+  #CoverID(7695):                      { type: string }
+  #ClientAccID(7693):                  { type: string }
+  #TradeIssueDate(9173):               { type: string }
+  #OrigOrderID(9945):                  { type: string }
+  #AccruedInterestAmt(159):            { type: float }
+  #Text(58):                           { type: string }
+  #NoMiscFees(136):                    { type: int }
+  #MiscFeeAmt(137):                    { type: float }
+  #MiscFeeType(139):                   { type: int }
+  # <TrdReg Timestamps>
+  #MaxPriceLevels(1090):               { type: int }
+  # <Standard Message Trailer>
