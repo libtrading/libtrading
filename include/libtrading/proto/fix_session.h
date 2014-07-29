@@ -14,12 +14,13 @@
 struct fix_message;
 
 enum fix_version {
-	FIXT_1_1,
-	FIX_4_4,
-	FIX_4_3,
-	FIX_4_2,
-	FIX_4_1,
 	FIX_4_0,
+	FIX_4_1,
+	FIX_4_2,
+	FIX_4_3,
+	FIX_4_4,
+	FIX_5_0,
+	FIXT_1_1,
 };
 
 struct fix_dialect {
