@@ -238,8 +238,14 @@ static int fix_do_unexpected(struct fix_session *session, struct fix_message *ms
 	char text[128];
 
 	if (msg->msg_seq_num > session->in_msg_seq_num) {
-		fix_session_resend_request(session,
-			session->in_msg_seq_num, 0);
+		unsigned long end_seq_no;
+
+		if (session->dialect->version <= FIX_4_1) {
+			end_seq_no = 999999;
+		} else {
+			end_seq_no = 0;
+		}
+		fix_session_resend_request(session, session->in_msg_seq_num, end_seq_no);
 
 		session->in_msg_seq_num--;
 	} else if (msg->msg_seq_num < session->in_msg_seq_num) {
