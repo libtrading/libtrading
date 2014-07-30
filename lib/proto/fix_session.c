@@ -375,18 +375,18 @@ bool fix_session_admin(struct fix_session *session, struct fix_message *msg)
 			if (!field)
 				goto done;
 
+			exp_seq_num = session->in_msg_seq_num;
 			new_seq_num = field->int_value;
-			msg_seq_num = msg->msg_seq_num;
 
-			if (new_seq_num > msg_seq_num) {
+			if (new_seq_num > exp_seq_num) {
 				session->in_msg_seq_num = new_seq_num - 1;
-			} else if (new_seq_num < msg_seq_num) {
+			} else if (new_seq_num < exp_seq_num) {
 				snprintf(text, sizeof(text),
 					"Value is incorrect (too low) %lu", new_seq_num);
 
 				session->in_msg_seq_num--;
 
-				fix_session_reject(session, msg_seq_num, text);
+				fix_session_reject(session, exp_seq_num, text);
 			}
 		}
 
