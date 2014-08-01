@@ -34,6 +34,8 @@ static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
 	[FIX_MSG_TYPE_INCREMENT_REFRESH]	= "X",
 	[FIX_MSG_TYPE_SESSION_STATUS]		= "h",
 	[FIX_MSG_TYPE_SECURITY_STATUS]		= "f",
+	[FIX_MSG_ORDER_MASS_CANCEL_REQUEST]	= "q",
+	[FIX_MSG_ORDER_MASS_CANCEL_REPORT]	= "r",
 };
 
 enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
@@ -61,6 +63,8 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 	case 'X': return FIX_MSG_TYPE_INCREMENT_REFRESH;
 	case 'h': return FIX_MSG_TYPE_SESSION_STATUS;
 	case 'f': return FIX_MSG_TYPE_SECURITY_STATUS;
+	case 'q': return FIX_MSG_ORDER_MASS_CANCEL_REQUEST;
+	case 'r': return FIX_MSG_ORDER_MASS_CANCEL_REPORT;
 	default : return FIX_MSG_TYPE_UNKNOWN;
 	}
 }
