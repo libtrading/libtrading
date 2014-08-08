@@ -27,7 +27,7 @@
 #include "test.h"
 
 static const char *program;
-static bool stop;
+static sig_atomic_t stop;
 
 static struct fix_client_function fix_client_functions[] = {
 	[FIX_CLIENT_SCRIPT] = {
@@ -47,7 +47,7 @@ static struct fix_client_function fix_client_functions[] = {
 static void signal_handler(int signum)
 {
 	if (signum == SIGINT)
-		stop = true;
+		stop = 1;
 }
 
 static int fix_logout_send(struct fix_session *session, const char *text)
@@ -233,13 +233,13 @@ static int fix_client_session(struct fix_session_cfg *cfg, struct fix_client_arg
 			prev = cur;
 
 			if (!fix_session_keepalive(session, &cur)) {
-				stop = true;
+				stop = 1;
 				break;
 			}
 		}
 
 		if (fix_session_time_update(session)) {
-			stop = true;
+			stop = 1;
 			break;
 		}
 
@@ -252,10 +252,10 @@ static int fix_client_session(struct fix_session_cfg *cfg, struct fix_client_arg
 
 			switch (msg->type) {
 			case FIX_MSG_TYPE_LOGOUT:
-				stop = true;
+				stop = 1;
 				break;
 			default:
-				stop = true;
+				stop = 1;
 				break;
 			}
 		}

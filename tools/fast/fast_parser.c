@@ -19,12 +19,12 @@
 
 #include "test.h"
 
-static bool	stop;
+static sig_atomic_t	stop;
 
 static void signal_handler(int signum)
 {
 	if (signum == SIGINT)
-		stop = true;
+		stop = 1;
 }
 
 struct protocol_info {
