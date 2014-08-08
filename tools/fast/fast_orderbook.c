@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 
-sig_atomic_t stop;
+static sig_atomic_t stop;
 
 static void signal_handler(int signum)
 {
