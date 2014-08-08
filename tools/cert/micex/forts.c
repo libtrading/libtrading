@@ -25,12 +25,12 @@
 #include <stdio.h>
 
 static const char *program;
-static bool stop;
+static sig_atomic_t stop;
 
 static void signal_handler(int signum)
 {
 	if (signum == SIGINT)
-		stop = true;
+		stop = 1;
 }
 
 static void usage(void)
@@ -490,11 +490,11 @@ static int do_logic(struct fix_session_cfg *cfg, const char *config, const char 
 			switch (msg->type) {
 			case FIX_MSG_TYPE_EXECUTION_REPORT:
 				if (do_exec(msg))
-					stop = true;
+					stop = 1;
 
 				if (mode > 1 && !replaced) {
 					if (do_replace(session, book_set, msg))
-						stop = true;
+						stop = 1;
 
 					replaced = true;
 				}
@@ -503,10 +503,10 @@ static int do_logic(struct fix_session_cfg *cfg, const char *config, const char 
 				fprintf(stdout, "Cancel reject\n");
 				break;
 			case FIX_MSG_TYPE_LOGOUT:
-				stop = true;
+				stop = 1;
 				break;
 			default:
-				stop = true;
+				stop = 1;
 				break;
 			}
 		}

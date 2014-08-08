@@ -10,12 +10,12 @@
 #include <string.h>
 #include <stdio.h>
 
-bool stop;
+sig_atomic_t stop;
 
 static void signal_handler(int signum)
 {
 	if (signum == SIGINT)
-		stop = true;
+		stop = 1;
 }
 
 static void fast_books_print(struct fast_book_set *set)
