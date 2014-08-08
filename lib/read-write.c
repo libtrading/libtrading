@@ -6,11 +6,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-ssize_t sys_recv(int fd, void *buffer, size_t length, int flags)
-{
-	return recv(fd, buffer, length, flags);
-}
-
 ssize_t sys_sendmsg(int fd, struct iovec *iov, size_t length, int flags)
 {
 	struct msghdr msg = (struct msghdr) {
@@ -20,7 +15,7 @@ ssize_t sys_sendmsg(int fd, struct iovec *iov, size_t length, int flags)
 	return sendmsg(fd, &msg, flags);
 }
 
-io_recv_t io_recv = &sys_recv;
+io_recv_t io_recv = &recv;
 io_sendmsg_t io_sendmsg = &sys_sendmsg;
 
 /* Same as read(2) except that this function never returns EAGAIN or EINTR. */

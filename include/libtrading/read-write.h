@@ -8,7 +8,6 @@
 typedef ssize_t (*io_recv_t)(int fd, void *buffer, size_t length, int flags);
 typedef ssize_t (*io_sendmsg_t)(int fd, struct iovec *iov, size_t length, int flags);
 
-ssize_t sys_recv(int fd, void *buffer, size_t length, int flags);
 ssize_t sys_sendmsg(int fd, struct iovec *iov, size_t length, int flags);
 
 extern io_recv_t io_recv;
