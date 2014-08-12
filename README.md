@@ -22,14 +22,14 @@ Install prerequisite packages:
 
 ```
 $ apt-get install pkg-config libxml2-dev libglib2.0-dev libncurses5-dev \
-    python-yaml
+    python-yaml libevent-dev
 ```
 
 **Fedora**
 
 ```
 $ yum install zlib-devel libxml2-devel glib2-devel vim-common ncurses-devel \
-    python-yaml
+    python-yaml libevent-devel
 ```
 
 Then run:
