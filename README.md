@@ -21,13 +21,15 @@ Install prerequisite packages:
 **Debian**
 
 ```
-$ apt-get install pkg-config libxml2-dev libglib2.0-dev libncurses5-dev python-yaml
+$ apt-get install pkg-config libxml2-dev libglib2.0-dev libncurses5-dev \
+    python-yaml
 ```
 
 **Fedora**
 
 ```
-$ yum install zlib-devel libxml2-devel glib2-devel vim-common ncurses-devel python-yaml
+$ yum install zlib-devel libxml2-devel glib2-devel vim-common ncurses-devel \
+    python-yaml
 ```
 
 Then run:
