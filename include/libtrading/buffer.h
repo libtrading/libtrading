@@ -38,9 +38,9 @@ static inline u8 buffer_peek_8(const struct buffer *self)
 	return self->data[self->start];
 }
 
-static inline u8 buffer_peek_le16(const struct buffer *self)
+static inline le16 buffer_peek_le16(const struct buffer *self)
 {
-	return (self->data[self->start + 1] << 8) | (self->data[self->start]);
+	return ((u8)(self->data[self->start + 1]) << 8) | (u8)(self->data[self->start]);
 }
 
 static inline u8 buffer_get_8(struct buffer *self)
