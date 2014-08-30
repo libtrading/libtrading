@@ -31,4 +31,7 @@ typedef uint64_t bitwise be64;
 
 #define packed __attribute__ ((packed))
 
+#undef bitwise
+#undef force
+
 #endif /* LIBTRADING_TYPES_H */
