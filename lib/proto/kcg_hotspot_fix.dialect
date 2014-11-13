@@ -1,0 +1,210 @@
+#
+# The KCG Hotspot dialect is based on the following specification:
+#
+#   KCG Hotspot
+#   Order Entry and Execution
+#   FIX Specification
+#   Date: Mar 04, 2014
+#   Version: 3.24
+#
+
+name: "kcg_hotspot"
+base_protocol: "FIX_4_2"
+
+tags:
+  SenderCompID(49):         { type: string }
+  SenderSubID(50):          { type: string }
+  TargetCompID(56):         { type: string }
+  OnBehalfOfSubID(116):     { type: string }
+  PossDupFlag(43):          { type: string }
+  PossResend(97):           { type: string }
+  SendingTime(52):          { type: string }
+  CheckSum(10):             { type: checksum }
+  Username(553):            { type: string }
+  Password(554):            { type: string }
+  EncryptMethod(98):        { type: string }
+  HeartBtInt(108):          { type: string }
+  ResetSeqNumFlag(141):     { type: string }
+  TestReqID(112):           { type: string }
+  BeginSeqNo(7):            { type: string }
+  EndSeqNo(16):             { type: string }
+  RefSeqNum(45):            { type: string }
+  RefTagID(371):            { type: string }
+  RefMsgType(372):          { type: string }
+  SessionRejectReason(373): { type: string }
+  Text(58):                 { type: string }
+  NewSeqNo(36):             { type: string }
+  GapFillFlag(123):         { type: string }
+  Account(1):               { type: string }
+  ClOrdID(11):              { type: string }
+  ExecInst(18):             { type: string }
+  HandlInst(21):            { type: string }
+  Currency(15):             { type: string }
+  OrderQty(38):             { type: string }
+  MaxShow(210):             { type: string }
+  MinQty(110):              { type: string }
+  Price(44):                { type: string }
+  Side(54):                 { type: string }
+  Symbol(55):               { type: string }
+  OrdType(40):              { type: string }
+  TimeInForce(59):          { type: string }
+  TransactTime(60):         { type: string }
+  PegDifference(211):       { type: string }
+  ExecID(17):               { type: string }
+  ExecTransType(20):        { type: string }
+  OrderID(37):              { type: string }
+  OrdStatus(39):            { type: string }
+  OrigClOrdID(41):          { type: string }
+  ExecBroker(76):           { type: string }
+  LeavesQty(151):           { type: string }
+  CumQty(14):               { type: string }
+  OrderQty2(192):           { type: string }
+  FutSetlDate(64):          { type: string }
+  TradeDate(75):            { type: string }
+  SettlCurrAmount(119):     { type: string }
+  SettleCurrency(120):      { type: string }
+  SecurityType(167):        { type: string }
+  ExecType(150):            { type: string }
+  LastShares(32):           { type: string }
+  LastPx(31):               { type: string }
+  NoContraBrokers(382):     { type: string }
+  ContraBroker(375):        { type: string }
+  CxlRejResponseTo(434):    { type: string }
+  CxlRejReason(102):        { type: string }
+
+messages:
+  Logon:
+    MsgType: A
+    tags:
+    - Username
+    - Password
+    - EncryptMethod
+    - HeartBtInt
+    - ResetSeqNumFlag
+  HeartBeat:
+    MsgType: 0
+    tags:
+    - TestReqID
+  TestRequest:
+    MsgType: 1
+    tags:
+    - TestReqID
+  ResendRequest:
+    MsgType: 2
+    tags:
+    - BeginSeqNo
+    - EndSeqNo
+  Reject:
+    MsgType: 3
+    tags:
+    - RefSeqNum
+    - RefTagID
+    - RefMsgType
+    - SessionRejectReason
+    - Text
+  SequenceReset:
+    MsgType: 4
+    tags:
+    - NewSeqNo
+    - GapFillFlag
+  Logout:
+    MsgType: 5
+    tags:
+    - Text
+  NewOrderSingle:
+    MsgType: D
+    tags:
+    - Account
+    - ClOrdID
+    - ExecInst
+    - HandlInst
+    - Currency
+    - OrderQty
+    - MaxShow
+    - MinQty
+    - Price
+    - Side
+    - Symbol
+    - OrdType
+    - TimeInForce
+    - TransactTime
+    - PegDifference
+  ExecutionReport:
+    MsgType: 8
+    tags:
+    - Account
+    - ClOrdID
+    - ExecID
+    - ExecInst
+    - ExecTransType
+    - OrderID
+    - OrdStatus
+    - OrigClOrdID
+    - OrderQty
+    - Price
+    - TimeInForce
+    - Currency
+    - Side
+    - Symbol
+    - ExecBroker
+    - LeavesQty
+    - CumQty
+    - MinQty
+    - OrderQty2
+    - FutSetlDate
+    - TradeDate
+    - SettlCurrAmount
+    - SettleCurrency
+    - SecurityType
+    - MaxShow
+    - ExecType
+    - LastShares
+    - LastPx
+    - NoContraBrokers
+    - ContraBroker
+    - Text
+    - TransactTime
+  OrderCancelRequest:
+    MsgType: F
+    tags:
+    - Account
+    - ClOrdID
+    - OrigClOrdID
+    - Symbol
+    - Side
+    - TransactTime
+    - Currency
+  OrderCancelReplaceRequest:
+    MsgType: G
+    tags:
+    - Account
+    - ClOrdID
+    - OrigClOrdID
+    - HandlInst
+    - OrderQty
+    - MaxShow
+    - MinQty
+    - Price
+    - Symbol
+    - OrdType
+    - Side
+    - TransactTime
+  OrderCancelReject:
+    MsgType: 9
+    tags:
+    - Account
+    - ClOrdID
+    - OrderID
+    - OrigClOrdID
+    - Symbol
+    - CxlRejResponseTo
+    - CxlRejReason
+    - Text
+  OrderStatusRequest:
+    MsgType: H
+    tags:
+    - Account
+    - ClOrdID
+    - Symbol
+    - Side
+    - TransactTime
