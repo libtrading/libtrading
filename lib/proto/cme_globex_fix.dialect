@@ -1,0 +1,430 @@
+#
+# The CME Group GLOBEX dialect is based on the following specification:
+#
+#   CME Group Globex
+#   iLink Order Entry
+#   https://www.cmegroup.com/confluence/display/EPICSANDBOX/iLink+Order+Entry
+#   Date: Apr 16, 2015
+#
+
+name: "cme_globex"
+base_protocol: "FIX_4_2"
+
+tags:
+  #
+  # Header & Trailer:
+  #
+  PossDupFlag(43):                      { type: string }
+  SenderCompID(49):                     { type: string }
+  SenderSubID(50):                      { type: string }
+  SendingTime(52):                      { type: string }
+  LastMsgSeqNumProcessed(369):          { type: string }
+  TargetCompID(56):                     { type: string }
+  TargetSubID(57):                      { type: string }
+  PossResend(97):                       { type: string }
+  OrigSendingTime(122):                 { type: string }
+  SenderLocationID(142):                { type: string }
+  TargetLocationID(143):                { type: string }
+  CheckSum(10):                         { type: checksum }
+  #
+  # Logon:
+  #
+  RawDataLength(95):                    { type: string }
+  RawData(96):                          { type: string }
+  EncryptMethod(98):                    { type: string }
+  HeartBtInt(108):                      { type: string }
+  ResetSeqNumFlag(141):                 { type: string }
+  ApplicationSystemName(1603):          { type: string }
+  TradingSystemVersion(1604):           { type: string }
+  ApplicationSystemVendor(1605):        { type: string }
+  #
+  # Heartbeat / Test Request:
+  #
+  TestReqID(112):                       { type: string }
+  #
+  # Resend Request:
+  #
+  BeginSeqNo(7):                        { type: string }
+  EndSeqNo(16):                         { type: string }
+  #
+  # Session Level Reject:
+  #
+  RefSeqNum(45):                        { type: string }
+  Text(58):                             { type: string }
+  RefTagID(371):                        { type: string }
+  RefMsgType(372):                      { type: string }
+  SessionRejectReason(373):             { type: string }
+  #
+  # Business Level Reject:
+  #
+  BusinessRejectRefID(379):             { type: string }
+  BusinessRejectReason(380):            { type: string }
+  #
+  # Sequence Reset:
+  #
+  NewSeqNo(36):                         { type: string }
+  GapFillFlag(123):                     { type: string }
+  #
+  # Logout:
+  #
+  NextExpectedMsgSeqNum(789):           { type: string }
+  #
+  # Session / Application:
+  #
+  ManualOrderIndicator(1028):           { type: string }
+  CustOrderHandlingInst(1031):          { type: string }
+
+  #
+  # New Order:
+  #
+  Account(1):                           { type: string }
+  ClOrdID(11):                          { type: string }
+  HandlInst(21):                        { type: string }
+  OrderQty(38):                         { type: string }
+  OrdType(40):                          { type: string }
+  Price(44):                            { type: string }
+  Side(54):                             { type: string }
+  Symbol(55):                           { type: string }
+  TimeInForce(59):                      { type: string }
+  TransactTime(60):                     { type: string }
+  PreTradeAnonymity(1091):              { type: string }
+  NoAllocs(78):                         { type: string }
+  AllocAccount(79):                     { type: string }
+  StopPx(99):                           { type: string }
+  SecurityDesc(107):                    { type: string }
+  MinQty(110):                          { type: string }
+  SecurityType(167):                    { type: string }
+  CustomerOrFirm(204):                  { type: string }
+  MaxShow(210):                         { type: string }
+  ExpireDate(432):                      { type: string }
+  SelfMatchPreventionID(7928):          { type: string }
+  SelfMatchPreventionInstruction(8000): { type: string }
+  CtiCode(9702):                        { type: string }
+  GiveUpFirm(9707):                     { type: string }
+  CmtaGiveupCD(9708):                   { type: string }
+  CorrelationClOrdID(9717):             { type: string }
+  #
+  # Order Cancel Request:
+  #
+  OrderID(37):                          { type: string }
+  OrigClOrdID(41):                      { type: string }
+  #
+  # Order Cancel-Replace Request:
+  #
+  OFMOverride(9768):                    { type: string }
+  #
+  # Execution Report:
+  #
+  AvgPx(6):                             { type: string }
+  CumQty(14):                           { type: string }
+  ExecID(17):                           { type: string }
+  ExecTransType(20):                    { type: string }
+  LastPx(31):                           { type: string }
+  LastQty(32):                          { type: string }
+  OrdStatus(39):                        { type: string }
+  SecurityID(48):                       { type: string }
+  ExecType(150):                        { type: string }
+  LeavesQty(151):                       { type: string }
+  ExecRestatementReason(378):           { type: string }
+  CrossID(548):                         { type: string }
+  CrossType(549):                       { type: string }
+  HostCrossID(961):                     { type: string }
+  MassStatusReqID(584):                 { type: string }
+  TradeDate(75):                        { type: string }
+  LastRptRequested(912):                { type: string }
+  ContraTrader(337):                    { type: string }
+  ContraBroker(375):                    { type: string }
+  TotalNumSecurities(393):              { type: string }
+  MultiLegReportingType(442):           { type: string }
+  SecondaryExecID(527):                 { type: string }
+  UnderlyingPx(810):                    { type: string }
+  OptionDelta(811):                     { type: string }
+  AggressorIndicator(1057):             { type: string }
+  Volatility(1188):                     { type: string }
+  ExpirationTimeValue(1189):            { type: string }
+  RiskFreeRate(1190):                   { type: string }
+  OrdRejReason(103):                    { type: string }
+  #
+  # Order Cancel Reject:
+  #
+  CxlRejReason(102):                    { type: string }
+  CxlRejResponseTo(434):                { type: string }
+  #
+  # Order Mass Status Request:
+  #
+  MassStatusReqType(585):               { type: string }
+  OrdStatusReqType(5000):               { type: string }
+  #
+  # Order Mass Action Request:
+  #
+  MassActionType(1373):                 { type: string }
+  MassActionScope(1374):                { type: string }
+  MarketSegmentID(1300):                { type: string }
+  MassCancelRequestType(6115):          { type: string }
+  #
+  # Mass Action Report:
+  #
+  MassActionReportID(1369):             { type: string }
+  MassActionResponse(1375):             { type: string }
+  TotalAffectedOrders(533):             { type: string }
+  NoAffectedOrders(534):                { type: string }
+  CxlQty(84):                           { type: string }
+  AffectedOrderID(535):                 { type: string }
+  LastFragment(893):                    { type: string }
+
+messages:
+  Logon:
+    MsgType: A
+    tags:
+    - RawDataLength
+    - RawData
+    - EncryptMethod
+    - HeartBtInt
+    - ResetSeqNumFlag
+    - ApplicationSystemName
+    - TradingSystemVersion
+    - ApplicationSystemVendor
+  HeartBeat:
+    MsgType: 0
+    tags:
+    - TestReqID
+  TestRequest:
+    MsgType: 1
+    tags:
+    - TestReqID
+  ResendRequest:
+    MsgType: 2
+    tags:
+    - BeginSeqNo
+    - EndSeqNo
+  SessionLevelReject:
+    MsgType: 3
+    tags:
+    - RefSeqNum
+    - Text
+    - RefTagID
+    - RefMsgType
+    - SessionRejectReason
+    - ManualOrderIndicator
+    - CustOrderHandlingInst
+  BusinessLevelReject:
+    MsgType: j
+    tags:
+    - RefSeqNum
+    - RefMsgType
+    - BusinessRejectRefID
+    - BusinessRejectReason
+    - Text
+    - ManualOrderIndicator
+    - CustOrderHandlingInst
+  SequenceReset:
+    MsgType: 4
+    tags:
+    - NewSeqNo
+    - GapFillFlag
+  Logout:
+    MsgType: 5
+    tags:
+    - Text
+    - NextExpectedMsgSeqNum
+  NewOrderSingle:
+    MsgType: D
+    tags:
+    - Account
+    - ClOrdID
+    - HandlInst
+    - CustOrderHandlingInst
+    - OrderQty
+    - OrdType
+    - Price
+    - Side
+    - Symbol
+    - TimeInForce
+    - TransactTime
+    - ManualOrderIndicator
+    - PreTradeAnonymity
+    - NoAllocs
+    - AllocAccount
+    - StopPx
+    - SecurityDesc
+    - MinQty
+    - SecurityType
+    - CustomerOrFirm
+    - MaxShow
+    - ExpireDate
+    - SelfMatchPreventionID
+    - SelfMatchPreventionInstruction
+    - CtiCode
+    - GiveUpFirm
+    - CmtaGiveupCD
+    - CorrelationClOrdID
+  ExecutionReport:
+    MsgType: 8
+    tags:
+    - Account
+    - AvgPx
+    - ClOrdID
+    - CumQty
+    - ExecID
+    - ExecTransType
+    - OrderID
+    - OrderQty
+    - OrdStatus
+    - OrdType
+    - OrigClOrdID
+    - Price
+    - SecurityID
+    - Side
+    - Symbol
+    - TimeInForce
+    - TransactTime
+    - NoAllocs
+    - AllocAccount
+    - SecurityDesc
+    - StopPx
+    - MinQty
+    - ExecType
+    - LeavesQty
+    - SecurityType
+    - ExecRestatementReason
+    - MaxShow
+    - ExpireDate
+    - ManualOrderIndicator
+    - CustOrderHandlingInst
+    - PreTradeAnonymity
+    - SelfMatchPreventionID
+    - SelfMatchPreventionInstruction
+    - CorrelationClOrdID
+    - CrossID
+    - CrossType
+    - HostCrossID
+    - MassStatusReqID
+    - RefMsgType
+    - BusinessRejectReason
+    - TradeDate
+    - LastRptRequested
+    - Text
+    - LastPx
+    - LastQty
+    - ContraTrader
+    - ContraBroker
+    - TotalNumSecurities
+    - MultiLegReportingType
+    - SecondaryExecID
+    - CrossID
+    - CrossType
+    - UnderlyingPx
+    - OptionDelta
+    - AggressorIndicator
+    - Volatility
+    - ExpirationTimeValue
+    - RiskFreeRate
+    - OrdRejReason
+  OrderCancelRequest:
+    MsgType: F
+    tags:
+    - Account
+    - ClOrdID
+    - OrderID
+    - OrigClOrdID
+    - Side
+    - Symbol
+    - TransactTime
+    - ManualOrderIndicator
+    - SecurityDesc
+    - SecurityType
+    - CorrelationClOrdID
+  OrderCancelReplaceRequest:
+    MsgType: G
+    tags:
+    - Account
+    - ClOrdID
+    - OrderID
+    - HandlInst
+    - OrderQty
+    - CustOrderHandlingInst
+    - OrdType
+    - OrigClOrdID
+    - Price
+    - Side
+    - Symbol
+    - Text
+    - TimeInForce
+    - ManualOrderIndicator
+    - PreTradeAnonymity
+    - TransactTime
+    - NoAllocs
+    - AllocAccount
+    - StopPx
+    - SecurityDesc
+    - MinQty
+    - SecurityType
+    - CustomerOrFirm
+    - MaxShow
+    - ExpireDate
+    - SelfMatchPreventionID
+    - SelfMatchPreventionInstruction
+    - CtiCode
+    - GiveUpFirm
+    - CmtaGiveupCD
+    - CorrelationClOrdID
+    - OFMOverride
+  OrderCancelReject:
+    MsgType: 9
+    tags:
+    - Account
+    - ClOrdID
+    - ExecID
+    - OrderID
+    - OrdStatus
+    - OrigClOrdID
+    - SecurityID
+    - Text
+    - TransactTime
+    - CxlRejReason
+    - SecurityDesc
+    - CxlRejResponseTo
+    - ManualOrderIndicator
+    - PreTradeAnonymity
+    - SelfMatchPreventionID
+    - CorrelationClOrdID
+  OrderStatusRequest:
+    MsgType: H
+    tags:
+    - ClOrdID
+    - OrderID
+    - Side
+    - Symbol
+    - ManualOrderIndicator
+    - TransactTime
+    - SecurityDesc
+    - SecurityType
+    - CorrelationClOrdID
+  OrderMassStatusRequest:
+    MsgType: AF
+    tags:
+    - MassStatusReqID
+    - MassStatusReqType
+    - OrdStatusReqType
+    - Account
+    - Symbol
+    - SecurityDesc
+    - TimeInForce
+    - TransactTime
+    - ManualOrderIndicator
+  OrderMassActionRequest:
+    MsgType: CA
+    tags:
+    - ClOrdID
+    - MassActionType
+    - MassActionScope
+    - MarketSegmentID
+    - Symbol
+    - SecurityDesc
+    - MassCancelRequestType
+    - Account
+    - Side
+    - OrdType
+    - TimeInForce
+    - TransactTime
+    - ManualOrderIndicator
