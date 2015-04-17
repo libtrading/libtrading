@@ -37,6 +37,8 @@ struct fix_session_cfg {
 	int			heartbtint;
 	struct fix_dialect	*dialect;
 	int			sockfd;
+	unsigned long		in_msg_seq_num;
+	unsigned long		out_msg_seq_num;
 };
 
 struct fix_session {

@@ -103,8 +103,8 @@ struct fix_session *fix_session_new(struct fix_session_cfg *cfg)
 	self->password		= cfg->password;
 	self->sockfd		= cfg->sockfd;
 	self->tr_pending	= 0;
-	self->in_msg_seq_num	= 0;
-	self->out_msg_seq_num	= 1;
+	self->in_msg_seq_num	= cfg->in_msg_seq_num  > 0 ? cfg->in_msg_seq_num  : 0;
+	self->out_msg_seq_num	= cfg->out_msg_seq_num > 1 ? cfg->out_msg_seq_num : 1;
 
 	return self;
 }
