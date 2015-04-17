@@ -30,7 +30,11 @@
 /include/libtrading/proto/kcg_hotspot_fix.h
 /include/libtrading/proto/mbt_fix.h
 /include/libtrading/proto/micex_fix.h
+/include/libtrading/proto/cme_globex_fix.h
 /lib/proto/iex_fix.c
 /lib/proto/kcg_hotspot_fix.c
 /lib/proto/mbt_fix.c
 /lib/proto/micex_fix.c
+/lib/proto/cme_globex_fix.c
+
+/nbproject
