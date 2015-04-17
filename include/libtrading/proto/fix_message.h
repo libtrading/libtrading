@@ -112,7 +112,7 @@ enum fix_tag {
 };
 
 struct fix_field {
-	enum fix_tag			tag;
+	int                             tag;
 	enum fix_type			type;
 
 	union {
