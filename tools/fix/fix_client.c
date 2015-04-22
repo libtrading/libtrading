@@ -409,7 +409,7 @@ retry:
 
         cycle_usec = (double)(after_cycles - before_cycles) / total_usec;
         min_usec = min_cycles / cycle_usec;
-	avg_usec = total_usec / (double)(orders - (orders >= 10000 ? orders - 1000 : orders));
+	avg_usec = total_usec / (double)(orders - (orders >= 10000 ? 1000 : 0));
         max_usec = max_cycles / cycle_usec;
 
 	fprintf(stdout, "Messages sent: %d\n", orders);
