@@ -54,7 +54,6 @@ EXTRA_WARNINGS += -Wmissing-prototypes
 EXTRA_WARNINGS += -Wnested-externs
 EXTRA_WARNINGS += -Wold-style-definition
 EXTRA_WARNINGS += -Wstrict-prototypes
-EXTRA_WARNINGS += -Wdeclaration-after-statement
 
 # Compile flags
 CFLAGS		:= -I$(CURDIR)/include -Wall $(EXTRA_WARNINGS) $(CFLAGS_WERROR) -g -O3 -std=gnu99 -fPIC
@@ -216,6 +215,7 @@ LIB_OBJS	+= lib/proto/ouch42_message.o
 LIB_OBJS	+= lib/proto/soupbin3_session.o
 LIB_OBJS	+= lib/proto/xdp_message.o
 LIB_OBJS	+= lib/proto/lse_itch_message.o
+LIB_OBJS	+= lib/stringencoders/modp_numtoa.o
 
 LIB_GEN_SRC	+= lib/proto/micex_fix.c
 LIB_GEN_SRC	+= lib/proto/iex_fix.c
