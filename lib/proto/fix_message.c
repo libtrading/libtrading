@@ -1,6 +1,7 @@
 #include "libtrading/proto/fix_message.h"
 
 #include "libtrading/proto/fix_session.h"
+#include "libtrading/modp_numtoa.h"
 #include "libtrading/read-write.h"
 #include "libtrading/buffer.h"
 #include "libtrading/array.h"
@@ -554,7 +555,7 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 		break;
 	}
 	case FIX_TYPE_FLOAT: {
-		buffer->end += sprintf(buffer_end(buffer), "%f", self->float_value);
+		buffer->end += modp_dtoa(self->float_value, buffer_end(buffer), 3);
 		break;
 	}
 	case FIX_TYPE_INT: {
