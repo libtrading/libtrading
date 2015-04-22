@@ -22,7 +22,7 @@ struct buffer {
 struct buffer *buffer_new(unsigned long capacity);
 void buffer_delete(struct buffer *self);
 bool buffer_printf(struct buffer *self, const char *format, ...);
-u8 buffer_sum_range(struct buffer *buf, const char *start, const char *end);
+u8 buffer_sum_range(const char *start, const char *end);
 u8 buffer_sum(struct buffer *self);
 
 ssize_t buffer_recv(struct buffer *self, int sockfd, size_t size, int flags);
