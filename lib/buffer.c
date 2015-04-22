@@ -47,6 +47,16 @@ u8 buffer_sum(struct buffer *buf)
 	return buffer_sum_range(buf->data + buf->start, buf->data + buf->end);
 }
 
+void buffer_append(struct buffer *dst, struct buffer *src)
+{
+	size_t len = buffer_size(src);
+	if (len > buffer_remaining(dst)) {
+		len = buffer_remaining(dst);
+	}
+	memcpy(dst->data + dst->start, dst->data + src->start, len);
+	dst->end += len;
+}
+
 bool buffer_printf(struct buffer *buf, const char *format, ...)
 {
 	size_t size;

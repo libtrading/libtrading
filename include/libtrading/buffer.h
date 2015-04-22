@@ -25,6 +25,7 @@ bool buffer_printf(struct buffer *self, const char *format, ...);
 u8 buffer_sum_range(const char *start, const char *end);
 u8 buffer_sum(struct buffer *self);
 
+void buffer_append(struct buffer *dst, struct buffer *src);
 ssize_t buffer_recv(struct buffer *self, int sockfd, size_t size, int flags);
 ssize_t buffer_xread(struct buffer *self, int fd);
 ssize_t buffer_nxread(struct buffer *buf, int fd, size_t size);
