@@ -8,13 +8,30 @@
 #include <stdio.h>
 #include <time.h>
 
+static unsigned long fix_new_order_single_fields(struct fix_field *fields, const char *now)
+{
+	unsigned long nr = 0;
+
+	fields[nr++] = FIX_STRING_FIELD(TransactTime, now);
+	fields[nr++] = FIX_STRING_FIELD(ClOrdID, "ClOrdID");
+	fields[nr++] = FIX_STRING_FIELD(Symbol, "Symbol");
+	fields[nr++] = FIX_FLOAT_FIELD(OrderQty, 100);
+	fields[nr++] = FIX_STRING_FIELD(OrdType, "2");
+	fields[nr++] = FIX_STRING_FIELD(Side, "1");
+	fields[nr++] = FIX_FLOAT_FIELD(Price, 100);
+
+	return nr;
+}
+
 int main(int argc, char *argv[])
 {
 	struct buffer *head_buf, *body_buf;
+	struct fix_field *fields = NULL;
 	struct timespec start, end;
 	struct fix_message *msg;
 	uint64_t elapsed_nsec;
 	char now[64];
+	size_t nr;
 	int count;
 	int i;
 
@@ -29,6 +46,10 @@ int main(int argc, char *argv[])
 	head_buf = buffer_new(4096);
 	body_buf = buffer_new(4096);
 
+	fields = calloc(FIX_MAX_FIELD_NUMBER, sizeof(struct fix_field));
+
+	nr = fix_new_order_single_fields(fields, now);
+
 	msg = fix_message_new();
 
 	msg->begin_string	= "FIX.4.2";
@@ -39,6 +60,8 @@ int main(int argc, char *argv[])
 	msg->head_buf		= head_buf;
 	msg->body_buf		= body_buf;
 	msg->str_now		= now;
+	msg->fields		= fields;
+	msg->nr_fields		= nr;
 
 	clock_gettime(CLOCK_MONOTONIC, &start);
 
