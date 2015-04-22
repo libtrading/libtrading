@@ -20,6 +20,11 @@ static const char *begin_strings[] = {
 	[FIX_4_0]	= "FIX.4.0",
 };
 
+void fix_session_cfg_init(struct fix_session_cfg *cfg)
+{
+	memset(cfg, 0, sizeof(*cfg));
+}
+
 struct fix_session_cfg *fix_session_cfg_new(
 	const char *sender_comp_id,
 	const char *target_comp_id,

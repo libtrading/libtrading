@@ -61,6 +61,8 @@ static int do_income(struct market *market, int sockfd)
 	struct trader *trader;
 	struct order order;
 
+	fix_session_cfg_init(&cfg);
+
 	trader = trader_by_sock(market, sockfd);
 	if (!trader) {
 		trader = trader_new(market);
