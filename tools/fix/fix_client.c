@@ -292,14 +292,36 @@ static unsigned long fix_new_order_single_fields(struct fix_session *session, st
 	return nr;
 }
 
+static inline uint64_t cpuid_rdtsc(void) {
+    uint32_t high, low;
+    asm volatile("cpuid\n"
+                 "rdtsc\n"
+                 "mov %%edx, %0\n"
+                 "mov %%eax, %1\n": "=r" (high), "=r" (low)::
+                 "%rax", "%rbx", "%rcx", "%rdx");
+    return (uint64_t)high << 32 | (uint64_t)low;
+}
+
+static inline uint64_t rdtscp_cpuid(void) {
+    uint32_t high, low;
+    asm volatile("rdtscp\n"
+                 "mov %%edx, %0\n"
+                 "mov %%eax, %1\n"
+                 "cpuid\n": "=r" (high), "=r" (low):: 
+                 "%rax", "%rbx", "%rcx", "%rdx");
+    return (uint64_t)high << 32 | (uint64_t)low;
+}
+
 static int fix_client_order(struct fix_session_cfg *cfg, struct fix_client_arg *arg)
 {
-	double min_usec, avg_usec, max_usec, total_usec;
+        uint64_t min_cycles = UINT64_MAX, max_cycles = 0, before_cycles = 0, after_cycles = 0;
+	double min_usec, avg_usec, max_usec, total_usec, cycle_usec;
 	struct fix_session *session = NULL;
 	struct fix_field *fields = NULL;
+        struct timespec before, after;
 	struct fix_message *msg;
 	FILE *file = NULL;
-	unsigned long nr;
+        unsigned long nr;
 	int ret = -1;
 	int orders;
 	int i;
@@ -345,12 +367,13 @@ static int fix_client_order(struct fix_session_cfg *cfg, struct fix_client_arg *
 	min_usec	= DBL_MAX;
 	max_usec	= 0;
 	total_usec	= 0;
+        
+        before_cycles = cpuid_rdtsc();
+        clock_gettime(CLOCK_MONOTONIC, &before);
 
 	for (i = 0; i < orders; i++) {
-		struct timespec before, after;
-		uint64_t elapsed_usec;
-
-		clock_gettime(CLOCK_MONOTONIC, &before);
+                uint64_t cycles = 0;
+                cycles = cpuid_rdtsc();
 
 		fix_session_new_order_single(session, fields, nr);
 
@@ -362,20 +385,23 @@ retry:
 		if (!fix_message_type_is(msg, FIX_MSG_TYPE_EXECUTION_REPORT))
 			goto retry;
 
-		clock_gettime(CLOCK_MONOTONIC, &after);
+                cycles = rdtscp_cpuid() - cycles;
 
-		elapsed_usec = timespec_delta(&before, &after) / 1000;
-
-		total_usec += elapsed_usec;
-
-		min_usec = fmin(min_usec, elapsed_usec);
-		max_usec = fmax(max_usec, elapsed_usec);
+		min_cycles = min_cycles < cycles ? min_cycles : cycles;
+		max_cycles = max_cycles > cycles ? max_cycles : cycles;
 
 		if (file)
-			fprintf(file, "%" PRIu64 "\n", elapsed_usec);
+			fprintf(file, "%" PRIu64 "\n", cycles);
 	}
 
+        clock_gettime(CLOCK_MONOTONIC, &after);
+        after_cycles = rdtscp_cpuid();
+        total_usec = timespec_delta(&before, &after) / 1000;
+
+        cycle_usec = total_usec / (double)(after_cycles - before_cycles);
+        min_usec = min_cycles / cycle_usec;
 	avg_usec = total_usec / orders;
+        max_usec = max_cycles / cycle_usec;
 
 	fprintf(stdout, "Messages sent: %d\n", orders);
 	fprintf(stdout, "Round-trip time: min/avg/max = %.1lf/%.1lf/%.1lf μs\n", min_usec, avg_usec, max_usec);
