@@ -368,12 +368,19 @@ static int fix_client_order(struct fix_session_cfg *cfg, struct fix_client_arg *
 	max_usec	= 0;
 	total_usec	= 0;
         
-        before_cycles = cpuid_rdtsc();
-        clock_gettime(CLOCK_MONOTONIC, &before);
+        if (orders < 10000) {
+            before_cycles = cpuid_rdtsc();
+            clock_gettime(CLOCK_MONOTONIC, &before);
+        }
 
 	for (i = 0; i < orders; i++) {
                 uint64_t cycles = 0;
                 cycles = cpuid_rdtsc();
+
+                if (orders >= 10000 && i == 1000) {
+                    before_cycles = cycles;
+                    clock_gettime(CLOCK_MONOTONIC, &before);
+                }
 
 		fix_session_new_order_single(session, fields, nr);
 
@@ -387,11 +394,13 @@ retry:
 
                 cycles = rdtscp_cpuid() - cycles;
 
-		min_cycles = min_cycles < cycles ? min_cycles : cycles;
-		max_cycles = max_cycles > cycles ? max_cycles : cycles;
+                if (orders < 10000 || i > 1000) {
+                    min_cycles = min_cycles < cycles ? min_cycles : cycles;
+                    max_cycles = max_cycles > cycles ? max_cycles : cycles;
 
-		if (file)
-			fprintf(file, "%" PRIu64 "\n", cycles);
+                    if (file)
+                            fprintf(file, "%" PRIu64 "\n", cycles);
+                }
 	}
 
         clock_gettime(CLOCK_MONOTONIC, &after);
@@ -400,7 +409,7 @@ retry:
 
         cycle_usec = (double)(after_cycles - before_cycles) / total_usec;
         min_usec = min_cycles / cycle_usec;
-	avg_usec = total_usec / orders;
+	avg_usec = total_usec / (double)(orders - (orders >= 10000 ? orders - 1000 : orders));
         max_usec = max_cycles / cycle_usec;
 
 	fprintf(stdout, "Messages sent: %d\n", orders);
