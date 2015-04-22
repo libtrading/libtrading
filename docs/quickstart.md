@@ -153,6 +153,8 @@ The full code may be broken into the following parts:
 ```c
 struct fix_session_cfg cfg;
 
+fix_session_cfg_init(&cfg);
+
 cfg.dialect	= &fix_dialects[version];
 
 if (!sender_comp_id) {

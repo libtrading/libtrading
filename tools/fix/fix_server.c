@@ -355,6 +355,8 @@ int main(int argc, char *argv[])
 	if (!port)
 		usage();
 
+	fix_session_cfg_init(&cfg);
+
 	cfg.dialect	= &fix_dialects[version];
 
 	if (!sender_comp_id) {

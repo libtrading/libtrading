@@ -37,9 +37,8 @@ struct fix_session_cfg {
 	int			heartbtint;
 	struct fix_dialect	*dialect;
 	int			sockfd;
-        
-        unsigned long           in_msg_seq_num;
-        unsigned long           out_msg_seq_num;
+	unsigned long		in_msg_seq_num;
+	unsigned long		out_msg_seq_num;
 };
 
 struct fix_session {
@@ -78,6 +77,7 @@ static inline bool fix_msg_expected(struct fix_session *session, struct fix_mess
 	return msg->msg_seq_num == session->in_msg_seq_num || fix_message_type_is(msg, FIX_MSG_TYPE_SEQUENCE_RESET);
 }
 
+void fix_session_cfg_init(struct fix_session_cfg *cfg);
 struct fix_session_cfg *fix_session_cfg_new(const char *sender_comp_id, const char *target_comp_id, int heartbtint, const char *dialect, int sockfd);
 struct fix_session *fix_session_new(struct fix_session_cfg *cfg);
 void fix_session_free(struct fix_session *self);

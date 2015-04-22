@@ -141,6 +141,8 @@ int main(int argc, char *argv[])
 	if (!port || !host)
 		usage();
 
+	fix_session_cfg_init(&cfg);
+
 	strncpy(cfg.target_comp_id, "SELLSIDE", ARRAY_SIZE(cfg.target_comp_id));
 	strncpy(cfg.sender_comp_id, "BUYSIDE", ARRAY_SIZE(cfg.sender_comp_id));
 	cfg.dialect	= &fix_dialects[FIX_4_4];
