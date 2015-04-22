@@ -398,7 +398,7 @@ retry:
         after_cycles = rdtscp_cpuid();
         total_usec = timespec_delta(&before, &after) / 1000;
 
-        cycle_usec = total_usec / (double)(after_cycles - before_cycles);
+        cycle_usec = (double)(after_cycles - before_cycles) / total_usec;
         min_usec = min_cycles / cycle_usec;
 	avg_usec = total_usec / orders;
         max_usec = max_cycles / cycle_usec;
