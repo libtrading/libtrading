@@ -288,7 +288,7 @@ static bool verify_checksum(struct fix_message *self, struct buffer *buffer)
 
 	cksum	= fix_uatoi(self->check_sum, NULL);
 
-	actual	= buffer_sum_range(buffer, self->begin_string - 2, self->check_sum - 3);
+	actual	= buffer_sum_range(self->begin_string - 2, self->check_sum - 3);
 
 	return actual == cksum;
 }

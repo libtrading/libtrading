@@ -31,7 +31,7 @@ void buffer_delete(struct buffer *buf)
 	free(buf);
 }
 
-u8 buffer_sum_range(struct buffer *buf, const char *start, const char *end)
+u8 buffer_sum_range(const char *start, const char *end)
 {
 	unsigned long sum = 0;
 	const char *ptr;
@@ -44,7 +44,17 @@ u8 buffer_sum_range(struct buffer *buf, const char *start, const char *end)
 
 u8 buffer_sum(struct buffer *buf)
 {
-	return buffer_sum_range(buf, buf->data + buf->start, buf->data + buf->end);
+	return buffer_sum_range(buf->data + buf->start, buf->data + buf->end);
+}
+
+void buffer_append(struct buffer *dst, struct buffer *src)
+{
+	size_t len = buffer_size(src);
+	if (len > buffer_remaining(dst)) {
+		len = buffer_remaining(dst);
+	}
+	memcpy(dst->data + dst->start, dst->data + src->start, len);
+	dst->end += len;
 }
 
 bool buffer_printf(struct buffer *buf, const char *format, ...)
