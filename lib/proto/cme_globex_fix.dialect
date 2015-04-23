@@ -14,14 +14,14 @@ tags:
   #
   # Header & Trailer:
   #
-  PossDupFlag(43):                      { type: string }
+  PossDupFlag(43):                      { type: char }
   SenderCompID(49):                     { type: string }
   SenderSubID(50):                      { type: string }
   SendingTime(52):                      { type: string }
-  LastMsgSeqNumProcessed(369):          { type: string }
+  LastMsgSeqNumProcessed(369):          { type: int }
   TargetCompID(56):                     { type: string }
   TargetSubID(57):                      { type: string }
-  PossResend(97):                       { type: string }
+  PossResend(97):                       { type: char }
   OrigSendingTime(122):                 { type: string }
   SenderLocationID(142):                { type: string }
   TargetLocationID(143):                { type: string }
@@ -29,11 +29,11 @@ tags:
   #
   # Logon:
   #
-  RawDataLength(95):                    { type: string }
+  RawDataLength(95):                    { type: int }
   RawData(96):                          { type: string }
-  EncryptMethod(98):                    { type: string }
-  HeartBtInt(108):                      { type: string }
-  ResetSeqNumFlag(141):                 { type: string }
+  EncryptMethod(98):                    { type: int }
+  HeartBtInt(108):                      { type: int }
+  ResetSeqNumFlag(141):                 { type: char }
   ApplicationSystemName(1603):          { type: string }
   TradingSystemVersion(1604):           { type: string }
   ApplicationSystemVendor(1605):        { type: string }
@@ -44,62 +44,62 @@ tags:
   #
   # Resend Request:
   #
-  BeginSeqNo(7):                        { type: string }
-  EndSeqNo(16):                         { type: string }
+  BeginSeqNo(7):                        { type: int }
+  EndSeqNo(16):                         { type: int }
   #
   # Session Level Reject:
   #
-  RefSeqNum(45):                        { type: string }
+  RefSeqNum(45):                        { type: int }
   Text(58):                             { type: string }
   RefTagID(371):                        { type: string }
   RefMsgType(372):                      { type: string }
-  SessionRejectReason(373):             { type: string }
+  SessionRejectReason(373):             { type: int }
   #
   # Business Level Reject:
   #
   BusinessRejectRefID(379):             { type: string }
-  BusinessRejectReason(380):            { type: string }
+  BusinessRejectReason(380):            { type: int }
   #
   # Sequence Reset:
   #
-  NewSeqNo(36):                         { type: string }
-  GapFillFlag(123):                     { type: string }
+  NewSeqNo(36):                         { type: int }
+  GapFillFlag(123):                     { type: char }
   #
   # Logout:
   #
-  NextExpectedMsgSeqNum(789):           { type: string }
+  NextExpectedMsgSeqNum(789):           { type: int }
   #
   # Session / Application:
   #
-  ManualOrderIndicator(1028):           { type: string }
-  CustOrderHandlingInst(1031):          { type: string }
+  ManualOrderIndicator(1028):           { type: char }
+  CustOrderHandlingInst(1031):          { type: char }
 
   #
   # New Order:
   #
   Account(1):                           { type: string }
   ClOrdID(11):                          { type: string }
-  HandlInst(21):                        { type: string }
-  OrderQty(38):                         { type: string }
-  OrdType(40):                          { type: string }
-  Price(44):                            { type: string }
-  Side(54):                             { type: string }
+  HandlInst(21):                        { type: char }
+  OrderQty(38):                         { type: int }
+  OrdType(40):                          { type: char }
+  Price(44):                            { type: float }
+  Side(54):                             { type: char }
   Symbol(55):                           { type: string }
-  TimeInForce(59):                      { type: string }
+  TimeInForce(59):                      { type: char }
   TransactTime(60):                     { type: string }
-  PreTradeAnonymity(1091):              { type: string }
-  NoAllocs(78):                         { type: string }
+  PreTradeAnonymity(1091):              { type: char }
+  NoAllocs(78):                         { type: char }
   AllocAccount(79):                     { type: string }
-  StopPx(99):                           { type: string }
+  StopPx(99):                           { type: float }
   SecurityDesc(107):                    { type: string }
-  MinQty(110):                          { type: string }
+  MinQty(110):                          { type: int }
   SecurityType(167):                    { type: string }
-  CustomerOrFirm(204):                  { type: string }
-  MaxShow(210):                         { type: string }
+  CustomerOrFirm(204):                  { type: int }
+  MaxShow(210):                         { type: int }
   ExpireDate(432):                      { type: string }
   SelfMatchPreventionID(7928):          { type: string }
-  SelfMatchPreventionInstruction(8000): { type: string }
-  CtiCode(9702):                        { type: string }
+  SelfMatchPreventionInstruction(8000): { type: char }
+  CtiCode(9702):                        { type: char }
   GiveUpFirm(9707):                     { type: string }
   CmtaGiveupCD(9708):                   { type: string }
   CorrelationClOrdID(9717):             { type: string }
@@ -111,66 +111,68 @@ tags:
   #
   # Order Cancel-Replace Request:
   #
-  OFMOverride(9768):                    { type: string }
+  OFMOverride(9768):                    { type: char }
   #
   # Execution Report:
   #
-  AvgPx(6):                             { type: string }
-  CumQty(14):                           { type: string }
+
+  # Not supported (always '0')
+  AvgPx(6):                             { type: char }
+  CumQty(14):                           { type: int }
   ExecID(17):                           { type: string }
-  ExecTransType(20):                    { type: string }
-  LastPx(31):                           { type: string }
-  LastQty(32):                          { type: string }
-  OrdStatus(39):                        { type: string }
+  ExecTransType(20):                    { type: char }
+  LastPx(31):                           { type: float }
+  LastQty(32):                          { type: int }
+  OrdStatus(39):                        { type: char }
   SecurityID(48):                       { type: string }
-  ExecType(150):                        { type: string }
-  LeavesQty(151):                       { type: string }
-  ExecRestatementReason(378):           { type: string }
+  ExecType(150):                        { type: char }
+  LeavesQty(151):                       { type: int }
+  ExecRestatementReason(378):           { type: int }
   CrossID(548):                         { type: string }
-  CrossType(549):                       { type: string }
+  CrossType(549):                       { type: char }
   HostCrossID(961):                     { type: string }
   MassStatusReqID(584):                 { type: string }
   TradeDate(75):                        { type: string }
-  LastRptRequested(912):                { type: string }
+  LastRptRequested(912):                { type: char }
   ContraTrader(337):                    { type: string }
   ContraBroker(375):                    { type: string }
-  TotalNumSecurities(393):              { type: string }
-  MultiLegReportingType(442):           { type: string }
+  TotalNumSecurities(393):              { type: int }
+  MultiLegReportingType(442):           { type: int }
   SecondaryExecID(527):                 { type: string }
-  UnderlyingPx(810):                    { type: string }
-  OptionDelta(811):                     { type: string }
-  AggressorIndicator(1057):             { type: string }
+  UnderlyingPx(810):                    { type: float }
+  OptionDelta(811):                     { type: float }
+  AggressorIndicator(1057):             { type: char }
   Volatility(1188):                     { type: string }
-  ExpirationTimeValue(1189):            { type: string }
-  RiskFreeRate(1190):                   { type: string }
+  ExpirationTimeValue(1189):            { type: float }
+  RiskFreeRate(1190):                   { type: float }
   OrdRejReason(103):                    { type: string }
   #
   # Order Cancel Reject:
   #
-  CxlRejReason(102):                    { type: string }
-  CxlRejResponseTo(434):                { type: string }
+  CxlRejReason(102):                    { type: int }
+  CxlRejResponseTo(434):                { type: char }
   #
   # Order Mass Status Request:
   #
-  MassStatusReqType(585):               { type: string }
-  OrdStatusReqType(5000):               { type: string }
+  MassStatusReqType(585):               { type: int }
+  OrdStatusReqType(5000):               { type: int }
   #
   # Order Mass Action Request:
   #
-  MassActionType(1373):                 { type: string }
-  MassActionScope(1374):                { type: string }
+  MassActionType(1373):                 { type: int }
+  MassActionScope(1374):                { type: int }
   MarketSegmentID(1300):                { type: string }
-  MassCancelRequestType(6115):          { type: string }
+  MassCancelRequestType(6115):          { type: int }
   #
   # Mass Action Report:
   #
   MassActionReportID(1369):             { type: string }
-  MassActionResponse(1375):             { type: string }
-  TotalAffectedOrders(533):             { type: string }
-  NoAffectedOrders(534):                { type: string }
-  CxlQty(84):                           { type: string }
+  MassActionResponse(1375):             { type: int }
+  TotalAffectedOrders(533):             { type: int }
+  NoAffectedOrders(534):                { type: int }
+  CxlQty(84):                           { type: int }
   AffectedOrderID(535):                 { type: string }
-  LastFragment(893):                    { type: string }
+  LastFragment(893):                    { type: char }
 
 messages:
   Logon:
