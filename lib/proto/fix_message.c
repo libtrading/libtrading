@@ -555,7 +555,7 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 		break;
 	}
 	case FIX_TYPE_FLOAT: {
-		buffer->end += modp_dtoa(self->float_value, buffer_end(buffer), 3);
+		buffer->end += modp_dtoa2(self->float_value, buffer_end(buffer), 7);
 		break;
 	}
 	case FIX_TYPE_INT: {
