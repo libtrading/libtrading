@@ -83,6 +83,7 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 	case 'f': return FIX_MSG_TYPE_SECURITY_STATUS;
 	case 'q': return FIX_MSG_ORDER_MASS_CANCEL_REQUEST;
 	case 'r': return FIX_MSG_ORDER_MASS_CANCEL_REPORT;
+        
         case 'R': return FIX_MSG_QUOTE_REQUEST;
         case 'c': return FIX_MSG_SECURITY_DEFINITION_REQUEST;
         case 's': return FIX_MSG_NEW_ORDER_CROSS;
