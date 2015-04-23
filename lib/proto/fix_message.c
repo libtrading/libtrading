@@ -37,12 +37,28 @@ static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
 	[FIX_MSG_TYPE_SECURITY_STATUS]		= "f",
 	[FIX_MSG_ORDER_MASS_CANCEL_REQUEST]	= "q",
 	[FIX_MSG_ORDER_MASS_CANCEL_REPORT]	= "r",
+	[FIX_MSG_QUOTE_REQUEST]			= "R",
+	[FIX_MSG_SECURITY_DEFINITION_REQUEST]	= "c",
+	[FIX_MSG_NEW_ORDER_CROSS]		= "s",
+	[FIX_MSG_MASS_QUOTE]			= "i",
+	[FIX_MSG_QUOTE_CANCEL]			= "Z",
+	[FIX_MSG_SECURITY_DEFINITION]		= "d",
+	[FIX_MSG_QUOTE_ACKNOWLEDGEMENT]		= "b",
+	[FIX_MSG_ORDER_MASS_STATUS_REQUEST]	= "AF",
+	[FIX_MSG_ORDER_MASS_ACTION_REQUEST]	= "CA",
+	[FIX_MSG_ORDER_MASS_ACTION_REPORT]	= "BZ",
 };
 
 enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 {
-	if (s[1] != delim)
-		return FIX_MSG_TYPE_UNKNOWN;
+	if (s[1] != delim) {
+		if (s[2] != delim)
+			return FIX_MSG_TYPE_UNKNOWN;
+		if (s[0] == 'A' && s[1] == 'F') return FIX_MSG_ORDER_MASS_STATUS_REQUEST;
+		else if (s[0] == 'C' && s[1] == 'A') return FIX_MSG_ORDER_MASS_ACTION_REQUEST;
+		else if (s[0] == 'B' && s[1] == 'Z') return FIX_MSG_ORDER_MASS_ACTION_REPORT;
+		else return FIX_MSG_TYPE_UNKNOWN;
+	}
 
 	/*
 	 * Single-character message type:
@@ -66,6 +82,13 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 	case 'f': return FIX_MSG_TYPE_SECURITY_STATUS;
 	case 'q': return FIX_MSG_ORDER_MASS_CANCEL_REQUEST;
 	case 'r': return FIX_MSG_ORDER_MASS_CANCEL_REPORT;
+	case 'R': return FIX_MSG_QUOTE_REQUEST;
+	case 'c': return FIX_MSG_SECURITY_DEFINITION_REQUEST;
+	case 's': return FIX_MSG_NEW_ORDER_CROSS;
+	case 'i': return FIX_MSG_MASS_QUOTE;
+	case 'Z': return FIX_MSG_QUOTE_CANCEL;
+	case 'd': return FIX_MSG_SECURITY_DEFINITION;
+	case 'b': return FIX_MSG_QUOTE_ACKNOWLEDGEMENT;
 	default : return FIX_MSG_TYPE_UNKNOWN;
 	}
 }
