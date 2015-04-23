@@ -180,10 +180,13 @@ static inline bool fix_session_buffer_full(struct fix_session *session)
 	return buffer_remaining(session->rx_buffer) <= FIX_MAX_MESSAGE_SIZE;
 }
 
-struct fix_message *fix_session_recv(struct fix_session *self, int flags)
+int fix_session_recv(struct fix_session *self, struct fix_message **res, int flags)
 {
 	struct fix_message *msg = self->rx_message;
 	struct buffer *buffer = self->rx_buffer;
+
+	self->failure_reason = FIX_SUCCESS;
+
 	size_t size;
 
 	TRACE(LIBTRADING_FIX_MESSAGE_RECV(msg, flags));
@@ -204,8 +207,11 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 		size -= FIX_MAX_MESSAGE_SIZE;
 
 		nr = buffer_recv(buffer, self->sockfd, size, flags);
-		if (nr <= 0)
-			return NULL;
+
+		if (nr <= 0) {
+			self->failure_reason = nr == 0 ? FIX_FAILURE_CONN_CLOSED : FIX_FAILURE_SYSTEM;
+			return -1;
+		}
 	}
 
 	if (!fix_message_parse(msg, self->dialect, buffer)) {
@@ -216,12 +222,13 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 
 	TRACE(LIBTRADING_FIX_MESSAGE_RECV_ERR());
 
-	return NULL;
+	return 0;
 
 parsed:
 	TRACE(LIBTRADING_FIX_MESSAGE_RECV_RET());
 
-	return msg;
+	*res = msg;
+	return 1;
 }
 
 bool fix_session_keepalive(struct fix_session *session, struct timespec *now)
@@ -441,8 +448,7 @@ int fix_session_logon(struct fix_session *session)
 	session->active = true;
 
 retry:
-	response = fix_session_recv(session, MSG_DONTWAIT);
-	if (!response)
+	if (fix_session_recv(session, &response, MSG_DONTWAIT) <= 0)
 		goto retry;
 
 	if (!fix_msg_expected(session, response)) {
@@ -491,8 +497,7 @@ retry:
 	if (end.tv_sec - start.tv_sec > 2)
 		return 0;
 
-	response = fix_session_recv(session, MSG_DONTWAIT);
-	if (!response)
+	if (fix_session_recv(session, &response, MSG_DONTWAIT) <= 0)
 		goto retry;
 
 	if (fix_session_admin(session, response))

@@ -154,9 +154,7 @@ static int fix_client_script(struct fix_session_cfg *cfg, struct fix_client_arg 
 			goto next;
 
 retry:
-		msg = fix_session_recv(session, MSG_DONTWAIT);
-
-		if (!msg)
+		if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0)
 			goto retry;
 
 		fprintf(stdout, "< ");
@@ -243,8 +241,7 @@ static int fix_client_session(struct fix_session_cfg *cfg, struct fix_client_arg
 			break;
 		}
 
-		msg = fix_session_recv(session, MSG_DONTWAIT);
-		if (msg) {
+		if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0) {
 			fprintmsg(stdout, msg);
 
 			if (fix_session_admin(session, msg))
@@ -355,8 +352,7 @@ static int fix_client_order(struct fix_session_cfg *cfg, struct fix_client_arg *
 		fix_session_new_order_single(session, fields, nr);
 
 retry:
-		msg = fix_session_recv(session, MSG_DONTWAIT);
-		if (!msg)
+		if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0)
 			goto retry;
 
 		if (!fix_message_type_is(msg, FIX_MSG_TYPE_EXECUTION_REPORT))
