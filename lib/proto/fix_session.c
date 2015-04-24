@@ -171,13 +171,16 @@ static inline bool fix_session_buffer_full(struct fix_session *session)
 	return buffer_remaining(session->rx_buffer) <= FIX_MAX_MESSAGE_SIZE;
 }
 
-struct fix_message *fix_session_recv(struct fix_session *self, int flags)
+struct fix_message *fix_session_recv_len(struct fix_session *self, int flags, ssize_t *sock_recv_len) 
 {
 	struct fix_message *msg = self->rx_message;
 	struct buffer *buffer = self->rx_buffer;
 	size_t size;
 
 	TRACE(LIBTRADING_FIX_MESSAGE_RECV(msg, flags));
+        
+        if (sock_recv_len)
+                *sock_recv_len = -1; // no data
 
 	if (!fix_message_parse(msg, self->dialect, buffer)) {
 		self->rx_timestamp = self->now;
@@ -195,6 +198,9 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 		size -= FIX_MAX_MESSAGE_SIZE;
 
 		nr = buffer_recv(buffer, self->sockfd, size, flags);
+                
+                if (sock_recv_len)
+                        *sock_recv_len = nr;
 		if (nr <= 0)
 			return NULL;
 	}
@@ -212,7 +218,12 @@ struct fix_message *fix_session_recv(struct fix_session *self, int flags)
 parsed:
 	TRACE(LIBTRADING_FIX_MESSAGE_RECV_RET());
 
-	return msg;
+	return msg;    
+}
+
+struct fix_message *fix_session_recv(struct fix_session *self, int flags)
+{
+    return fix_session_recv_len(self, flags, NULL);
 }
 
 bool fix_session_keepalive(struct fix_session *session, struct timespec *now)
