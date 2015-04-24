@@ -121,16 +121,16 @@ void fix_session_free(struct fix_session *self)
 	free(self);
 }
 
-int fix_session_time_update(struct fix_session *self)
+int fix_session_time_update_timespec(struct fix_session *self, struct timespec *ts)
 {
 	struct timeval tv;
 	struct tm *tm;
 	char fmt[64];
-
-	if (clock_gettime(CLOCK_MONOTONIC, &self->now))
-		goto fail;
-
-	gettimeofday(&tv, NULL);
+        
+        self->now.tv_sec  = ts->tv_sec;
+        self->now.tv_nsec = ts->tv_nsec;
+        
+        TIMESPEC_TO_TIMEVAL(&tv, ts);
 
 	tm = gmtime(&tv.tv_sec);
 	if (!tm)
@@ -141,6 +141,17 @@ int fix_session_time_update(struct fix_session *self)
 					fmt, (long)tv.tv_usec / 1000);
 
 	return 0;
+
+fail:
+	return -1;
+}
+
+int fix_session_time_update(struct fix_session *self)
+{
+	if (clock_gettime(CLOCK_MONOTONIC, &self->now))
+		goto fail;
+
+        return fix_session_time_update_timespec(self, &self->now);
 
 fail:
 	return -1;
