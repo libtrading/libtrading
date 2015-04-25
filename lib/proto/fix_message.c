@@ -1,12 +1,13 @@
 #include "libtrading/proto/fix_message.h"
 
 #include "libtrading/proto/fix_session.h"
-#include "libtrading/modp_numtoa.h"
 #include "libtrading/read-write.h"
 #include "libtrading/buffer.h"
 #include "libtrading/array.h"
 #include "libtrading/trace.h"
 #include "libtrading/itoa.h"
+
+#include "modp_numtoa.h"
 
 #include <sys/socket.h>
 #include <inttypes.h>

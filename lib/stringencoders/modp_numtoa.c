@@ -1,12 +1,12 @@
 /* -*- mode: c; c-basic-offset: 4; indent-tabs-mode: nil; tab-width: 4 -*- */
 /* vi: set expandtab shiftwidth=4 tabstop=4: */
 
-#include "libtrading/modp_numtoa.h"
+#include "modp_numtoa.h"
 
 #include <stdio.h>
 #include <math.h>
 
-#include "libtrading/modp_stdint.h"
+#include "modp_stdint.h"
 
 /*
  * other interesting references on num to string convesion

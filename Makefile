@@ -88,6 +88,7 @@ PROGRAMS += tools/tape/tape
 DEFINES =
 INCLUDES += $(shell sh -c 'xml2-config --cflags')
 INCLUDES += $(shell sh -c 'pkg-config --cflags glib-2.0')
+INCLUDES += -Ilib/stringencoders
 
 EXTRA_LIBS += $(shell sh -c 'xml2-config --libs')
 EXTRA_LIBS += $(shell sh -c 'pkg-config --libs glib-2.0')$
