@@ -41,6 +41,14 @@ struct fix_session_cfg {
 	unsigned long		out_msg_seq_num;
 };
 
+enum fix_failure_reason {
+	FIX_SUCCESS		= 0,
+	FIX_FAILURE_CONN_CLOSED = 1,
+	FIX_FAILURE_RECV_ZERO_B = 2,
+	FIX_FAILURE_SYSTEM	= 3,	// see errno
+	FIX_FAILURE_GARBLED	= 4
+};
+
 struct fix_session {
 	struct fix_dialect		*dialect;
 	int				sockfd;
@@ -70,6 +78,8 @@ struct fix_session {
 	char				testreqid[64];
 	struct timespec			tr_timestamp;
 	int				tr_pending;
+
+	enum fix_failure_reason		failure_reason;
 };
 
 static inline bool fix_msg_expected(struct fix_session *session, struct fix_message *msg)
@@ -84,7 +94,7 @@ void fix_session_free(struct fix_session *self);
 int fix_session_time_update_timespec(struct fix_session *self, struct timespec *ts);
 int fix_session_time_update(struct fix_session *self);
 int fix_session_send(struct fix_session *self, struct fix_message *msg, int flags);
-struct fix_message *fix_session_recv(struct fix_session *self, int flags);
+int fix_session_recv(struct fix_session *self, struct fix_message **msg, int flags);
 bool fix_session_keepalive(struct fix_session *session, struct timespec *now);
 bool fix_session_admin(struct fix_session *session, struct fix_message *msg);
 int fix_session_logon(struct fix_session *session);

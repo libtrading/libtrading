@@ -81,8 +81,7 @@ static int do_income(struct market *market, int sockfd)
 			goto fail;
 	}
 
-	recv_msg = fix_session_recv(trader->session, 0);
-	if (!recv_msg)
+	if (fix_session_recv(trader->session, &recv_msg, 0) <= 0)
 		goto done;
 
 	send_msg.nr_fields = 0;
