@@ -564,6 +564,7 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 	buffer->end += uitoa(self->tag, buffer_end(buffer));
 
 	buffer_put(buffer, '=');
+	self->buf_off = buffer->end;
 
 	switch (self->type) {
 	case FIX_TYPE_STRING: {
@@ -579,15 +580,18 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 		break;
 	}
 	case FIX_TYPE_FLOAT: {
-                // dtoa2 do not print leading zeros or .0, 7 digits needed sometimes
-		buffer->end += modp_dtoa2(self->float_value, buffer_end(buffer), 7);
+		// dtoa2 do not print leading zeros or .0, 7 digits needed sometimes
+		// zero pad according to user preferences
+		buffer->end += modp_dtoa2_zpad(self->float_value, buffer_end(buffer), 7, self->fixed_len);
 		break;
 	}
 	case FIX_TYPE_INT: {
-		buffer->end += i64toa(self->int_value, buffer_end(buffer));
+		// zero pad according to user preferences
+		buffer->end += modp_itoa10_zpad(self->int_value, buffer_end(buffer), self->fixed_len);
 		break;
 	}
 	case FIX_TYPE_CHECKSUM: {
+		// always fixed length
 		buffer->end += checksumtoa(self->int_value, buffer_end(buffer));
 		break;
 	}
@@ -596,6 +600,45 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 	};
 
 	buffer_put(buffer, 0x01);
+
+	return true;
+}
+
+bool fix_field_replace(struct fix_field *self, struct buffer *buffer)
+{
+	switch (self->type) {
+	case FIX_TYPE_STRING: {
+		const char *p = self->string_value;
+		char *q = buffer->data + self->buf_off;
+
+		while (*p) {
+			*q++ = *p++;
+		}
+		break;
+	}
+	case FIX_TYPE_CHAR: {
+		buffer->data[self->buf_off] = self->char_value;
+		break;
+	}
+	case FIX_TYPE_FLOAT: {
+		// dtoa2 do not print leading zeros or .0, 7 digits needed sometimes
+		// zero pad according to user preferences
+		modp_dtoa2_zpad(self->float_value, buffer->data + self->buf_off, 7, self->fixed_len);
+		break;
+	}
+	case FIX_TYPE_INT: {
+		// zero pad according to user preferences
+		modp_itoa10_zpad(self->int_value, buffer->data + self->buf_off, self->fixed_len);
+		break;
+	}
+	case FIX_TYPE_CHECKSUM: {
+		// always fixed length
+		checksumtoa(self->int_value, buffer->data + self->buf_off);
+		break;
+	}
+	default:
+		break;
+	};
 
 	return true;
 }
@@ -646,6 +689,75 @@ void fix_message_unparse(struct fix_message *self)
 	cksum		= buffer_sum(self->head_buf) + buffer_sum(self->body_buf);
 	check_sum	= FIX_CHECKSUM_FIELD(CheckSum, cksum % 256);
 	fix_field_unparse(&check_sum, self->body_buf);
+
+	TRACE(LIBTRADING_FIX_MESSAGE_UNPARSE_RET());
+}
+
+void fix_message_pre_unparse_fixed(struct fix_message *self, struct fix_message_unparse_context *ctx)
+{
+	unsigned long cksum;
+	char buf[64];
+	int i;
+
+	TRACE(LIBTRADING_FIX_MESSAGE_UNPARSE(self));
+
+	strncpy(buf, self->str_now, sizeof(buf));
+
+	/* standard header */
+	ctx->msg_type		= FIX_STRING_FIELD(MsgType, fix_msg_types[self->type]);
+	ctx->sender_comp_id	= FIX_STRING_FIELD(SenderCompID, self->sender_comp_id); // assume fixed length sender
+	ctx->target_comp_id	= FIX_STRING_FIELD(TargetCompID, self->target_comp_id);
+	ctx->msg_seq_num	= FIX_INT_FIXED_FIELD(MsgSeqNum, self->msg_seq_num, 6); // assume 1 million messages is enough
+	ctx->sending_time	= FIX_STRING_FIELD(SendingTime, buf);
+
+	/* body */
+	fix_field_unparse(&ctx->msg_type, self->body_buf);
+	fix_field_unparse(&ctx->sender_comp_id, self->body_buf);
+	fix_field_unparse(&ctx->target_comp_id, self->body_buf);
+	fix_field_unparse(&ctx->msg_seq_num, self->body_buf);
+	fix_field_unparse(&ctx->sending_time, self->body_buf);
+
+	for (i = 0; i < self->nr_fields; i++)
+		fix_field_unparse(&self->fields[i], self->body_buf);
+
+	/* head */
+	ctx->begin_string	= FIX_STRING_FIELD(BeginString, self->begin_string);
+	ctx->body_length	= FIX_INT_FIXED_FIELD(BodyLength, buffer_size(self->body_buf), 4); // assume 10000 characters is enough
+
+	fix_field_unparse(&ctx->begin_string, self->head_buf);
+	fix_field_unparse(&ctx->body_length, self->head_buf);
+
+	/* trailer */
+	cksum		= buffer_sum(self->head_buf) + buffer_sum(self->body_buf);
+	ctx->check_sum	= FIX_CHECKSUM_FIELD(CheckSum, cksum % 256);
+	fix_field_unparse(&ctx->check_sum, self->body_buf);
+
+	TRACE(LIBTRADING_FIX_MESSAGE_UNPARSE_RET());
+}
+
+void fix_message_replace_fixed(struct fix_message *self, struct fix_message_unparse_context *ctx) {
+	unsigned long cksum;
+	char buf[64];
+	int i;
+
+	TRACE(LIBTRADING_FIX_MESSAGE_UNPARSE(self));
+
+	strncpy(buf, self->str_now, sizeof(buf));
+
+	/* body */
+	fix_field_replace(&ctx->sender_comp_id, self->body_buf);
+	fix_field_replace(&ctx->target_comp_id, self->body_buf);
+	fix_field_replace(&ctx->msg_seq_num,  self->body_buf);
+	fix_field_replace(&ctx->sending_time, self->body_buf);
+
+	for (i = 0; i < self->nr_fields; i++)
+		if (self->fields[i].fixed_len > 0) // replace fixed length only
+			fix_field_replace(&self->fields[i], self->body_buf);
+
+	/* trailer */
+	cksum = buffer_sum(self->head_buf) + buffer_sum(self->body_buf);
+	ctx->check_sum.int_value = cksum % 256;
+	fix_field_replace(&ctx->check_sum, self->body_buf);
 
 	TRACE(LIBTRADING_FIX_MESSAGE_UNPARSE_RET());
 }
