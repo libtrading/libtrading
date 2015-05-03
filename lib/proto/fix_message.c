@@ -323,7 +323,7 @@ static bool verify_checksum(struct fix_message *self, struct buffer *buffer)
  * - "CheckSum=" ("10=") is 3 bytes long
  * - "MsgType=" ("35=") is 3 bytes long
  */
-static int checksum(struct fix_message *self, struct buffer *buffer)
+static int checksum(struct fix_message *self, struct buffer *buffer, int flags)
 {
 	const char *start;
 	int offset;
@@ -340,6 +340,11 @@ static int checksum(struct fix_message *self, struct buffer *buffer)
 	 */
 	if (buffer_size(buffer) + offset < self->body_length + 7) {
 		ret = FIX_MSG_STATE_PARTIAL;
+		goto exit;
+	}
+
+	if (flags & FIX_PARSE_FAST) {
+		ret = 0;
 		goto exit;
 	}
 
@@ -428,7 +433,7 @@ exit:
 	return ret;
 }
 
-int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer)
+int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer, int flags)
 {
 	unsigned long size;
 	const char *start;
@@ -450,7 +455,7 @@ retry:
 	if (ret)
 		goto fail;
 
-	ret = checksum(self, buffer);
+	ret = checksum(self, buffer, flags);
 	if (ret)
 		goto fail;
 

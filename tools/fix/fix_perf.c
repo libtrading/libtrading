@@ -96,12 +96,26 @@ int main(int argc, char *argv[])
 
 	buffer_append(rx_buf, head_buf);
 	buffer_append(rx_buf, body_buf);
+	rx_buf->start = 0;
 	
 	clock_gettime(CLOCK_MONOTONIC, &start);
 
 	for (i = 0; i < count; i++) {
 		rx_buf->start = 0;
-		fix_message_parse(rx_msg, &fix_dialects[FIX_4_2], rx_buf);
+		fix_message_parse(rx_msg, &fix_dialects[FIX_4_2], rx_buf, FIX_PARSE_FAST);
+	}
+
+	clock_gettime(CLOCK_MONOTONIC, &end);
+
+	elapsed_nsec = timespec_delta(&start, &end);
+
+	printf("%-10s %d %f µs/message\n", "parse/fast", count, (double)elapsed_nsec/(double)count/1000.0);
+
+	clock_gettime(CLOCK_MONOTONIC, &start);
+
+	for (i = 0; i < count; i++) {
+		rx_buf->start = 0;
+		fix_message_parse(rx_msg, &fix_dialects[FIX_4_2], rx_buf, 0);
 	}
 
 	clock_gettime(CLOCK_MONOTONIC, &end);
