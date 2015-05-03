@@ -162,6 +162,13 @@ struct fix_field {
 		{ .int_value	= v },			\
 	}
 
+#define FIX_CHAR_FIELD(t, v)				\
+	(struct fix_field) {				\
+		.tag		= t,			\
+		.type		= FIX_TYPE_CHAR,	\
+		{ .char_value	= v },			\
+	}
+
 struct fix_message {
 	enum fix_msg_type		type;
 
