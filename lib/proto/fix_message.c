@@ -290,6 +290,7 @@ retry:
 		self->fields[nr_fields++] = FIX_FLOAT_FIELD(tag, strtod(tag_ptr, NULL));
 		goto retry;
 	case FIX_TYPE_CHAR:
+		self->fields[nr_fields++] = FIX_CHAR_FIELD(tag, tag_ptr[0]);
 		goto retry;
 	case FIX_TYPE_STRING:
 		self->fields[nr_fields++] = FIX_STRING_FIELD(tag, tag_ptr);
