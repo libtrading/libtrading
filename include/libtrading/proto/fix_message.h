@@ -123,8 +123,11 @@ enum fix_tag {
 };
 
 struct fix_field {
-	int                             tag;
+	int				tag;
 	enum fix_type			type;
+
+	unsigned long			buf_off;
+	int				fixed_len;
 
 	union {
 		int64_t			int_value;
@@ -138,6 +141,17 @@ struct fix_field {
 	(struct fix_field) {				\
 		.tag		= t,			\
 		.type		= FIX_TYPE_INT,		\
+		.buf_off	= -1,			\
+		.fixed_len	= -1,			\
+		{ .int_value	= v },			\
+	}
+
+#define FIX_INT_FIXED_FIELD(t, v, l)			\
+	(struct fix_field) {				\
+		.tag		= t,			\
+		.type		= FIX_TYPE_INT,		\
+		.buf_off	= -1,			\
+		.fixed_len	= l,			\
 		{ .int_value	= v },			\
 	}
 
@@ -145,6 +159,17 @@ struct fix_field {
 	(struct fix_field) {				\
 		.tag		= t,			\
 		.type		= FIX_TYPE_STRING,	\
+		.buf_off	= -1,			\
+		.fixed_len	= -1,			\
+		{ .string_value	= s },			\
+	}
+
+#define FIX_STRING_FIXED_FIELD(t, s, l)			\
+	(struct fix_field) {				\
+		.tag		= t,			\
+		.type		= FIX_TYPE_STRING,	\
+		.buf_off	= -1,			\
+		.fixed_len	= l,			\
 		{ .string_value	= s },			\
 	}
 
@@ -152,6 +177,17 @@ struct fix_field {
 	(struct fix_field) {				\
 		.tag		= t,			\
 		.type		= FIX_TYPE_FLOAT,	\
+		.buf_off	= -1,			\
+		.fixed_len	= -1,			\
+		{ .float_value  = v },			\
+	}
+
+#define FIX_FLOAT_FIXED_FIELD(t, v, l)			\
+	(struct fix_field) {				\
+		.tag		= t,			\
+		.type		= FIX_TYPE_FLOAT,	\
+		.buf_off	= -1,			\
+		.fixed_len	= l,			\
 		{ .float_value  = v },			\
 	}
 
@@ -159,6 +195,8 @@ struct fix_field {
 	(struct fix_field) {				\
 		.tag		= t,			\
 		.type		= FIX_TYPE_CHECKSUM,	\
+		.buf_off	= -1,			\
+		.fixed_len	= 3,			\
 		{ .int_value	= v },			\
 	}
 
@@ -195,7 +233,19 @@ struct fix_message {
 	struct fix_field		*fields;
 };
 
+struct fix_message_unparse_context {
+	struct fix_field sender_comp_id;
+	struct fix_field target_comp_id;
+	struct fix_field begin_string;
+	struct fix_field sending_time;
+	struct fix_field body_length;
+	struct fix_field msg_seq_num;
+	struct fix_field check_sum;
+	struct fix_field msg_type;
+};
+
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer);
+bool fix_field_replace(struct fix_field *self, struct buffer *buffer);
 
 struct fix_message *fix_message_new(void);
 void fix_message_free(struct fix_message *self);
@@ -204,6 +254,9 @@ void fix_message_add_field(struct fix_message *msg, struct fix_field *field);
 
 void fix_message_unparse(struct fix_message *self);
 int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer);
+
+void fix_message_pre_unparse_fixed(struct fix_message *self, struct fix_message_unparse_context *ctx);
+void fix_message_replace_fixed(struct fix_message *self, struct fix_message_unparse_context *ctx);
 
 int fix_get_field_count(struct fix_message *self);
 struct fix_field *fix_get_field_at(struct fix_message *self, int index);

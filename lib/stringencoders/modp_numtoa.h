@@ -40,6 +40,15 @@
  */
 size_t modp_itoa10(int32_t value, char* buf);
 
+/** \brief convert an signed integer to char buffer with leading zeroes padding
+ *         no C string terminator
+ *
+ * \param[in] value
+ * \param[out] buf the output buffer.  Should be 16 chars or more.
+ * \param[in] fixed_len
+ */
+size_t modp_itoa10_zpad(int32_t value, char* buf, int32_t fixed_len);
+
 /** \brief convert an unsigned integer to char buffer
  *
  * \param[in] value
@@ -93,6 +102,25 @@ size_t modp_dtoa(double value, char* buf, int precision);
  *    Can only be 0-9.
  */
 size_t modp_dtoa2(double value, char* buf, int precision);
+
+/** \brief convert a floating point number to char buffer with a
+ *         variable-precision format, and no trailing zeros but with leading
+ *         zero padding
+ *
+ * This is similar to "%.[0-9]f" in the printf style, except it will
+ * NOT include trailing zeros after the decimal point.  This type
+ * of format oddly does not exists with printf.
+ *
+ * If the input value is greater than 1<<31, then the output format
+ * will be switched exponential format.
+ *
+ * \param[in] value
+ * \param[out] buf  The allocated output buffer.  Should be 32 chars or more.
+ * \param[in] precision  Number of digits to the right of the decimal point.
+ *    Can only be 0-9.
+ * \param[in] fixed_len Number of digits (total) for zero padding.
+ */
+size_t modp_dtoa2_zpad(double value, char* buf, int precision, int fixed_len);
 
 /**
  * adds a 8-character hexadecimal representation of value
