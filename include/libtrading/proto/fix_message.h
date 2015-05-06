@@ -188,8 +188,9 @@ struct fix_message {
 	struct fix_field		*fields;
 };
 
-#define FIX_PARSE_CONVENTIONAL	0x0
-#define FIX_PARSE_FAST		0x1
+enum fix_parse_flag {
+	FIX_PARSE_NO_CSUM = 1UL << 0
+};
 
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer);
 
@@ -199,7 +200,7 @@ void fix_message_free(struct fix_message *self);
 void fix_message_add_field(struct fix_message *msg, struct fix_field *field);
 
 void fix_message_unparse(struct fix_message *self);
-int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer, int flags);
+int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer, unsigned long flags);
 
 int fix_get_field_count(struct fix_message *self);
 struct fix_field *fix_get_field_at(struct fix_message *self, int index);
