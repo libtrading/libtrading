@@ -53,7 +53,8 @@ void buffer_append(struct buffer *dst, struct buffer *src)
 	if (len > buffer_remaining(dst)) {
 		len = buffer_remaining(dst);
 	}
-	memcpy(dst->data + dst->start, dst->data + src->start, len);
+	memcpy(dst->data + dst->start, src->data + src->start, len);
+	dst->start += len;
 	dst->end += len;
 }
 

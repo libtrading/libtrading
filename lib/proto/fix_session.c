@@ -191,7 +191,7 @@ int fix_session_recv(struct fix_session *self, struct fix_message **res, int fla
 
 	TRACE(LIBTRADING_FIX_MESSAGE_RECV(msg, flags));
 
-	if (!fix_message_parse(msg, self->dialect, buffer)) {
+	if (!fix_message_parse(msg, self->dialect, buffer, 0)) {
 		self->rx_timestamp = self->now;
 		self->in_msg_seq_num++;
 		goto parsed;
@@ -214,7 +214,7 @@ int fix_session_recv(struct fix_session *self, struct fix_message **res, int fla
 		}
 	}
 
-	if (!fix_message_parse(msg, self->dialect, buffer)) {
+	if (!fix_message_parse(msg, self->dialect, buffer, 0)) {
 		self->rx_timestamp = self->now;
 		self->in_msg_seq_num++;
 		goto parsed;
