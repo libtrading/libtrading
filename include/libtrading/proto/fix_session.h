@@ -5,6 +5,7 @@
 
 #include "libtrading/buffer.h"
 
+#include <netinet/in.h>
 #include <stdbool.h>
 
 #define RECV_BUFFER_SIZE	4096UL
@@ -37,6 +38,7 @@ struct fix_session_cfg {
 	int			heartbtint;
 	struct fix_dialect	*dialect;
 	int			sockfd;
+	struct sockaddr_in	sock_endp_addr;
 	unsigned long		in_msg_seq_num;
 	unsigned long		out_msg_seq_num;
 };
