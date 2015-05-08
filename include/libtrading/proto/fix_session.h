@@ -109,6 +109,9 @@ int fix_session_order_cancel_replace(struct fix_session *session, struct fix_fie
 int fix_session_new_order_single(struct fix_session *session, struct fix_field* fields, long nr_fields);
 int fix_session_execution_report(struct fix_session *session, struct fix_field *fields, long nr_fields);
 
-#define	FIX_FLAG_PRESERVE_MSG_NUM	0x01
+enum fix_send_flag {
+	FIX_FLAG_PRESERVE_MSG_NUM = 1UL << 0,
+	FIX_FLAG_PRESERVE_BUFFER  = 1UL << 1
+};
 
 #endif
