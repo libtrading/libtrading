@@ -663,7 +663,8 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND(self, sockfd, flags));
 
-	fix_message_unparse(self);
+	if (!(flags & FIX_FLAG_PRESERVE_BUFFER))
+		fix_message_unparse(self);
 
 	buffer_to_iovec(self->head_buf, &iov[0]);
 	buffer_to_iovec(self->body_buf, &iov[1]);
@@ -674,7 +675,9 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 	}
 
 error_out:
-	self->head_buf = self->body_buf = NULL;
+	if (!(flags & FIX_FLAG_PRESERVE_BUFFER)) {
+		self->head_buf = self->body_buf = NULL;
+	}
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND_RET());
 
