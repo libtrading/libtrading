@@ -80,6 +80,8 @@ struct fix_session {
 	int				tr_pending;
 
 	enum fix_failure_reason		failure_reason;
+
+	void				*user_data;
 };
 
 static inline bool fix_msg_expected(struct fix_session *session, struct fix_message *msg)
