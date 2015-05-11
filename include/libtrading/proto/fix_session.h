@@ -39,6 +39,8 @@ struct fix_session_cfg {
 	int			sockfd;
 	unsigned long		in_msg_seq_num;
 	unsigned long		out_msg_seq_num;
+	
+	void			*user_data;
 };
 
 enum fix_failure_reason {
