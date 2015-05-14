@@ -57,7 +57,7 @@ enum fix_msg_type {
 #define FIX_MAX_MESSAGE_SIZE	(FIX_MAX_HEAD_LEN + FIX_MAX_BODY_LEN)
 
 /* Total number of elements of fix_tag type*/
-#define FIX_MAX_FIELD_NUMBER	32
+#define FIX_MAX_FIELD_NUMBER	48
 
 #define	FIX_MSG_STATE_PARTIAL	1
 #define	FIX_MSG_STATE_GARBLED	2
