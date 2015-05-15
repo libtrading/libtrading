@@ -121,16 +121,18 @@ void fix_session_free(struct fix_session *self)
 	free(self);
 }
 
-int fix_session_time_update_timespec(struct fix_session *self, struct timespec *ts)
+void fix_session_time_update_monotonic(struct fix_session *self, struct timespec *monotonic)
+{
+	self->now = *monotonic;
+}
+
+int fix_session_time_update_realtime(struct fix_session *self, struct timespec *realtime)
 {
 	struct timeval tv;
 	struct tm *tm;
 	char fmt[64];
 
-	self->now.tv_sec  = ts->tv_sec;
-	self->now.tv_nsec = ts->tv_nsec;
-
-	TIMESPEC_TO_TIMEVAL(&tv, ts);
+	TIMESPEC_TO_TIMEVAL(&tv, realtime);
 
 	tm = gmtime(&tv.tv_sec);
 	if (!tm)
@@ -150,7 +152,11 @@ int fix_session_time_update(struct fix_session *self)
 	if (clock_gettime(CLOCK_MONOTONIC, &self->now))
 		goto fail;
 
-	return fix_session_time_update_timespec(self, &self->now);
+	struct timespec realtime;
+	if (clock_gettime(CLOCK_REALTIME, &realtime))
+		goto fail;
+
+	return fix_session_time_update_realtime(self, &realtime);
 fail:
 	return -1;
 }
