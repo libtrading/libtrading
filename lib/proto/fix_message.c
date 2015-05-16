@@ -344,7 +344,7 @@ static int checksum(struct fix_message *self, struct buffer *buffer, unsigned lo
 		goto exit;
 	}
 
-	if (flags & FIX_PARSE_NO_CSUM) {
+	if (flags & FIX_PARSE_FLAG_NO_CSUM) {
 		ret = 0;
 		goto exit;
 	}
@@ -663,7 +663,7 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND(self, sockfd, flags));
 
-	if (!(flags & FIX_FLAG_PRESERVE_BUFFER))
+	if (!(flags & FIX_SEND_FLAG_PRESERVE_BUFFER))
 		fix_message_unparse(self);
 
 	buffer_to_iovec(self->head_buf, &iov[0]);
@@ -675,7 +675,7 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 	}
 
 error_out:
-	if (!(flags & FIX_FLAG_PRESERVE_BUFFER)) {
+	if (!(flags & FIX_SEND_FLAG_PRESERVE_BUFFER)) {
 		self->head_buf = self->body_buf = NULL;
 	}
 

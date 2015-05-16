@@ -155,13 +155,13 @@ fail:
 	return -1;
 }
 
-int fix_session_send(struct fix_session *self, struct fix_message *msg, int flags)
+int fix_session_send(struct fix_session *self, struct fix_message *msg, unsigned long flags)
 {
 	msg->begin_string	= self->begin_string;
 	msg->sender_comp_id	= self->sender_comp_id;
 	msg->target_comp_id	= self->target_comp_id;
 
-	if (!(flags && FIX_FLAG_PRESERVE_MSG_NUM))
+	if (!(flags && FIX_SEND_FLAG_PRESERVE_MSG_NUM))
 		msg->msg_seq_num	= self->out_msg_seq_num++;
 
 	msg->head_buf = self->tx_head_buffer;
@@ -180,7 +180,12 @@ static inline bool fix_session_buffer_full(struct fix_session *session)
 	return buffer_remaining(session->rx_buffer) <= FIX_MAX_MESSAGE_SIZE;
 }
 
-int fix_session_recv(struct fix_session *self, struct fix_message **res, int flags)
+static int translate_recv_flags(unsigned long flags)
+{
+	return flags & FIX_RECV_FLAG_MSG_DONTWAIT ? MSG_DONTWAIT : 0;
+}
+
+int fix_session_recv(struct fix_session *self, struct fix_message **res, unsigned long flags)
 {
 	struct fix_message *msg = self->rx_message;
 	struct buffer *buffer = self->rx_buffer;
@@ -191,7 +196,7 @@ int fix_session_recv(struct fix_session *self, struct fix_message **res, int fla
 
 	TRACE(LIBTRADING_FIX_MESSAGE_RECV(msg, flags));
 
-	if (!fix_message_parse(msg, self->dialect, buffer, 0)) {
+	if (!fix_message_parse(msg, self->dialect, buffer, flags)) {
 		self->rx_timestamp = self->now;
 		self->in_msg_seq_num++;
 		goto parsed;
@@ -206,7 +211,7 @@ int fix_session_recv(struct fix_session *self, struct fix_message **res, int fla
 
 		size -= FIX_MAX_MESSAGE_SIZE;
 
-		nr = buffer_recv(buffer, self->sockfd, size, flags);
+		nr = buffer_recv(buffer, self->sockfd, size, translate_recv_flags(flags));
 
 		if (nr <= 0) {
 			self->failure_reason = nr == 0 ? FIX_FAILURE_CONN_CLOSED : FIX_FAILURE_SYSTEM;
@@ -214,7 +219,7 @@ int fix_session_recv(struct fix_session *self, struct fix_message **res, int fla
 		}
 	}
 
-	if (!fix_message_parse(msg, self->dialect, buffer, 0)) {
+	if (!fix_message_parse(msg, self->dialect, buffer, flags)) {
 		self->rx_timestamp = self->now;
 		self->in_msg_seq_num++;
 		goto parsed;
@@ -448,7 +453,7 @@ int fix_session_logon(struct fix_session *session)
 	session->active = true;
 
 retry:
-	if (fix_session_recv(session, &response, MSG_DONTWAIT) <= 0)
+	if (fix_session_recv(session, &response, FIX_RECV_FLAG_MSG_DONTWAIT) <= 0)
 		goto retry;
 
 	if (!fix_msg_expected(session, response)) {
@@ -497,7 +502,7 @@ retry:
 	if (end.tv_sec - start.tv_sec > 2)
 		return 0;
 
-	if (fix_session_recv(session, &response, MSG_DONTWAIT) <= 0)
+	if (fix_session_recv(session, &response, FIX_RECV_FLAG_MSG_DONTWAIT) <= 0)
 		goto retry;
 
 	if (fix_session_admin(session, response))
@@ -608,7 +613,7 @@ int fix_session_sequence_reset(struct fix_session *session, unsigned long msg_se
 		.fields		= fields,
 	};
 
-	return fix_session_send(session, &sequence_reset_msg, FIX_FLAG_PRESERVE_MSG_NUM);
+	return fix_session_send(session, &sequence_reset_msg, FIX_SEND_FLAG_PRESERVE_MSG_NUM);
 }
 
 int fix_session_new_order_single(struct fix_session *session,

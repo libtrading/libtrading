@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
 	for (i = 0; i < count; i++) {
 		rx_buf->start = 0;
-		fix_message_parse(rx_msg, &fix_dialects[FIX_4_2], rx_buf, FIX_PARSE_NO_CSUM);
+		fix_message_parse(rx_msg, &fix_dialects[FIX_4_2], rx_buf, FIX_PARSE_FLAG_NO_CSUM);
 	}
 
 	clock_gettime(CLOCK_MONOTONIC, &end);
