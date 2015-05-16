@@ -8,6 +8,7 @@ struct fix_client_arg {
 	const char *script;
 	const char *output;
 	int orders;
+	int warmup_orders;
 };
 
 struct fix_client_function {

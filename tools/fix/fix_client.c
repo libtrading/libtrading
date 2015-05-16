@@ -343,6 +343,17 @@ static int fix_client_order(struct fix_session_cfg *cfg, struct fix_client_arg *
 	max_usec	= 0;
 	total_usec	= 0;
 
+	for (i = 0; i < arg->warmup_orders; i++) {
+		fix_session_new_order_single(session, fields, nr);
+
+retry_warmup:
+		if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0)
+			goto retry_warmup;
+
+		if (!fix_message_type_is(msg, FIX_MSG_TYPE_EXECUTION_REPORT))
+			goto retry_warmup;
+	}
+
 	for (i = 0; i < orders; i++) {
 		struct timespec before, after;
 		uint64_t elapsed_usec;
@@ -398,7 +409,7 @@ exit:
 
 static void usage(void)
 {
-	printf("\n usage: %s [-m mode] [-d dialect] [-f filename] [-n orders] [-s sender-comp-id] [-t target-comp-id] [-r password] -h hostname -p port\n\n", program);
+	printf("\n usage: %s [-m mode] [-d dialect] [-f filename] [-n orders] [-s sender-comp-id] [-t target-comp-id] [-r password] [-w warmup orders] -h hostname -p port\n\n", program);
 
 	exit(EXIT_FAILURE);
 }
@@ -466,7 +477,7 @@ int main(int argc, char *argv[])
 
 	program = basename(argv[0]);
 
-	while ((opt = getopt(argc, argv, "f:h:p:d:s:t:m:n:o:r:")) != -1) {
+	while ((opt = getopt(argc, argv, "f:h:p:d:s:t:m:n:o:r:w:")) != -1) {
 		switch (opt) {
 		case 'd':
 			version = strversion(optarg);
@@ -497,6 +508,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'h':
 			host = optarg;
+			break;
+		case 'w':
+			arg.warmup_orders = atoi(optarg);
 			break;
 		default: /* '?' */
 			usage();
