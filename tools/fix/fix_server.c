@@ -38,7 +38,7 @@ static bool fix_server_logon(struct fix_session *session)
 	struct fix_message *msg;
 
 retry:
-	if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0)
+	if (fix_session_recv(session, &msg, FIX_RECV_FLAG_MSG_DONTWAIT) <= 0)
 		goto retry;
 
 	if (!fix_message_type_is(msg, FIX_MSG_TYPE_LOGON))
@@ -64,7 +64,7 @@ retry:
 	if (!session->active)
 		goto exit;
 
-	if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0)
+	if (fix_session_recv(session, &msg, FIX_RECV_FLAG_MSG_DONTWAIT) <= 0)
 		goto retry;
 
 	if (!fix_message_type_is(msg, FIX_MSG_TYPE_LOGOUT))
@@ -135,7 +135,7 @@ static int fix_server_script(struct fix_session_cfg *cfg, struct fix_server_arg 
 	expected_elem = cur_elem(c_container);
 
 	while (expected_elem) {
-		if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0)
+		if (fix_session_recv(session, &msg, FIX_RECV_FLAG_MSG_DONTWAIT) <= 0)
 			continue;
 
 		fprintf(stdout, "> ");
@@ -217,7 +217,7 @@ static int fix_server_session(struct fix_session_cfg *cfg, struct fix_server_arg
 	if (!session)
 		goto exit;
 
-	fix_session_recv(session, &msg, MSG_DONTWAIT);
+	fix_session_recv(session, &msg, FIX_RECV_FLAG_MSG_DONTWAIT);
 
 	logon_msg	= (struct fix_message) {
 		.type		= FIX_MSG_TYPE_LOGON,
@@ -234,7 +234,7 @@ static int fix_server_session(struct fix_session_cfg *cfg, struct fix_server_arg
 	for (;;) {
 		struct fix_message logout_msg;
 
-		if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0)
+		if (fix_session_recv(session, &msg, FIX_RECV_FLAG_MSG_DONTWAIT) <= 0)
 			continue;
 		else if (fix_message_type_is(msg, FIX_MSG_TYPE_NEW_ORDER_SINGLE)) {
 			fix_session_execution_report(session, fields, nr);

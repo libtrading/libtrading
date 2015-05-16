@@ -97,8 +97,8 @@ struct fix_session *fix_session_new(struct fix_session_cfg *cfg);
 void fix_session_free(struct fix_session *self);
 int fix_session_time_update_timespec(struct fix_session *self, struct timespec *ts);
 int fix_session_time_update(struct fix_session *self);
-int fix_session_send(struct fix_session *self, struct fix_message *msg, int flags);
-int fix_session_recv(struct fix_session *self, struct fix_message **msg, int flags);
+int fix_session_send(struct fix_session *self, struct fix_message *msg, unsigned long flags);
+int fix_session_recv(struct fix_session *self, struct fix_message **msg, unsigned long flags);
 bool fix_session_keepalive(struct fix_session *session, struct timespec *now);
 bool fix_session_admin(struct fix_session *session, struct fix_message *msg);
 int fix_session_logon(struct fix_session *session);
@@ -114,8 +114,12 @@ int fix_session_new_order_single(struct fix_session *session, struct fix_field* 
 int fix_session_execution_report(struct fix_session *session, struct fix_field *fields, long nr_fields);
 
 enum fix_send_flag {
-	FIX_FLAG_PRESERVE_MSG_NUM = 1UL << 0,
-	FIX_FLAG_PRESERVE_BUFFER  = 1UL << 1
+	FIX_SEND_FLAG_PRESERVE_MSG_NUM = 1UL << 0, // lower 16 bits
+	FIX_SEND_FLAG_PRESERVE_BUFFER  = 1UL << 1,
+};
+
+enum fix_recv_flag {
+	FIX_RECV_FLAG_MSG_DONTWAIT = 1UL << 16, // upper 16 bits
 };
 
 #endif
