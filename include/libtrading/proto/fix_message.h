@@ -196,7 +196,7 @@ struct fix_message {
 };
 
 enum fix_parse_flag {
-	FIX_PARSE_NO_CSUM = 1UL << 0
+	FIX_PARSE_FLAG_NO_CSUM = 1UL << 0
 };
 
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer);

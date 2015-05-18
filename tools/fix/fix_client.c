@@ -146,7 +146,7 @@ static int fix_client_script(struct fix_session_cfg *cfg, struct fix_client_arg 
 
 	while (tosend_elem) {
 		if (tosend_elem->msg.msg_seq_num)
-			fix_session_send(session, &tosend_elem->msg, FIX_FLAG_PRESERVE_MSG_NUM);
+			fix_session_send(session, &tosend_elem->msg, FIX_SEND_FLAG_PRESERVE_MSG_NUM);
 		else
 			fix_session_send(session, &tosend_elem->msg, 0);
 
@@ -154,7 +154,7 @@ static int fix_client_script(struct fix_session_cfg *cfg, struct fix_client_arg 
 			goto next;
 
 retry:
-		if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0)
+		if (fix_session_recv(session, &msg, FIX_RECV_FLAG_MSG_DONTWAIT) <= 0)
 			goto retry;
 
 		fprintf(stdout, "< ");
@@ -241,7 +241,7 @@ static int fix_client_session(struct fix_session_cfg *cfg, struct fix_client_arg
 			break;
 		}
 
-		if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0) {
+		if (fix_session_recv(session, &msg, FIX_RECV_FLAG_MSG_DONTWAIT) <= 0) {
 			fprintmsg(stdout, msg);
 
 			if (fix_session_admin(session, msg))
@@ -363,7 +363,7 @@ retry_warmup:
 		fix_session_new_order_single(session, fields, nr);
 
 retry:
-		if (fix_session_recv(session, &msg, MSG_DONTWAIT) <= 0)
+		if (fix_session_recv(session, &msg, FIX_RECV_FLAG_MSG_DONTWAIT) <= 0)
 			goto retry;
 
 		if (!fix_message_type_is(msg, FIX_MSG_TYPE_EXECUTION_REPORT))
