@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in sa;
 	int sockfd = -1;
 	int port = 0;
-	int ret = -1;
+	int ret = EXIT_FAILURE;
 	int opt;
 
 	program = basename(argv[0]);
@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
 
 	event_base_dispatch(base);
 
-	ret = 0;
+	ret = EXIT_SUCCESS;
 
 exit:
 	close(sockfd);

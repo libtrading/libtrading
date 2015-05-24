@@ -19,7 +19,7 @@ static const char *usage_fmt =
 static void usage(void)
 {
 	fprintf(stderr, usage_fmt, program);
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 static const struct option options[] = {
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 
 	if (version) {
 		printf("%s\n", LIBTRADING_VERSION);
-		return 0;
+		return EXIT_SUCCESS;
 	}
 
 	if (cflags)
@@ -84,5 +84,5 @@ int main(int argc, char *argv[])
 
 	printf("\n");
 
-	return 0;
+	return EXIT_SUCCESS;
 }

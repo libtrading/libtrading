@@ -345,10 +345,10 @@ int main(int argc, char *argv[])
 
 	free(book_set);
 
-	return 0;
+	return EXIT_SUCCESS;
 
 fail:
 	free(book_set);
 
-	return -1;
+	return EXIT_FAILURE;
 }

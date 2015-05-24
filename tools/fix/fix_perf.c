@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	buffer_append(rx_buf, head_buf);
 	buffer_append(rx_buf, body_buf);
 	rx_buf->start = 0;
-	
+
 	clock_gettime(CLOCK_MONOTONIC, &start);
 
 	for (i = 0; i < count; i++) {
