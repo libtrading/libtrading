@@ -199,6 +199,9 @@ enum fix_parse_flag {
 	FIX_PARSE_FLAG_NO_CSUM = 1UL << 0
 };
 
+int fix_atoi(const char *p, const char **end);
+int fix_uatoi(const char *p, const char **end);
+
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer);
 
 struct fix_message *fix_message_new(void);

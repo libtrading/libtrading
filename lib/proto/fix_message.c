@@ -94,7 +94,7 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 	}
 }
 
-static int fix_atoi(const char *p, const char **end)
+int fix_atoi(const char *p, const char **end)
 {
 	int ret = 0;
 	bool neg = false;
@@ -115,7 +115,7 @@ static int fix_atoi(const char *p, const char **end)
 	return ret;
 }
 
-static inline int fix_uatoi(const char *p, const char **end)
+inline int fix_uatoi(const char *p, const char **end)
 {
 	int ret = 0;
 	while (*p >= '0' && *p <= '9') {
