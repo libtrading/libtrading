@@ -62,6 +62,8 @@ enum fix_msg_type {
 #define	FIX_MSG_STATE_PARTIAL	1
 #define	FIX_MSG_STATE_GARBLED	2
 
+extern const char *fix_msg_types[FIX_MSG_TYPE_MAX];
+
 enum fix_type {
 	FIX_TYPE_INT,
 	FIX_TYPE_FLOAT,
@@ -124,7 +126,7 @@ enum fix_tag {
 };
 
 struct fix_field {
-	int                             tag;
+	int				tag;
 	enum fix_type			type;
 
 	union {

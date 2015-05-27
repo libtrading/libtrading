@@ -19,7 +19,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
+const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
 	[FIX_MSG_TYPE_HEARTBEAT]		= "0",
 	[FIX_MSG_TYPE_TEST_REQUEST]		= "1",
 	[FIX_MSG_TYPE_RESEND_REQUEST]		= "2",
@@ -591,7 +591,7 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 		break;
 	}
 	case FIX_TYPE_FLOAT: {
-                // dtoa2 do not print leading zeros or .0, 7 digits needed sometimes
+		// dtoa2 do not print leading zeros or .0, 7 digits needed sometimes
 		buffer->end += modp_dtoa2(self->float_value, buffer_end(buffer), 7);
 		break;
 	}
