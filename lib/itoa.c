@@ -106,3 +106,27 @@ int checksumtoa(int n, char *s)
 
 	return p - s;
 }
+
+static void strreverse(char* begin, char* end)
+{
+	char aux;
+	while (end > begin)
+		aux = *end, *end-- = *begin, *begin++ = aux;
+}
+
+size_t modp_litoa10_zpad(int64_t value, int zpad, char* str)
+{
+	char* wstr=str;
+	uint64_t uvalue = (value < 0) ? (uint64_t)(-value) : (uint64_t)(value);
+
+	/* Conversion. Number is reversed. */
+	do *wstr++ = (char)(48 + (uvalue % 10)); while(uvalue /= 10);
+	/* Pad with zeros */
+	for (zpad -= (wstr - str) + (value < 0 ? 1 : 0); zpad > 0; --zpad)
+		*wstr++ = '0';
+	if (value < 0) *wstr++ = '-';
+
+	/* Reverse string */
+	strreverse(str, wstr - 1);
+	return (size_t)(wstr - str);
+}
