@@ -69,6 +69,7 @@ enum fix_type {
 	FIX_TYPE_STRING,
 	FIX_TYPE_CHECKSUM,
 	FIX_TYPE_MSGSEQNUM,
+	FIX_TYPE_SHORT_STR,
 };
 
 enum fix_tag {
@@ -131,6 +132,7 @@ struct fix_field {
 		double			float_value;
 		char			char_value;
 		const char		*string_value;
+		char			short_str_value[8];
 	};
 };
 
@@ -167,6 +169,12 @@ struct fix_field {
 		.tag		= t,			\
 		.type		= FIX_TYPE_CHAR,	\
 		{ .char_value	= v },			\
+	}
+
+#define FIX_SHORT_STR_FIELD(t)				\
+	(struct fix_field) {				\
+		.tag		= t,			\
+		.type		= FIX_TYPE_SHORT_STR,	\
 	}
 
 struct fix_message {
