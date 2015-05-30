@@ -580,9 +580,9 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 		}
 		break;
 	}
-	case FIX_TYPE_SHORT_STR: {
-		for (int i = 0; i < sizeof(self->short_str_value) && self->short_str_value[i]; ++i) {
-			buffer_put(buffer, self->short_str_value[i]);
+	case FIX_TYPE_STRING_8: {
+		for (int i = 0; i < sizeof(self->string_8_value) && self->string_8_value[i]; ++i) {
+			buffer_put(buffer, self->string_8_value[i]);
 		}
 		break;
 	}
