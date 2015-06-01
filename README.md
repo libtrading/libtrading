@@ -93,5 +93,6 @@ Libtrading is distributed under the 2-clause BSD license.
 
 ## Contributors
 
+* Denis Ivaykin
 * Marat Stanichenko
 * Jussi Virtanen
