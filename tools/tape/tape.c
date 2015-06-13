@@ -22,14 +22,14 @@ static struct builtin_cmd builtins[] = {
 	DEFINE_BUILTIN("check",		cmd_check),
 };
 
-static struct builtin_cmd *parse_builtin_cmd(int argc, char *argv[])
+static struct builtin_cmd *get_builtin_cmd(const char *name)
 {
 	unsigned int i;
 
 	for (i = 0; i < ARRAY_SIZE(builtins); i++) {
 		struct builtin_cmd *cmd = &builtins[i];
 
-		if (strcmp(argv[1], cmd->name) == 0)
+		if (strcmp(name, cmd->name) == 0)
 			return cmd;
 	}
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 		usage();
 
-	cmd = parse_builtin_cmd(argc, argv);
+	cmd = get_builtin_cmd(argv[1]);
 	if (!cmd)
 		usage();
 
