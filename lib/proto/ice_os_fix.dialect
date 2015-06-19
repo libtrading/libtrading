@@ -1,0 +1,323 @@
+#
+# The ICE FIX OS (Order Server) dialect is based on the following specification:
+#
+#   ICE FIX OS Reference Manual
+#   FIX Protocol Support Document
+#   Version 3.4.6
+#   Date: Mar 31, 2015
+#
+
+name: "ice_os"
+base_protocol: "FIX_4_2"
+
+tags:
+  #
+  # Header & Trailer:
+  #
+  SenderCompID(49):                     { type: string }
+  TargetCompID(56):                     { type: string }
+  TargetSubID(57):                      { type: string }
+  SenderSubID(50):                      { type: string }
+  PossDupFlag(43):                      { type: char }
+  PossResend(97):                       { type: char }
+  SendingTime(52):                      { type: string }
+  CheckSum(10):                         { type: checksum }
+  #
+  # Logon:
+  #
+  UserName(553):                        { type: string }
+  RawData(96):                          { type: string }
+  EncryptMethod(98):                    { type: int }
+  ResetSeqNumFlag(141):                 { type: char }
+  HeartbeatInt(108):                    { type: int }
+  Text(58):                             { type: string }
+  #
+  # Heartbeat / Test Request:
+  #
+  TestReqID(112):                       { type: string }
+  #
+  # Resend Request:
+  #
+  BeginSeqNo(7):                        { type: int }
+  EndSeqNo(16):                         { type: int }
+  #
+  # Sequence Reset:
+  #
+  NewSeqNo(36):                         { type: int }
+  GapFillFlag(123):                     { type: char }
+  #
+  # Session Level Reject:
+  #
+  RefSeqNum(45):                        { type: int }
+  RefTagID(371):                        { type: string }
+  RefMsgType(372):                      { type: string }
+  SessionRejectReason(373):             { type: int }
+  Text(58):                             { type: string }
+  EncodedTextLen(354):                  { type: int }
+  EncodedText(355):                     { type: string }
+  #
+  # Trader Logon:
+  #
+  ClientID(109):                        { type: string }
+
+  #
+  # New Order:
+  #
+  ClOrdID(11):                          { type: string }
+  OnBehalfOfCompID(115):                { type: string }
+  OnBehalfOfSubID(116):                 { type: string }
+  OnBehalfOfLocationID(144):            { type: string }
+  OriginatorUserID(9139):               { type: string }
+  HandlInst(21):                        { type: char }
+  Symbol(55):                           { type: string }
+  SecurityType(167):                    { type: string }
+  PutOrCall(201):                       { type: char }
+  StrikePrice(202):                     { type: float }
+  CustOrderHandlingInst(1031):          { type: char }
+  Side(54):                             { type: char }
+  TransactTime(60):                     { type: string }
+  OrderQty(38):                         { type: int }
+  MaxShow(210):                         { type: int }
+  OrdType(40):                          { type: char }
+  Price(44):                            { type: float }
+  PriceType(423):                       { type: int }
+  StopPx(99):                           { type: float }
+  PositionEffect(77):                   { type: char }
+  TimeInForce(59):                      { type: char }
+  NoAllocs(78):                         { type: char }
+  AllocHandlInst(209):                  { type: char }
+  GiveUpClearingFirm(9196):             { type: int }
+  AllocAccount(79):                     { type: string }
+  AllocQty(80):                         { type: int }
+  ClearingAccount(440):                 { type: string }
+  ClearingFirm(439):                    { type: int }
+  MemoField(9121):                      { type: string }
+  AccountCode(9195):                    { type: char }
+  CTICode(9208):                        { type: char }
+  CustomerAccountRefId(9207):           { type: string }
+  #
+  # Order Cancel Request:
+  #
+  OrigClOrdID(41):                      { type: string }
+  #
+  # Order Cancel Reject:
+  #
+  OrderID(37):                          { type: int }
+  OrdStatus(39):                        { type: char }
+  CxlRejectresponseTo(434):             { type: char }
+  CxlRejectReason(102):                 { type: char }
+  #
+  # Execution Report:
+  #
+  ExecID(17):                           { type: string }
+  ExecTransType(20):                    { type: char }
+  ExecRefID(19):                        { type: string }
+  ExecType(150):                        { type: char }
+  OrdRejReason(103):                    { type: int }
+  OrderState(9175):                     { type: char }
+  LiquidityIndicator(9120):             { type: char }
+  ExecRestatementReason(378):           { type: int }
+  LeavesQty(151):                       { type: int }
+  CumQty(14):                           { type: int }
+  AvgPx(6):                             { type: float }
+  LastPx(31):                           { type: float }
+  LastParPx(669):                       { type: float }
+  LastQty(32):                          { type: int }
+  MultiLegReportingType(442):           { type: int }
+  SecondaryExecID(527):                 { type: string }
+  CrossID(548):                         { type: string }
+  CrossType(549):                       { type: char }
+  DeliveryStartDate(9520):              { type: string }
+  DeliveryEndDate(9521):                { type: string }
+  CrossExecutionType(9405):             { type: int }
+
+messages:
+  Logon:
+    MsgType: A
+    tags:
+    - UserName
+    - RawData
+    - EncryptMethod
+    - ResetSeqNumFlag
+    - HeartbeatInt
+  Logout:
+    MsgType: 5
+    tags:
+    - Text
+  Heartbeat:
+    MsgType: 0
+    tags:
+    - TestReqID
+  TestRequest:
+    MsgType: 1
+    tags:
+    - TestReqID
+  ResendRequest:
+    MsgType: 2
+    tags:
+    - BeginSeqNo
+    - EndSeqNo
+  SequenceReset:
+    MsgType: 4
+    tags:
+    - NewSeqNo
+    - GapFillFlag
+  SessionLevelReject:
+    MsgType: 3
+    tags:
+    - RefSeqNum
+    - RefTagID
+    - RefMsgType
+    - SessionRejectReason
+    - Text
+    - EncodedTextLen
+    - EncodedText
+  TraderLogin:
+    MsgType: CG
+    tags:
+    - ClientID
+    - UserName
+    - RawData
+  TraderLogout:
+    MsgType: CH
+    tags:
+    - ClientID
+    - UserName
+
+  NewOrderSingle:
+    MsgType: D
+    tags:
+    - ClOrdID
+    - ClientID
+    - OnBehalfOfCompID
+    - OnBehalfOfSubID
+    - OnBehalfOfLocationID
+    - OriginatorUserID
+    - HandlInst
+    - Symbol
+    - SecurityType
+    - PutOrCall
+    - StrikePrice
+    - CustOrderHandlingInst
+    - Side
+    - TransactTime
+    - OrderQty
+    - MaxShow
+    - OrdType
+    - Price
+    - PriceType
+    - StopPx
+    - PositionEffect
+    - TimeInForce
+    - NoAllocs
+    - AllocHandlInst
+    - GiveUpClearingFirm
+    - AllocAccount
+    - AllocQty
+    - ClearingAccount
+    - ClearingFirm
+    - MemoField
+    - AccountCode
+    - CTICode
+    - CustomerAccountRefId
+  ExecutionReport:
+    MsgType: 8
+    tags:
+    - OrderID
+    - ClOrdID
+    - OrigClOrdID
+    - ClientID
+    - OriginatorUserID
+    - ExecID
+    - ExecTransType
+    - ExecRefID
+    - ExecType
+    - OrdStatus
+    - OrdRejReason
+    - Symbol
+    - Side
+    - OrderQty
+    - SecurityID
+    - PutOrCall
+    - StrikePrice
+    - CustOrderHandlingInst
+    - MaxShow
+    - OrdType
+    - Price
+    - OrderState
+    - LiquidityIndicator
+    - ExecRestatementReason
+    - TimeInForce
+    - LeavesQty
+    - CumQty
+    - AvgPx
+    - LastPx
+    - LastParPx
+    - LastQty
+    - TransactTime
+    - MultiLegReportingType
+    - SecondaryExecID
+    - CrossID
+    - CrossType
+    - ClearingFirm
+    - ClearingAccount
+    - MemoField
+    - DeliveryStartDate
+    - DeliveryEndDate
+    - CrossExecutionType
+    - Text
+  OrderCancelRequest:
+    MsgType: F
+    tags:
+    - OrigClOrdID
+    - ClOrdID
+    - ClientID
+    - OriginatorUserID
+    - Symbol
+    - SecurityType
+    - PutOrCall
+    - StrikePrice
+    - Side
+  OrderCancelReplaceRequest:
+    MsgType: G
+    tags:
+    - OrigClOrdID
+    - ClOrdID
+    - ClientID
+    - OnBehalfOfCompID
+    - OnBehalfOfSubID
+    - OnBehalfOfLocationID
+    - OriginatorUserID
+    - HandlInst
+    - Symbol
+    - Side
+    - TransactTime
+    - OrderQty
+    - SecurityType
+    - PutOrCall
+    - StrikePrice
+    - CustOrderHandlingInst
+    - MaxShow
+    - OrdType
+    - Price
+    - PriceType
+    - StopPx
+    - TimeInForce
+    - ClearingAccount
+    - ClearingFirm
+    - MemoField
+    - AccountCode
+    - CTICode
+    - CustomerAccountRefId
+  OrderCancelReject:
+    MsgType: 9
+    tags:
+    - OrderID
+    - ClOrdID
+    - OrigClOrdID
+    - OrdStatus
+    - ClientID
+    - OriginatorUserID
+    - CxlRejectresponseTo
+    - CxlRejectReason
+    - Text
