@@ -109,6 +109,7 @@ enum fix_tag {
 	TransactTime		= 60,
 	RptSeq			= 83,
 	EncryptMethod		= 98,
+	OrdRejReason		= 103,
 	HeartBtInt		= 108,
 	TestReqID		= 112,
 	GapFillFlag		= 123,
