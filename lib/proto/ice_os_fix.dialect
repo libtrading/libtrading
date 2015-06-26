@@ -123,7 +123,7 @@ tags:
   LastPx(31):                           { type: float }
   LastParPx(669):                       { type: float }
   LastQty(32):                          { type: int }
-  MultiLegReportingType(442):           { type: int }
+  MultiLegReportingType(442):           { type: char }
   SecondaryExecID(527):                 { type: string }
   CrossID(548):                         { type: string }
   CrossType(549):                       { type: char }

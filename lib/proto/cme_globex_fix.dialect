@@ -137,7 +137,7 @@ tags:
   ContraTrader(337):                    { type: string }
   ContraBroker(375):                    { type: string }
   TotalNumSecurities(393):              { type: int }
-  MultiLegReportingType(442):           { type: int }
+  MultiLegReportingType(442):           { type: char }
   SecondaryExecID(527):                 { type: string }
   UnderlyingPx(810):                    { type: float }
   OptionDelta(811):                     { type: float }
