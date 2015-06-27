@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_NASDAQ_ITCH40_MESSAGE_H
 #define LIBTRADING_NASDAQ_ITCH40_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/types.h"
 
 struct buffer;
@@ -208,5 +212,9 @@ struct itch40_msg_noii {
 } packed;
 
 int itch40_message_decode(struct buffer *buf, struct itch40_message *msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

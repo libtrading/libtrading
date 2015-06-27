@@ -1,6 +1,10 @@
 #ifndef	LIBTRADING_FAST_FEED_H
 #define	LIBTRADING_FAST_FEED_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/proto/fast_session.h"
 
 #include <sys/socket.h>
@@ -35,5 +39,9 @@ static inline struct fast_message *fast_feed_recv(struct fast_feed *feed, int fl
 
 int fast_feed_close(struct fast_feed *feed);
 int fast_feed_open(struct fast_feed *feed);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* LIBTRADING_FAST_FEED_H */

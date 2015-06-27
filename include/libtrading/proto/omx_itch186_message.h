@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_OMX_ITCH186_MESSAGE_H
 #define LIBTRADING_OMX_ITCH186_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/types.h"
 
 struct buffer;
@@ -167,5 +171,9 @@ struct omx_itch186_msg_noii {
 unsigned long omx_itch186_message_size(u8 type);
 
 struct omx_itch186_message *omx_itch186_message_decode(struct buffer *buf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

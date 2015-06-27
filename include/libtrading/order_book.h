@@ -1,6 +1,10 @@
 #ifndef	LIBTRADING_ORDER_BOOK_H
 #define	LIBTRADING_ORDER_BOOK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libtrading/types.h>
 
 #include <stdbool.h>
@@ -64,5 +68,9 @@ int ob_clear(struct order_book *ob);
 int ob_level_modify(struct order_book *ob, struct ob_order *order);
 int ob_level_delete(struct order_book *ob, struct ob_order *order);
 struct ob_level *ob_level_lookup(struct order_book *ob, struct ob_order *order);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* LIBTRADING_ORDER_BOOK_H */

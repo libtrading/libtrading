@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_BOE_MESSAGE_H
 #define LIBTRADING_BOE_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/types.h"
 
 #include <stddef.h>
@@ -183,5 +187,9 @@ static inline void *boe_message_payload(struct boe_message *msg)
 {
 	return (void *) msg + sizeof(struct boe_header);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

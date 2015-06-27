@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_FAST_SESSION_H
 #define LIBTRADING_FAST_SESSION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libtrading/proto/fast_message.h>
 
 #include <libtrading/buffer.h>
@@ -60,5 +64,9 @@ int fast_parse_template(struct fast_session *self, const char *xml);
 struct fast_session *fast_session_new(struct fast_session_cfg *cfg);
 void fast_session_free(struct fast_session *self);
 void fast_session_reset(struct fast_session *self);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
