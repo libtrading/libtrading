@@ -208,7 +208,8 @@ struct fix_message {
 };
 
 enum fix_parse_flag {
-	FIX_PARSE_FLAG_NO_CSUM = 1UL << 0
+	FIX_PARSE_FLAG_NO_CSUM = 1UL << 0,
+	FIX_PARSE_FLAG_NO_TYPE = 1UL << 1
 };
 
 int fix_atoi(const char *p, const char **end);
