@@ -262,8 +262,8 @@ static enum fix_type fix_tag_type(int tag)
 	case Symbol:			return FIX_TYPE_STRING;
 	case Side:			return FIX_TYPE_STRING;
 	case Text:			return FIX_TYPE_STRING;
+	case OrdRejReason:		return FIX_TYPE_INT;
 	case MultiLegReportingType:	return FIX_TYPE_CHAR;
-
 	default:			return FIX_TYPE_STRING;	/* unrecognized tag */
 	}
 }
