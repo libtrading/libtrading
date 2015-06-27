@@ -368,7 +368,7 @@ exit:
 	return ret;
 }
 
-static int parse_msg_type(struct fix_message *self)
+static int parse_msg_type(struct fix_message *self, unsigned long flags)
 {
 	int ret;
 
@@ -377,12 +377,14 @@ static int parse_msg_type(struct fix_message *self)
 	if (ret)
 		goto exit;
 
-	self->type = fix_msg_type_parse(self->msg_type, 0x01);
+	if (!(flags & FIX_PARSE_FLAG_NO_TYPE)) {
+		self->type = fix_msg_type_parse(self->msg_type, 0x01);
 
-	// if third field is not MsgType -> garbled
-
-	if (fix_message_type_is(self, FIX_MSG_TYPE_UNKNOWN))
-		ret = FIX_MSG_STATE_GARBLED;
+		/* If third field is not MsgType -> garbled */
+		if (fix_message_type_is(self, FIX_MSG_TYPE_UNKNOWN))
+			ret = FIX_MSG_STATE_GARBLED;
+	} else
+		self->type = FIX_MSG_TYPE_UNKNOWN;
 
 exit:
 	return ret;
@@ -416,7 +418,7 @@ static int parse_begin_string(struct fix_message *self)
 	return match_field(self->head_buf, BeginString, &self->begin_string);
 }
 
-static int first_three_fields(struct fix_message *self)
+static int first_three_fields(struct fix_message *self, unsigned long flags)
 {
 	int ret;
 
@@ -428,7 +430,7 @@ static int first_three_fields(struct fix_message *self)
 	if (ret)
 		goto exit;
 
-	return parse_msg_type(self);
+	return parse_msg_type(self, flags);
 
 exit:
 	return ret;
@@ -452,7 +454,7 @@ retry:
 	if (!size)
 		goto fail;
 
-	ret = first_three_fields(self);
+	ret = first_three_fields(self, flags);
 	if (ret)
 		goto fail;
 
@@ -631,7 +633,9 @@ void fix_message_unparse(struct fix_message *self)
 	strncpy(buf, self->str_now, sizeof(buf));
 
 	/* standard header */
-	msg_type	= FIX_STRING_FIELD(MsgType, fix_msg_types[self->type]);
+	msg_type	= (self->type != FIX_MSG_TYPE_UNKNOWN) ?
+			FIX_STRING_FIELD(MsgType, fix_msg_types[self->type]) :
+			FIX_STRING_FIELD(MsgType, self->msg_type);
 	sender_comp_id	= FIX_STRING_FIELD(SenderCompID, self->sender_comp_id);
 	target_comp_id	= FIX_STRING_FIELD(TargetCompID, self->target_comp_id);
 	msg_seq_num	= FIX_INT_FIELD   (MsgSeqNum, self->msg_seq_num);
