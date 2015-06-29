@@ -31,6 +31,10 @@ with open(header_filename, 'w') as file:
   file.write("#ifndef %s\n" % guard)
   file.write("#define %s\n" % guard)
   file.write("\n")
+  file.write("#ifdef __cplusplus\n")
+  file.write("extern \"C\" {\n")
+  file.write("#endif\n")
+  file.write("\n")
   file.write("#include \"libtrading/proto/fix_session.h\"\n")
   file.write("\n")
 
@@ -54,6 +58,10 @@ with open(header_filename, 'w') as file:
   #
   # Footer:
   #
+  file.write("#ifdef __cplusplus\n")
+  file.write("}\n")
+  file.write("#endif\n")
+  file.write("\n")
   file.write("#endif /* %s */\n" % (guard))
 
 #

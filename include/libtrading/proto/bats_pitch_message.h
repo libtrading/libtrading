@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_BATS_PITCH_MESSAGE_H
 #define LIBTRADING_BATS_PITCH_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/types.h"
 
 struct buffer;
@@ -131,5 +135,9 @@ struct pitch_msg_auction_summary {
 } packed;
 
 struct pitch_message *pitch_message_decode(struct buffer *buf, unsigned long extra);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

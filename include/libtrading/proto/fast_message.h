@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_FAST_MESSAGE_H
 #define LIBTRADING_FAST_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libtrading/types.h>
 
 #include <stdbool.h>
@@ -303,5 +307,9 @@ struct fast_field *fast_get_field(struct fast_message *msg, const char *name);
 struct fast_message *fast_message_decode(struct fast_session *session);
 int fast_message_send(struct fast_message *self, struct fast_session *session, int flags);
 int fast_message_encode(struct fast_message *msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

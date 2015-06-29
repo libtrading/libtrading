@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_BUFFER_H
 #define LIBTRADING_BUFFER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libtrading/types.h>
 
 #include <sys/socket.h>
@@ -155,5 +159,9 @@ struct buffer *buffer_mmap(int fd, size_t len);
 void buffer_munmap(struct buffer *buf);
 
 ssize_t buffer_inflate(struct buffer *comp_buf, struct buffer *uncomp_buf, z_stream *stream);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

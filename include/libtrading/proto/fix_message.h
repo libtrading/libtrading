@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_FIX_MESSAGE_H
 #define LIBTRADING_FIX_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -238,5 +242,9 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim);
 bool fix_message_type_is(struct fix_message *self, enum fix_msg_type type);
 
 char *fix_timestamp_now(char *buf, size_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

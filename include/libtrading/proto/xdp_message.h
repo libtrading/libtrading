@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_XDP_MESSAGE_H
 #define LIBTRADING_XDP_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/types.h"
 
 #include <stddef.h>
@@ -207,5 +211,9 @@ struct xdp_msg_imbalance {
 } packed;
 
 int xdp_message_decode(struct buffer *buf, struct xdp_message *msg, size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_LSE_ITCH_MESSAGE_H
 #define LIBTRADING_LSE_ITCH_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/types.h"
 
 struct buffer;
@@ -163,5 +167,9 @@ struct lse_itch_snapshot_complete {
 } packed;
 
 int lse_itch_message_decode(struct buffer *buf, struct lse_itch_message *msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

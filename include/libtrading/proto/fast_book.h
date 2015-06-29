@@ -1,6 +1,10 @@
 #ifndef	LIBTRADING_FAST_BOOK_H
 #define	LIBTRADING_FAST_BOOK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/proto/fast_message.h"
 #include "libtrading/proto/fast_feed.h"
 #include "libtrading/order_book.h"
@@ -178,5 +182,9 @@ int fast_books_subscribe(struct fast_book_set *set, struct fast_book *book);
 int fast_books_update(struct fast_book_set *set);
 int fast_books_init(struct fast_book_set *set);
 int fast_books_fini(struct fast_book_set *set);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* LIBTRADING_FAST_BOOK_H */

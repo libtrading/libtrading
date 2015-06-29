@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_BYTE_ORDER_H
 #define LIBTRADING_BYTE_ORDER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <endian.h>
 
 /*
@@ -70,5 +74,9 @@ static inline u64 be64_to_cpu(be64 value)
 {
 	return be64toh(value);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

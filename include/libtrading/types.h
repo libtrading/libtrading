@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_TYPES_H
 #define LIBTRADING_TYPES_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #ifdef __CHECKER__
@@ -33,5 +37,9 @@ typedef uint64_t bitwise be64;
 
 #undef bitwise
 #undef force
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIBTRADING_TYPES_H */

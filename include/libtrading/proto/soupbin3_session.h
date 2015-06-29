@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_SOUPBIN3_SESSION_H
 #define LIBTRADING_SOUPBIN3_SESSION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/types.h"
 
 struct buffer;
@@ -108,5 +112,9 @@ struct soupbin3_session {
 struct soupbin3_session *soupbin3_session_new(int sockfd);
 void soupbin3_session_delete(struct soupbin3_session *session);
 int soupbin3_session_recv(struct soupbin3_session *session, struct soupbin3_packet *packet);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

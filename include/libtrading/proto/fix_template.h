@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_FIX_TEMPLATE_H
 #define LIBTRADING_FIX_TEMPLATE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "fix_message.h"
 #include "fix_session.h"
 
@@ -62,5 +66,9 @@ void fix_template_prepare(struct fix_template *self, struct fix_template_cfg *cf
 void fix_template_update_time(struct fix_template *self, const char *str_now);
 void fix_template_unparse(struct fix_template *self, struct fix_session *session);
 int fix_template_send(struct fix_template *self, int sockfd, int flags);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
