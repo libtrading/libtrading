@@ -530,6 +530,23 @@ const char *fix_get_string(struct fix_field *field, char *buffer, unsigned long 
 	return buffer;
 }
 
+double fix_get_float(struct fix_message *self, int tag, double _default_) {
+	struct fix_field *field = fix_get_field(self, tag);
+	return field ? field->float_value : _default_;
+}
+
+int64_t fix_get_int(struct fix_message *self, int tag, int64_t _default_)
+{
+	struct fix_field *field = fix_get_field(self, tag);
+	return field ? field->int_value : _default_;
+}
+
+char fix_get_char(struct fix_message *self, int tag, char _default_)
+{
+	struct fix_field *field = fix_get_field(self, tag);
+	return field ? field->char_value : _default_;
+}
+
 struct fix_message *fix_message_new(void)
 {
 	struct fix_message *self = calloc(1, sizeof *self);
