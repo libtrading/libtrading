@@ -106,7 +106,7 @@ tags:
   #
   # Order Cancel Request:
   #
-  OrderID(37):                          { type: string }
+  OrderID(37):                          { type: int }
   OrigClOrdID(41):                      { type: string }
   #
   # Order Cancel-Replace Request:
@@ -124,7 +124,7 @@ tags:
   LastPx(31):                           { type: float }
   LastQty(32):                          { type: int }
   OrdStatus(39):                        { type: char }
-  SecurityID(48):                       { type: string }
+  SecurityID(48):                       { type: int }
   ExecType(150):                        { type: char }
   LeavesQty(151):                       { type: int }
   ExecRestatementReason(378):           { type: int }
@@ -145,7 +145,7 @@ tags:
   Volatility(1188):                     { type: string }
   ExpirationTimeValue(1189):            { type: float }
   RiskFreeRate(1190):                   { type: float }
-  OrdRejReason(103):                    { type: string }
+  OrdRejReason(103):                    { type: int }
   #
   # Order Cancel Reject:
   #
@@ -171,7 +171,7 @@ tags:
   TotalAffectedOrders(533):             { type: int }
   NoAffectedOrders(534):                { type: int }
   CxlQty(84):                           { type: int }
-  AffectedOrderID(535):                 { type: string }
+  AffectedOrderID(535):                 { type: int }
   LastFragment(893):                    { type: char }
 
 messages:
