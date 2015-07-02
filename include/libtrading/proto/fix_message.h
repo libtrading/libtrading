@@ -235,6 +235,10 @@ struct fix_field *fix_get_field(struct fix_message *self, int tag);
 
 const char *fix_get_string(struct fix_field *field, char *buffer, unsigned long len);
 
+double fix_get_float(struct fix_message *self, int tag, double _default_);
+int64_t fix_get_int(struct fix_message *self, int tag, int64_t _default_);
+char fix_get_char(struct fix_message *self, int tag, char _default_);
+
 void fix_message_validate(struct fix_message *self);
 int fix_message_send(struct fix_message *self, int sockfd, int flags);
 
