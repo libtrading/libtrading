@@ -216,7 +216,7 @@ enum fix_parse_flag {
 	FIX_PARSE_FLAG_NO_TYPE = 1UL << 1
 };
 
-int fix_atoi(const char *p, const char **end);
+int64_t fix_atoi64(const char *p, const char **end);
 int fix_uatoi(const char *p, const char **end);
 
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer);

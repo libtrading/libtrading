@@ -94,9 +94,9 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 	}
 }
 
-int fix_atoi(const char *p, const char **end)
+int64_t fix_atoi64(const char *p, const char **end)
 {
-	int ret = 0;
+	int64_t ret = 0;
 	bool neg = false;
 	if (*p == '-') {
 		neg = true;
@@ -285,7 +285,7 @@ retry:
 
 	switch (type) {
 	case FIX_TYPE_INT:
-		self->fields[nr_fields++] = FIX_INT_FIELD(tag, fix_atoi(tag_ptr, NULL));
+		self->fields[nr_fields++] = FIX_INT_FIELD(tag, fix_atoi64(tag_ptr, NULL));
 		goto retry;
 	case FIX_TYPE_FLOAT:
 		self->fields[nr_fields++] = FIX_FLOAT_FIELD(tag, strtod(tag_ptr, NULL));
