@@ -171,6 +171,7 @@ LIB_H += proto/fast_message.h
 LIB_H += proto/fast_session.h
 LIB_H += proto/fix_message.h
 LIB_H += proto/fix_template.h
+LIB_H += proto/fix_session.h
 LIB_H += proto/cme_globex_fix.h
 LIB_H += proto/ice_os_fix.h
 LIB_H += proto/micex_fix.h
