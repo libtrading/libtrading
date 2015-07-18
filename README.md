@@ -74,11 +74,11 @@ Client Logout OK
 Protocol | RTT (μs)
 ---------|---------
 FAST     | 13
-FIX      | 15
+FIX      | 6
 
 The following above were obtained by running Libtrading messaging
-ping-pong tests on a 2-way 2.7GHz Sandy Bridge i7 CPU running Fedora 19
-with Linux 3.11.6.  The processes were pinned to separate physical cores
+ping-pong tests on a 4-way Intel Haswell 3.60 GHz CPU running Fedora 21
+with Linux 3.19.7-200. The processes were pinned to separate physical cores
 and the numbers include time spent in the Linux TCP/IP stack.
 
 FIX engine round-trip time frequency plot for the above looks as follows:
