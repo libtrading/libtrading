@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_OMX_MOLDUDP_MESSAGE_H
 #define LIBTRADING_OMX_MOLDUDP_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/types.h"
 
 struct omx_moldudp_header {
@@ -28,5 +32,9 @@ static inline void *omx_moldudp_message_payload(struct omx_moldudp_message *msg)
 {
 	return (void *) msg + sizeof(struct omx_moldudp_message);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

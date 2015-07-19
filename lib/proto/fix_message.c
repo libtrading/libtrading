@@ -19,7 +19,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-static const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
+const char *fix_msg_types[FIX_MSG_TYPE_MAX] = {
 	[FIX_MSG_TYPE_HEARTBEAT]		= "0",
 	[FIX_MSG_TYPE_TEST_REQUEST]		= "1",
 	[FIX_MSG_TYPE_RESEND_REQUEST]		= "2",
@@ -94,9 +94,9 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim)
 	}
 }
 
-int fix_atoi(const char *p, const char **end)
+int64_t fix_atoi64(const char *p, const char **end)
 {
-	int ret = 0;
+	int64_t ret = 0;
 	bool neg = false;
 	if (*p == '-') {
 		neg = true;
@@ -262,7 +262,8 @@ static enum fix_type fix_tag_type(int tag)
 	case Symbol:			return FIX_TYPE_STRING;
 	case Side:			return FIX_TYPE_STRING;
 	case Text:			return FIX_TYPE_STRING;
-
+	case OrdRejReason:		return FIX_TYPE_INT;
+	case MultiLegReportingType:	return FIX_TYPE_CHAR;
 	default:			return FIX_TYPE_STRING;	/* unrecognized tag */
 	}
 }
@@ -284,7 +285,7 @@ retry:
 
 	switch (type) {
 	case FIX_TYPE_INT:
-		self->fields[nr_fields++] = FIX_INT_FIELD(tag, fix_atoi(tag_ptr, NULL));
+		self->fields[nr_fields++] = FIX_INT_FIELD(tag, fix_atoi64(tag_ptr, NULL));
 		goto retry;
 	case FIX_TYPE_FLOAT:
 		self->fields[nr_fields++] = FIX_FLOAT_FIELD(tag, strtod(tag_ptr, NULL));
@@ -368,7 +369,7 @@ exit:
 	return ret;
 }
 
-static int parse_msg_type(struct fix_message *self)
+static int parse_msg_type(struct fix_message *self, unsigned long flags)
 {
 	int ret;
 
@@ -377,12 +378,14 @@ static int parse_msg_type(struct fix_message *self)
 	if (ret)
 		goto exit;
 
-	self->type = fix_msg_type_parse(self->msg_type, 0x01);
+	if (!(flags & FIX_PARSE_FLAG_NO_TYPE)) {
+		self->type = fix_msg_type_parse(self->msg_type, 0x01);
 
-	// if third field is not MsgType -> garbled
-
-	if (fix_message_type_is(self, FIX_MSG_TYPE_UNKNOWN))
-		ret = FIX_MSG_STATE_GARBLED;
+		/* If third field is not MsgType -> garbled */
+		if (fix_message_type_is(self, FIX_MSG_TYPE_UNKNOWN))
+			ret = FIX_MSG_STATE_GARBLED;
+	} else
+		self->type = FIX_MSG_TYPE_UNKNOWN;
 
 exit:
 	return ret;
@@ -416,7 +419,7 @@ static int parse_begin_string(struct fix_message *self)
 	return match_field(self->head_buf, BeginString, &self->begin_string);
 }
 
-static int first_three_fields(struct fix_message *self)
+static int first_three_fields(struct fix_message *self, unsigned long flags)
 {
 	int ret;
 
@@ -428,7 +431,7 @@ static int first_three_fields(struct fix_message *self)
 	if (ret)
 		goto exit;
 
-	return parse_msg_type(self);
+	return parse_msg_type(self, flags);
 
 exit:
 	return ret;
@@ -452,7 +455,7 @@ retry:
 	if (!size)
 		goto fail;
 
-	ret = first_three_fields(self);
+	ret = first_three_fields(self, flags);
 	if (ret)
 		goto fail;
 
@@ -527,6 +530,23 @@ const char *fix_get_string(struct fix_field *field, char *buffer, unsigned long 
 	return buffer;
 }
 
+double fix_get_float(struct fix_message *self, int tag, double _default_) {
+	struct fix_field *field = fix_get_field(self, tag);
+	return field ? field->float_value : _default_;
+}
+
+int64_t fix_get_int(struct fix_message *self, int tag, int64_t _default_)
+{
+	struct fix_field *field = fix_get_field(self, tag);
+	return field ? field->int_value : _default_;
+}
+
+char fix_get_char(struct fix_message *self, int tag, char _default_)
+{
+	struct fix_field *field = fix_get_field(self, tag);
+	return field ? field->char_value : _default_;
+}
+
 struct fix_message *fix_message_new(void)
 {
 	struct fix_message *self = calloc(1, sizeof *self);
@@ -591,7 +611,7 @@ bool fix_field_unparse(struct fix_field *self, struct buffer *buffer)
 		break;
 	}
 	case FIX_TYPE_FLOAT: {
-                // dtoa2 do not print leading zeros or .0, 7 digits needed sometimes
+		// dtoa2 do not print leading zeros or .0, 7 digits needed sometimes
 		buffer->end += modp_dtoa2(self->float_value, buffer_end(buffer), 7);
 		break;
 	}
@@ -631,7 +651,9 @@ void fix_message_unparse(struct fix_message *self)
 	strncpy(buf, self->str_now, sizeof(buf));
 
 	/* standard header */
-	msg_type	= FIX_STRING_FIELD(MsgType, fix_msg_types[self->type]);
+	msg_type	= (self->type != FIX_MSG_TYPE_UNKNOWN) ?
+			FIX_STRING_FIELD(MsgType, fix_msg_types[self->type]) :
+			FIX_STRING_FIELD(MsgType, self->msg_type);
 	sender_comp_id	= FIX_STRING_FIELD(SenderCompID, self->sender_comp_id);
 	target_comp_id	= FIX_STRING_FIELD(TargetCompID, self->target_comp_id);
 	msg_seq_num	= FIX_INT_FIELD   (MsgSeqNum, self->msg_seq_num);

@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_FIX_SESSION_H
 #define LIBTRADING_FIX_SESSION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/proto/fix_message.h"
 
 #include "libtrading/buffer.h"
@@ -122,5 +126,9 @@ enum fix_send_flag {
 enum fix_recv_flag {
 	FIX_RECV_FLAG_MSG_DONTWAIT = 1UL << 16, // upper 16 bits
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

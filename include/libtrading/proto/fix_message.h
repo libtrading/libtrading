@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_FIX_MESSAGE_H
 #define LIBTRADING_FIX_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -62,6 +66,8 @@ enum fix_msg_type {
 #define	FIX_MSG_STATE_PARTIAL	1
 #define	FIX_MSG_STATE_GARBLED	2
 
+extern const char *fix_msg_types[FIX_MSG_TYPE_MAX];
+
 enum fix_type {
 	FIX_TYPE_INT,
 	FIX_TYPE_FLOAT,
@@ -107,6 +113,7 @@ enum fix_tag {
 	TransactTime		= 60,
 	RptSeq			= 83,
 	EncryptMethod		= 98,
+	OrdRejReason		= 103,
 	HeartBtInt		= 108,
 	TestReqID		= 112,
 	GapFillFlag		= 123,
@@ -119,12 +126,13 @@ enum fix_tag {
 	MDUpdateAction		= 279,
 	TradingSessionID	= 336,
 	LastMsgSeqNumProcessed	= 369,
+	MultiLegReportingType	= 442,
 	Password		= 554,
 	MDPriceLevel		= 1023,
 };
 
 struct fix_field {
-	int                             tag;
+	int				tag;
 	enum fix_type			type;
 
 	union {
@@ -204,10 +212,11 @@ struct fix_message {
 };
 
 enum fix_parse_flag {
-	FIX_PARSE_FLAG_NO_CSUM = 1UL << 0
+	FIX_PARSE_FLAG_NO_CSUM = 1UL << 0,
+	FIX_PARSE_FLAG_NO_TYPE = 1UL << 1
 };
 
-int fix_atoi(const char *p, const char **end);
+int64_t fix_atoi64(const char *p, const char **end);
 int fix_uatoi(const char *p, const char **end);
 
 bool fix_field_unparse(struct fix_field *self, struct buffer *buffer);
@@ -226,6 +235,10 @@ struct fix_field *fix_get_field(struct fix_message *self, int tag);
 
 const char *fix_get_string(struct fix_field *field, char *buffer, unsigned long len);
 
+double fix_get_float(struct fix_message *self, int tag, double _default_);
+int64_t fix_get_int(struct fix_message *self, int tag, int64_t _default_);
+char fix_get_char(struct fix_message *self, int tag, char _default_);
+
 void fix_message_validate(struct fix_message *self);
 int fix_message_send(struct fix_message *self, int sockfd, int flags);
 
@@ -233,5 +246,9 @@ enum fix_msg_type fix_msg_type_parse(const char *s, const char delim);
 bool fix_message_type_is(struct fix_message *self, enum fix_msg_type type);
 
 char *fix_timestamp_now(char *buf, size_t len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

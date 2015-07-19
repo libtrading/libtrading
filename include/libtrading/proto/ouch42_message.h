@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_OUCH42_MESSAGE_H
 #define LIBTRADING_OUCH42_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/types.h"
 
 struct buffer;
@@ -194,5 +198,9 @@ struct ouch42_msg_order_modified {
 
 int ouch42_in_message_decode(struct buffer *buf, struct ouch42_message *msg);
 int ouch42_out_message_decode(struct buffer *buf, struct ouch42_message *msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

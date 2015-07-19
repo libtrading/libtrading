@@ -1,6 +1,10 @@
 #ifndef LIBTRADING_NYSE_TAQ_MESSAGE_H
 #define LIBTRADING_NYSE_TAQ_MESSAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "libtrading/types.h"
 
 #include <stddef.h>
@@ -98,5 +102,9 @@ static inline struct nyse_taq_msg_daily_nbbo *nyse_taq_msg_daily_nbbo_decode(str
 {
 	return nyse_taq_msg_decode(buf, sizeof(struct nyse_taq_msg_daily_nbbo));
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
