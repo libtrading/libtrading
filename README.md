@@ -32,6 +32,13 @@ $ yum install zlib-devel libxml2-devel glib2-devel vim-common ncurses-devel \
     python-yaml libevent-devel
 ```
 
+**OSX**
+
+```
+$ brew install libevent glib pkgconfig
+$ pip install pyyaml
+```
+
 Then run:
 
 ```

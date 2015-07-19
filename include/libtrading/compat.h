@@ -10,6 +10,7 @@ extern "C" {
 
 enum {
 	CLOCK_MONOTONIC,
+	CLOCK_REALTIME,
 };
 
 typedef int clockid_t;
