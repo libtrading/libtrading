@@ -33,8 +33,6 @@ typedef uint16_t bitwise be16;
 typedef uint32_t bitwise be32;
 typedef uint64_t bitwise be64;
 
-#define packed __attribute__ ((packed))
-
 #undef bitwise
 #undef force
 

@@ -11,17 +11,17 @@ struct omx_moldudp_header {
 	char			Session[10];
 	le32			SequenceNumber;
 	le16			MessageCount;
-} packed;
+} __attribute__((packed));
 
 struct omx_moldudp_message {
 	le16			MessageLength;
-} packed;
+} __attribute__((packed));
 
 struct omx_moldudp_request {
 	char			Session[10];
 	le32			SequenceNumber;
 	le16			RequestedMessageCount;
-} packed;
+} __attribute__((packed));
 
 static inline struct omx_moldudp_message *omx_moldudp_payload(struct omx_moldudp_header *msg)
 {

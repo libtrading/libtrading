@@ -104,7 +104,7 @@ struct lse_itch_login_request {
 	u8			MessageType;
 	char			Username[6];
 	char			Password[8];
-} packed;
+} __attribute__((packed));
 
 /* LSE_ITCH_MSG_REPLAY_REQUEST */
 struct lse_itch_replay_request {
@@ -113,7 +113,7 @@ struct lse_itch_replay_request {
 	u8			MarketDataGroup;
 	le32			FirstMessage;
 	le16			Count;
-} packed;
+} __attribute__((packed));
 
 /* LSE_ITCH_MSG_SNAPSHOT_REQUEST */
 struct lse_itch_snapshot_request {
@@ -122,20 +122,20 @@ struct lse_itch_snapshot_request {
 	le32			SequenceNumber;
 	char			Segment[6];
 	le32			InstrumentID;
-} packed;
+} __attribute__((packed));
 
 /* LSE_ITCH_MSG_LOGOUT_REQUEST */
 struct lse_itch_logout_request {
 	u8			Length;
 	u8			MessageType;
-} packed;
+} __attribute__((packed));
 
 /* LSE_ITCH_MSG_LOGIN_RESPONSE */
 struct lse_itch_logout_response {
 	u8			Length;
 	u8			MessageType;
 	u8			Status;		/* See LSE_ITCH_LOGIN_STATUS enum */
-} packed;
+} __attribute__((packed));
 
 /* LSE_ITCH_MSG_REPLAY_RESPONSE */
 struct lse_itch_replay_response {
@@ -145,7 +145,7 @@ struct lse_itch_replay_response {
 	le32			FirstMessage;
 	le16			Count;
 	u8			Status;		/* See LSE_ITCH_REPLAY_STATUS enum */
-} packed;
+} __attribute__((packed));
 
 /* LSE_ITCH_MSG_SNAPSHOT_RESPONSE */
 struct lse_itch_snapshot_response {
@@ -154,7 +154,7 @@ struct lse_itch_snapshot_response {
 	le32			SequenceNumber;
 	le32			OrderCount;
 	u8			Status;		/* See LSE_ITCH_SNAPSHOT_STATUS enum */
-} packed;
+} __attribute__((packed));
 
 /* LSE_ITCH_MSG_SNAPSHOT_COMPLETE */
 struct lse_itch_snapshot_complete {
@@ -164,7 +164,7 @@ struct lse_itch_snapshot_complete {
 	char			Segment[6];
 	le32			InstrumentID;
 	u8			Flags;
-} packed;
+} __attribute__((packed));
 
 int lse_itch_message_decode(struct buffer *buf, struct lse_itch_message *msg);
 

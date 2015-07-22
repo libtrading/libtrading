@@ -60,7 +60,7 @@ struct boe_header {
 	u8				MessageType;
 	u8				MatchingUnit;
 	le32				SequenceNumber;
-} packed;
+} __attribute__((packed));
 
 struct boe_message {
 	struct boe_header		header;
@@ -127,7 +127,7 @@ struct boe_message {
 struct boe_unit {
 	u8				UnitNumber;
 	le32				UnitSequence;
-} packed;
+} __attribute__((packed));
 
 struct boe_login_request {
 	char				SessionSubID[4];
@@ -147,7 +147,7 @@ struct boe_login_request {
 	le64				ReservedBitfields2;
 	u8				NumberOfUnits;
 	struct boe_unit			Units[];
-} packed;
+} __attribute__((packed));
 
 /*
  * BATS to participant messages:
@@ -171,7 +171,7 @@ struct boe_login_response {
 	le32				LastReceivedSequenceNumber;
 	u8				NumberOfUnits;
 	struct boe_unit			Units[];
-} packed;
+} __attribute__((packed));
 
 struct boe_logout {
 	u8				LogoutReason;
@@ -179,7 +179,7 @@ struct boe_logout {
 	le32				LastReceivedSequenceNumber;
 	u8				NumberOfUnits;
 	struct boe_unit			Units[];
-} packed;
+} __attribute__((packed));
 
 int boe_message_decode(struct buffer *buf, struct boe_message *msg, size_t size);
 

@@ -57,14 +57,14 @@ struct itch40_message {
 struct itch40_msg_timestamp_seconds {
 	u8			MessageType;
 	be32			Second;	
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_SYSTEM_EVENT */
 struct itch40_msg_system_event {
 	u8			MessageType;
 	be32			Timestamp;
 	char			EventCode;	/* ITCH40_EVENT_<code> */
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_STOCK_DIRECTORY */
 struct itch40_msg_stock_directory {
@@ -75,7 +75,7 @@ struct itch40_msg_stock_directory {
 	char			FinancialStatusIndicator;
 	be32			RoundLotSize;
 	char			RoundLotsOnly;
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_STOCK_TRADING_ACTION */
 struct itch40_msg_stock_trading_action {
@@ -85,7 +85,7 @@ struct itch40_msg_stock_trading_action {
 	char			TradingState;
 	char			Reserved;
 	char			Reason[4];
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_MARKET_PARTICIPANT_POS */
 struct itch40_msg_market_participant_pos {
@@ -96,7 +96,7 @@ struct itch40_msg_market_participant_pos {
 	char			PrimaryMarketMaker;
 	char			MarketMakerMode;
 	char			MarketParticipantState;	
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_ADD_ORDER */
 struct itch40_msg_add_order {
@@ -107,7 +107,7 @@ struct itch40_msg_add_order {
 	be32			Shares;
 	char			Stock[6];
 	be32			Price;
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_ADD_ORDER_MPID */
 struct itch40_msg_add_order_mpid {
@@ -119,7 +119,7 @@ struct itch40_msg_add_order_mpid {
 	char			Stock[6];
 	be32			Price;
 	char			Attribution[4];
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_ORDER_EXECUTED */
 struct itch40_msg_order_executed {
@@ -128,7 +128,7 @@ struct itch40_msg_order_executed {
 	be64			OrderReferenceNumber;
 	be32			ExecutedShares;
 	be64			MatchNumber;
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_ORDER_EXECUTED_WITH_PRICE */
 struct itch40_msg_order_executed_with_price {
@@ -139,7 +139,7 @@ struct itch40_msg_order_executed_with_price {
 	be64			MatchNumber;
 	char			Printable;
 	be32			ExecutionPrice;
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_ORDER_CANCEL */
 struct itch40_msg_order_cancel {
@@ -147,14 +147,14 @@ struct itch40_msg_order_cancel {
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
 	be32			CanceledShares;
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_ORDER_DELETE */
 struct itch40_msg_order_delete {
 	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			OrderReferenceNumber;
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_ORDER_REPLACE */
 struct itch40_msg_order_replace {
@@ -164,7 +164,7 @@ struct itch40_msg_order_replace {
 	be64			NewOrderReferenceNumber;
 	be32			Shares;
 	be32			Price;
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_TRADE */
 struct itch40_msg_trade {
@@ -176,7 +176,7 @@ struct itch40_msg_trade {
 	char			Stock[6];
 	be32			Price;
 	be64			MatchNumber;
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_CROSS_TRADE */
 struct itch40_msg_cross_trade {
@@ -187,14 +187,14 @@ struct itch40_msg_cross_trade {
 	be32			CrossPrice;
 	be64			MatchNumber;
 	char			CrossType;
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_BROKEN_TRADE */
 struct itch40_msg_broken_trade {
 	u8			MessageType;
 	be32			TimestampNanoseconds;
 	be64			MatchNumber;
-} packed;
+} __attribute__((packed));
 
 /* ITCH40_MSG_NOII */
 struct itch40_msg_noii {
@@ -209,7 +209,7 @@ struct itch40_msg_noii {
 	be32			CurrentReferencePrice;
 	char			CrossType;
 	char			PriceVariationIndicator;
-} packed;
+} __attribute__((packed));
 
 int itch40_message_decode(struct buffer *buf, struct itch40_message *msg);
 

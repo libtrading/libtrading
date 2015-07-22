@@ -29,7 +29,7 @@ enum pitch_msg_type {
 struct pitch_message {
 	char			Timestamp[8];
 	u8			MessageType;
-} packed;
+} __attribute__((packed));
 
 struct pitch_msg_symbol_clear {
 	char			Timestamp[8];
@@ -46,7 +46,7 @@ struct pitch_msg_add_order_short {
 	char			StockSymbol[6];
 	char			Price[10];
 	char			Display;
-} packed;
+} __attribute__((packed));
 
 struct pitch_msg_add_order_long {
 	char			Timestamp[8];
@@ -58,7 +58,7 @@ struct pitch_msg_add_order_long {
 	char			Price[10];
 	char			Display;
 	char			ParticipantID[4];
-} packed;
+} __attribute__((packed));
 
 struct pitch_msg_order_executed {
 	char			Timestamp[8];
@@ -66,14 +66,14 @@ struct pitch_msg_order_executed {
 	char			OrderID[12];
 	char			ExecutedShares[6];
 	char			ExecutionID[12];
-} packed;
+} __attribute__((packed));
 
 struct pitch_msg_order_cancel {
 	char			Timestamp[8];
 	u8			MessageType;
 	char			OrderID[12];
 	char			CanceledShares[6];
-} packed;
+} __attribute__((packed));
 
 struct pitch_msg_trade_short {
 	char			Timestamp[8];
@@ -84,7 +84,7 @@ struct pitch_msg_trade_short {
 	char			StockSymbol[6];
 	char			Price[10];
 	char			ExecutionID[12];
-} packed;
+} __attribute__((packed));
 
 struct pitch_msg_trade_long {
 	char			Timestamp[8];
@@ -95,13 +95,13 @@ struct pitch_msg_trade_long {
 	char			StockSymbol[8];
 	char			Price[10];
 	char			ExecutionID[12];
-} packed;
+} __attribute__((packed));
 
 struct pitch_msg_trade_break {
 	char			Timestamp[8];
 	u8			MessageType;
 	char			ExecutionID[12];
-} packed;
+} __attribute__((packed));
 
 struct pitch_msg_trading_status {
 	char			Timestamp[8];
@@ -111,7 +111,7 @@ struct pitch_msg_trading_status {
 	char			RegSHOAction;
 	char			Reserved1;
 	char			Reserved2;
-} packed;
+} __attribute__((packed));
 
 struct pitch_msg_auction_update {
 	char			Timestamp[8];
@@ -123,7 +123,7 @@ struct pitch_msg_auction_update {
 	char			SellShares[10];
 	char			IndicativePrice[10];
 	char			AuctionOnlyPrice[10];
-} packed;
+} __attribute__((packed));
 
 struct pitch_msg_auction_summary {
 	char			Timestamp[8];
@@ -132,7 +132,7 @@ struct pitch_msg_auction_summary {
 	char			AuctionType;
 	char			Price[10];
 	char			Shares[10];
-} packed;
+} __attribute__((packed));
 
 struct pitch_message *pitch_message_decode(struct buffer *buf, unsigned long extra);
 
