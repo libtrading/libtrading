@@ -134,7 +134,6 @@ int main(int argc, char *argv[])
 			break;
 		default: /* '?' */
 			usage();
-			exit(EXIT_FAILURE);
 		}
 	}
 
