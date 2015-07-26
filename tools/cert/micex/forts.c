@@ -1,5 +1,4 @@
-#include "libtrading/proto/fix_message.h"
-#include "libtrading/proto/fix_session.h"
+#include "fix/fix_common.h"
 #include "libtrading/proto/fast_book.h"
 
 #include "libtrading/compat.h"

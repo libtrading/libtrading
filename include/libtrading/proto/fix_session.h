@@ -104,19 +104,6 @@ int fix_session_time_update_realtime(struct fix_session *self, struct timespec *
 int fix_session_time_update(struct fix_session *self);
 int fix_session_send(struct fix_session *self, struct fix_message *msg, unsigned long flags);
 int fix_session_recv(struct fix_session *self, struct fix_message **msg, unsigned long flags);
-bool fix_session_keepalive(struct fix_session *session, struct timespec *now);
-bool fix_session_admin(struct fix_session *session, struct fix_message *msg);
-int fix_session_logon(struct fix_session *session);
-int fix_session_logout(struct fix_session *session, const char *text);
-int fix_session_heartbeat(struct fix_session *session, const char *test_req_id);
-int fix_session_test_request(struct fix_session *session);
-int fix_session_resend_request(struct fix_session *session, unsigned long bgn, unsigned long end);
-int fix_session_reject(struct fix_session *session, unsigned long refseqnum, char *text);
-int fix_session_sequence_reset(struct fix_session *session, unsigned long msg_seq_num, unsigned long new_seq_num, bool gap_fill);
-int fix_session_order_cancel_request(struct fix_session *session, struct fix_field *fields, long nr_fields);
-int fix_session_order_cancel_replace(struct fix_session *session, struct fix_field *fields, long nr_fields);
-int fix_session_new_order_single(struct fix_session *session, struct fix_field* fields, long nr_fields);
-int fix_session_execution_report(struct fix_session *session, struct fix_field *fields, long nr_fields);
 
 enum fix_send_flag {
 	FIX_SEND_FLAG_PRESERVE_MSG_NUM = 1UL << 0, // lower 16 bits
