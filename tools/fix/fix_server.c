@@ -139,7 +139,7 @@ static int fix_server_script(struct fix_session_cfg *cfg, struct fix_server_arg 
 			continue;
 
 		fprintf(stdout, "> ");
-		fprintmsg(stdout, msg);
+		fprintmsg_iov(stdout, msg);
 
 		if (fmsgcmp(&expected_elem->msg, msg)) {
 			fprintf(stderr, "Server: messages differ\n");

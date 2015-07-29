@@ -158,7 +158,7 @@ retry:
 			goto retry;
 
 		fprintf(stdout, "< ");
-		fprintmsg(stdout, msg);
+		fprintmsg_iov(stdout, msg);
 
 		if (fmsgcmp(&expected_elem->msg, msg)) {
 			fprintf(stderr, "Client: messages differ\n");
