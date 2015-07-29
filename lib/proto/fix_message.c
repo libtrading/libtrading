@@ -439,7 +439,6 @@ exit:
 
 int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer, unsigned long flags)
 {
-	unsigned long size;
 	const char *start;
 	int ret;
 
@@ -450,9 +449,8 @@ retry:
 	ret = FIX_MSG_STATE_PARTIAL;
 
 	start	= buffer_start(buffer);
-	size	= buffer_size(buffer);
 
-	if (!size)
+	if (!buffer_size(buffer))
 		goto fail;
 
 	ret = first_three_fields(self, flags);
