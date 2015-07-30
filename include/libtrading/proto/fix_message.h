@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include <sys/uio.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -209,6 +210,8 @@ struct fix_message {
 
 	unsigned long			nr_fields;
 	struct fix_field		*fields;
+
+	struct iovec			iov[2];
 };
 
 enum fix_parse_flag {

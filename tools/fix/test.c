@@ -338,3 +338,28 @@ void fprintmsg(FILE *stream, struct fix_message *msg)
 
 	fprintf(stream, "%s%c\n", buf, delim);
 }
+
+void fprintmsg_iov(FILE *stream, struct fix_message *msg)
+{
+	char delim = '|';
+	int i;
+
+	if (!msg)
+		return;
+
+	for (i = 0; i < 2; ++i) {
+		const char *start = msg->iov[i].iov_base;
+		unsigned int len = msg->iov[i].iov_len;
+		const char *end = start;
+
+		while ((end = memchr(start, 0x01, len))) {
+			fprintf(stdout, "%c%.*s", delim, (int)(end - start), start);
+			len -= (end - start + 1);
+			start = end + 1;
+		}
+	}
+
+	fprintf(stdout, "%c\n", delim);
+
+	return;
+}

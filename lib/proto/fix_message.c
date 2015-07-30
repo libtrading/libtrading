@@ -439,7 +439,6 @@ exit:
 
 int fix_message_parse(struct fix_message *self, struct fix_dialect *dialect, struct buffer *buffer, unsigned long flags)
 {
-	unsigned long size;
 	const char *start;
 	int ret;
 
@@ -450,9 +449,8 @@ retry:
 	ret = FIX_MSG_STATE_PARTIAL;
 
 	start	= buffer_start(buffer);
-	size	= buffer_size(buffer);
 
-	if (!size)
+	if (!buffer_size(buffer))
 		goto fail;
 
 	ret = first_three_fields(self, flags);
@@ -464,6 +462,9 @@ retry:
 		goto fail;
 
 	rest_of_message(self, dialect, buffer);
+
+	self->iov[0].iov_base	= (void *)start;
+	self->iov[0].iov_len 	= buffer_start(buffer) - start;
 
 	TRACE(LIBTRADING_FIX_MESSAGE_PARSE_RET());
 
@@ -686,7 +687,6 @@ void fix_message_unparse(struct fix_message *self)
 
 int fix_message_send(struct fix_message *self, int sockfd, int flags)
 {
-	struct iovec iov[2];
 	int ret = 0;
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND(self, sockfd, flags));
@@ -694,10 +694,10 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 	if (!(flags & FIX_SEND_FLAG_PRESERVE_BUFFER))
 		fix_message_unparse(self);
 
-	buffer_to_iovec(self->head_buf, &iov[0]);
-	buffer_to_iovec(self->body_buf, &iov[1]);
+	buffer_to_iovec(self->head_buf, &self->iov[0]);
+	buffer_to_iovec(self->body_buf, &self->iov[1]);
 
-	if (io_sendmsg(sockfd, iov, 2, 0) < 0) {
+	if (io_sendmsg(sockfd, self->iov, 2, 0) < 0) {
 		ret = -1;
 		goto error_out;
 	}
