@@ -687,6 +687,7 @@ void fix_message_unparse(struct fix_message *self)
 
 int fix_message_send(struct fix_message *self, int sockfd, int flags)
 {
+	size_t msg_size;
 	int ret = 0;
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND(self, sockfd, flags));
@@ -697,19 +698,20 @@ int fix_message_send(struct fix_message *self, int sockfd, int flags)
 	buffer_to_iovec(self->head_buf, &self->iov[0]);
 	buffer_to_iovec(self->body_buf, &self->iov[1]);
 
-	if (io_sendmsg(sockfd, self->iov, 2, 0) < 0) {
-		ret = -1;
-		goto error_out;
-	}
+	ret = io_sendmsg(sockfd, self->iov, 2, 0);
 
-error_out:
+	msg_size = fix_message_size(self);
+
 	if (!(flags & FIX_SEND_FLAG_PRESERVE_BUFFER)) {
 		self->head_buf = self->body_buf = NULL;
 	}
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND_RET());
 
-	return ret;
+	if (ret >= 0)
+		return msg_size - ret;
+	else
+		return ret;
 }
 
 struct fix_dialect fix_dialects[] = {

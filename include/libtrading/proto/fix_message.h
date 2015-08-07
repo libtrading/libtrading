@@ -214,6 +214,11 @@ struct fix_message {
 	struct iovec			iov[2];
 };
 
+static inline size_t fix_message_size(struct fix_message *self)
+{
+	return (self->iov[0].iov_len + self->iov[1].iov_len);
+}
+
 enum fix_parse_flag {
 	FIX_PARSE_FLAG_NO_CSUM = 1UL << 0,
 	FIX_PARSE_FLAG_NO_TYPE = 1UL << 1
