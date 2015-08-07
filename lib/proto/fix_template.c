@@ -156,24 +156,34 @@ void fix_template_unparse(struct fix_template *self, struct fix_session *session
 	checksumtoa((buffer_sum(&self->head_buf) + buffer_sum(&self->sys_buf) + self->const_csum + buffer_sum(&self->body_buf)) % 256, self->marker_check_sum);
 }
 
+static size_t iov_length(struct iovec *iov, size_t iov_len)
+{
+	size_t len = 0;
+	size_t i;
+
+	for (i = 0; i < iov_len; ++i)
+		len += iov[i].iov_len;
+
+	return len;
+}
+
 int fix_template_send(struct fix_template *self, int sockfd, int flags)
 {
-	struct iovec iov[4];
 	int ret = 0;
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND(self, sockfd, flags));
 
-	iov[0].iov_base	= &self->tx_data[0];
-	iov[0].iov_len	= self->head_buf.capacity + self->const_buf.end; // head and const buffers are continuous
-	buffer_to_iovec(&self->sys_buf,	 &iov[1]);
-	buffer_to_iovec(&self->body_buf, &iov[2]);
-	buffer_to_iovec(&self->csum_buf, &iov[3]);
+	self->iov[0].iov_base	= &self->tx_data[0];
+	self->iov[0].iov_len	= self->head_buf.capacity + self->const_buf.end; // head and const buffers are continuous
+	buffer_to_iovec(&self->sys_buf,	 &self->iov[1]);
+	buffer_to_iovec(&self->body_buf, &self->iov[2]);
+	buffer_to_iovec(&self->csum_buf, &self->iov[3]);
 
-	if (io_sendmsg(sockfd, iov, 4, flags) < 0) {
-		ret = -1;
+	if ((ret = io_sendmsg(sockfd, self->iov, 4, flags)) < 0) {
+		return ret;
 	}
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND_RET());
 
-	return ret;
+	return iov_length(self->iov, 4) - ret;
 }

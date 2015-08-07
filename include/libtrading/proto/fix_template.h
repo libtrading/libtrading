@@ -44,6 +44,8 @@ struct fix_template {
 
 	unsigned long		nr_fields;	 // number of variable length fields to be serialized each time
 	struct fix_field	fields[FIX_MAX_FIELD_NUMBER]; // variable fields array
+
+	struct iovec		iov[4];
 };
 
 struct fix_template_cfg {
