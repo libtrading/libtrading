@@ -1,6 +1,7 @@
 #include "libtrading/proto/fix_template.h"
 #include "libtrading/read-write.h"
 #include "libtrading/buffer.h"
+#include "libtrading/array.h"
 #include "libtrading/trace.h"
 #include "libtrading/itoa.h"
 
@@ -68,30 +69,12 @@ struct fix_template *fix_template_new(void)
 
 	self->marker_transact_time = NULL;
 
-	self->head_buf.start = 0;
-	self->head_buf.end = 0;
-	self->head_buf.capacity = FIX_MAX_HEAD_BUFFER_SIZE;
-	self->head_buf.data = &self->tx_data[0];
+	self->buf.start = 0;
+	self->buf.end = 0;
+	self->buf.capacity = FIX_MAX_TEMPLATE_BUFFER_SIZE;
+	self->buf.data = &self->tx_data[0];
 
-	self->const_buf.start = 0;
-	self->const_buf.end = 0;
-	self->const_buf.capacity = FIX_MAX_TEMPLATE_TX_BUFFER_SIZE;
-	self->const_buf.data = self->head_buf.data + self->head_buf.capacity;
-
-	self->sys_buf.start = 0;
-	self->sys_buf.end = 0;
-	self->sys_buf.capacity = FIX_MAX_SYS_BUFFER_SIZE;
-	self->sys_buf.data = self->const_buf.data + self->const_buf.capacity;
-
-	self->body_buf.start = 0;
-	self->body_buf.end = 0;
-	self->body_buf.capacity = FIX_MAX_TEMPLATE_TX_BUFFER_SIZE;
-	self->body_buf.data = self->sys_buf.data + self->sys_buf.capacity;
-
-	self->csum_buf.start = 0;
-	self->csum_buf.end = 0;
-	self->csum_buf.capacity = FIX_MAX_CSUM_BUFFER_SIZE;
-	self->csum_buf.data = self->body_buf.data + self->body_buf.capacity;
+	self->csum_field = FIX_CHECKSUM_FIELD(CheckSum, 0);
 
 	return self;
 }
@@ -108,30 +91,34 @@ void fix_template_prepare(struct fix_template *self, struct fix_template_cfg *cf
 {
 	int i;
 
-	/* head */
-	fix_field_unparse(&FIX_STRING_FIELD(BeginString, cfg->begin_string), &self->head_buf);
-	self->marker_body_length = fix_field_unparse_zpad(&FIX_INT_FIELD(BodyLength, 0), FIX_TEMPLATE_BODY_LEN_ZPAD, &self->head_buf);
-	fix_field_unparse(&FIX_STRING_FIELD(MsgType, fix_msg_types[cfg->msg_type]), &self->const_buf);
-	self->marker_msg_seq_num = fix_field_unparse_zpad(&FIX_INT_FIELD(MsgSeqNum, 0), FIX_TEMPLATE_MSG_SEQ_NUM_ZPAD, &self->sys_buf);
-	self->marker_sender_comp_id = fix_field_unparse_zpad(&FIX_STRING_FIELD(SenderCompID, cfg->sender_comp_id), 0, &self->sys_buf); // assume all sender_comp_id are of the same size
+	// head
+	fix_field_unparse(&FIX_STRING_FIELD(BeginString, cfg->begin_string), &self->buf);
+	self->marker_body_length = fix_field_unparse_zpad(&FIX_INT_FIELD(BodyLength, 0), FIX_TEMPLATE_BODY_LEN_ZPAD, &self->buf);
+	fix_field_unparse(&FIX_STRING_FIELD(MsgType, fix_msg_types[cfg->msg_type]), &self->buf);
+	self->marker_msg_seq_num = fix_field_unparse_zpad(&FIX_INT_FIELD(MsgSeqNum, 0), FIX_TEMPLATE_MSG_SEQ_NUM_ZPAD, &self->buf);
+	self->marker_sender_comp_id = fix_field_unparse_zpad(&FIX_STRING_FIELD(SenderCompID, cfg->sender_comp_id), 0, &self->buf); // assume all sender_comp_id are of the same size
 	self->sender_comp_id_len = strlen(cfg->sender_comp_id);
-	self->marker_sending_time = fix_field_unparse_zpad(&FIX_STRING_FIELD(SendingTime, "YYYYMMDD-HH:MM:SS.sss"), 0, &self->sys_buf);
-	fix_field_unparse(&FIX_STRING_FIELD(TargetCompID, cfg->target_comp_id), &self->const_buf); // assume target_comp_id is static
+	self->marker_sending_time = fix_field_unparse_zpad(&FIX_STRING_FIELD(SendingTime, "YYYYMMDD-HH:MM:SS.sss"), 0, &self->buf);
+	fix_field_unparse(&FIX_STRING_FIELD(TargetCompID, cfg->target_comp_id), &self->buf); // assume target_comp_id is static
 
 	if (cfg->manage_transact_time)
-		self->marker_transact_time = fix_field_unparse_zpad(&FIX_STRING_FIELD(TransactTime, "YYYYMMDD-HH:MM:SS.sss"), 0, &self->sys_buf);
+		self->marker_transact_time = fix_field_unparse_zpad(&FIX_STRING_FIELD(TransactTime, "YYYYMMDD-HH:MM:SS.sss"), 0, &self->buf);
+
+	self->marker_const_start = buffer_end(&self->buf);
 
 	for (i = 0; i < cfg->nr_const_fields; i++)
-		fix_field_unparse(&cfg->const_fields[i], &self->const_buf);
+		fix_field_unparse(&cfg->const_fields[i], &self->buf);
 
-	self->const_csum = buffer_sum(&self->const_buf);
-	self->marker_check_sum = fix_field_unparse_zpad(&FIX_CHECKSUM_FIELD(CheckSum, 0), 3, &self->csum_buf); // checksum is always three digit
+	self->marker_const_end = buffer_end(&self->buf);
+	self->const_csum =  buffer_sum_range(self->marker_const_start, self->marker_const_end) +
+			    buffer_sum_range(self->buf.data, self->marker_body_length);
 
 	assert(self->marker_body_length != NULL);
 	assert(self->marker_msg_seq_num != NULL);
 	assert(self->marker_sender_comp_id != NULL);
 	assert(self->marker_sending_time != NULL);
-	assert(self->marker_check_sum != NULL);
+	assert(self->marker_const_start != NULL);
+	assert(self->marker_const_end != NULL);
 }
 
 void fix_template_update_time(struct fix_template *self, const char *str_now)
@@ -145,26 +132,24 @@ void fix_template_unparse(struct fix_template *self, struct fix_session *session
 {
 	int i;
 
-	buffer_reset(&self->body_buf);
+	self->buf.start = 0;
+	self->buf.end = (self->marker_const_end - self->buf.data);
 
 	for (i = 0; i < self->nr_fields; i++)
-		fix_field_unparse(&self->fields[i], &self->body_buf);
+		fix_field_unparse(&self->fields[i], &self->buf);
 
-	modp_litoa10_zpad(buffer_size(&self->body_buf) + buffer_size(&self->sys_buf) + buffer_size(&self->const_buf), FIX_TEMPLATE_BODY_LEN_ZPAD, self->marker_body_length);
-	modp_litoa10_zpad(session->out_msg_seq_num, FIX_TEMPLATE_MSG_SEQ_NUM_ZPAD, self->marker_msg_seq_num);
 	memcpy(self->marker_sender_comp_id, session->sender_comp_id, self->sender_comp_id_len);
-	checksumtoa((buffer_sum(&self->head_buf) + buffer_sum(&self->sys_buf) + self->const_csum + buffer_sum(&self->body_buf)) % 256, self->marker_check_sum);
-}
+	modp_litoa10_zpad(session->out_msg_seq_num, FIX_TEMPLATE_MSG_SEQ_NUM_ZPAD, self->marker_msg_seq_num);
+	modp_litoa10_zpad(self->buf.end - (self->marker_body_length - self->buf.data + FIX_TEMPLATE_BODY_LEN_ZPAD + 1),
+			  FIX_TEMPLATE_BODY_LEN_ZPAD, self->marker_body_length);
 
-static size_t iov_length(struct iovec *iov, size_t iov_len)
-{
-	size_t len = 0;
-	size_t i;
+	self->csum_field.int_value = (buffer_sum_range(self->marker_body_length, self->marker_const_start) +
+				      self->const_csum +
+				      buffer_sum_range(self->marker_const_end, buffer_end(&self->buf))) % 256;
+	fix_field_unparse(&self->csum_field, &self->buf);
 
-	for (i = 0; i < iov_len; ++i)
-		len += iov[i].iov_len;
-
-	return len;
+	self->iov[0].iov_base	= &self->tx_data[0]; // prepare iovec for sending
+	self->iov[0].iov_len	= self->buf.end;
 }
 
 int fix_template_send(struct fix_template *self, int sockfd, int flags)
@@ -173,17 +158,11 @@ int fix_template_send(struct fix_template *self, int sockfd, int flags)
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND(self, sockfd, flags));
 
-	self->iov[0].iov_base	= &self->tx_data[0];
-	self->iov[0].iov_len	= self->head_buf.capacity + self->const_buf.end; // head and const buffers are continuous
-	buffer_to_iovec(&self->sys_buf,	 &self->iov[1]);
-	buffer_to_iovec(&self->body_buf, &self->iov[2]);
-	buffer_to_iovec(&self->csum_buf, &self->iov[3]);
-
-	if ((ret = io_sendmsg(sockfd, self->iov, 4, flags)) < 0) {
+	if ((ret = io_sendmsg(sockfd, self->iov, ARRAY_SIZE(self->iov), flags)) < 0) {
 		return ret;
 	}
 
 	TRACE(LIBTRADING_FIX_MESSAGE_SEND_RET());
 
-	return iov_length(self->iov, 4) - ret;
+	return iov_byte_length(self->iov, ARRAY_SIZE(self->iov)) - ret;
 }
