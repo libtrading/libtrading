@@ -310,7 +310,7 @@ retry:
 
 static bool verify_checksum(struct fix_message *self, struct buffer *buffer)
 {
-	u8 cksum, actual;
+	int cksum, actual;
 
 	cksum	= fix_uatoi(self->check_sum, NULL);
 
