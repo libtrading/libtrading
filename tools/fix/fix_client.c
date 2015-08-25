@@ -574,6 +574,8 @@ int main(int argc, char *argv[])
 	if (socket_setopt(cfg.sockfd, IPPROTO_TCP, TCP_NODELAY, 1) < 0)
 		die("cannot set socket option TCP_NODELAY");
 
+	cfg.heartbtint = 15;
+
 	switch (mode) {
 	case FIX_CLIENT_SCRIPT:
 		ret = fix_client_functions[mode].fix_session_initiate(&cfg, &arg);
@@ -582,7 +584,6 @@ int main(int argc, char *argv[])
 		ret = fix_client_functions[mode].fix_session_initiate(&cfg, &arg);
 		break;
 	case FIX_CLIENT_SESSION:
-		cfg.heartbtint = 15;
 		ret = fix_client_functions[mode].fix_session_initiate(&cfg, NULL);
 		break;
 	default:
