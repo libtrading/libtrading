@@ -394,9 +394,6 @@ static int fast_field_init(xmlNodePtr node, struct fast_field *field)
 	if (ret)
 		goto exit;
 
-	if (field->type == FAST_TYPE_DECIMAL)
-		ret = 0;
-
 	ret = fast_presence_init(node, field);
 	if (ret)
 		goto exit;
