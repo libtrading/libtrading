@@ -172,18 +172,8 @@ static void fix_template_unparse_benchmark(const int count, struct buffer *rx_bu
 
 	elapsed_nsec = timespec_delta(&start, &end);
 	printf("%-10s %d %f µs/message\n", "format/templ", count, (double)elapsed_nsec/(double)count/1000.0);
-	buffer_printf(rx_buf, "%.*s%.*s%.*s%.*s%.*s",
-		(int)buffer_size(&template->head_buf),	buffer_start(&template->head_buf),
-		(int)buffer_size(&template->const_buf),	buffer_start(&template->const_buf),
-		(int)buffer_size(&template->sys_buf),	buffer_start(&template->sys_buf),
-		(int)buffer_size(&template->body_buf),	buffer_start(&template->body_buf),
-		(int)buffer_size(&template->csum_buf),	buffer_start(&template->csum_buf));
-	/* printf("%.*s%.*s%.*s%.*s%.*s\n",
-		(int)buffer_size(&template->head_buf),	buffer_start(&template->head_buf),
-		(int)buffer_size(&template->const_buf),	buffer_start(&template->const_buf),
-		(int)buffer_size(&template->sys_buf),	buffer_start(&template->sys_buf),
-		(int)buffer_size(&template->body_buf),	buffer_start(&template->body_buf),
-		(int)buffer_size(&template->csum_buf),	buffer_start(&template->csum_buf)); */
+	buffer_printf(rx_buf, "%.*s", (int)buffer_size(&template->buf), buffer_start(&template->buf));
+	// printf("%.*s\n", (int)buffer_size(&template->buf), buffer_start(&template->buf));
 
 	templ_parse = fix_message_parse(rx_msg, &fix_dialects[FIX_4_2], rx_buf, 0);
 	printf("template unparse status: %i\n", templ_parse);

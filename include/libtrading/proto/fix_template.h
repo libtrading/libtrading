@@ -10,15 +10,7 @@ extern "C" {
 
 #define FIX_TEMPLATE_BODY_LEN_ZPAD 4UL
 #define FIX_TEMPLATE_MSG_SEQ_NUM_ZPAD 6UL
-
-// 8=FIX.4.2|9=NNNN|		17 chars
-// 10=NNN|			7  chars
-// 52=YYYYMMDD-HH:MM:SS.sss|	25 chars
-
-#define FIX_MAX_HEAD_BUFFER_SIZE 17UL
-#define FIX_MAX_SYS_BUFFER_SIZE	 80UL
-#define FIX_MAX_CSUM_BUFFER_SIZE 7UL
-#define FIX_MAX_TEMPLATE_TX_BUFFER_SIZE 256UL
+#define FIX_MAX_TEMPLATE_BUFFER_SIZE 1024UL
 
 struct fix_template {
 	char			*marker_body_length;
@@ -26,26 +18,20 @@ struct fix_template {
 	char			*marker_sender_comp_id;
 	char			*marker_sending_time;
 	char			*marker_transact_time;
-	char			*marker_check_sum;
+	char			*marker_const_start;
+	char			*marker_const_end;
 
 	unsigned long		sender_comp_id_len;
+	uint8_t			const_csum;
 
-	struct buffer		head_buf;	 // first two fields
-	struct buffer		const_buf;	 // constant fields
-	struct buffer		sys_buf;	 // SenderCompID + SendingTime only (@TODO TransactTime)
-	struct buffer		body_buf;	 // variable fields
-	struct buffer		csum_buf;	 // checksum  field
-	char			tx_data[FIX_MAX_HEAD_BUFFER_SIZE +
-					FIX_MAX_SYS_BUFFER_SIZE + 
-					2 * FIX_MAX_TEMPLATE_TX_BUFFER_SIZE +
-					FIX_MAX_CSUM_BUFFER_SIZE];
-
-	unsigned long		const_csum;
+	struct buffer		buf;	 // first two fields
+	char			tx_data[FIX_MAX_TEMPLATE_BUFFER_SIZE];
 
 	unsigned long		nr_fields;	 // number of variable length fields to be serialized each time
 	struct fix_field	fields[FIX_MAX_FIELD_NUMBER]; // variable fields array
+	struct fix_field	csum_field;
 
-	struct iovec		iov[4];
+	struct iovec		iov[1];
 };
 
 struct fix_template_cfg {
