@@ -270,6 +270,9 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 	while (node && node->type != XML_ELEMENT_NODE)
 		node = node->next;
 
+	if (node == NULL)
+		goto exit;
+
 	if (xmlStrcmp(node->name, (const xmlChar *)"length"))
 		goto exit;
 
@@ -393,9 +396,6 @@ static int fast_field_init(xmlNodePtr node, struct fast_field *field)
 	ret = fast_type_init(node, field);
 	if (ret)
 		goto exit;
-
-	if (field->type == FAST_TYPE_DECIMAL)
-		ret = 0;
 
 	ret = fast_presence_init(node, field);
 	if (ret)
