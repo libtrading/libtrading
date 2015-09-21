@@ -350,7 +350,7 @@ void fprintmsg_iov(FILE *stream, struct fix_message *msg)
 	for (i = 0; i < 2; ++i) {
 		const char *start = msg->iov[i].iov_base;
 		unsigned int len = msg->iov[i].iov_len;
-		const char *end = start;
+		const char *end;
 
 		while ((end = memchr(start, 0x01, len))) {
 			fprintf(stdout, "%c%.*s", delim, (int)(end - start), start);
