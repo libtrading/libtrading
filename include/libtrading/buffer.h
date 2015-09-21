@@ -57,34 +57,45 @@ static inline char buffer_get_char(struct buffer *self)
 {
 	return buffer_get_8(self);
 }
+
 static inline u16 buffer_get_le16(struct buffer *self)
 {
-	return buffer_get_8(self) | buffer_get_8(self) << 8;
+	u16 x = 0;
+	x |= (u16)buffer_get_8(self);
+	x |= (u16)buffer_get_8(self) << 8;
+	return x;
 }
 
 static inline u32 buffer_get_le32(struct buffer *self)
 {
-	return buffer_get_8(self)
-		| buffer_get_8(self) << 8
-		| buffer_get_8(self) << 16
-		| buffer_get_8(self) << 24;
+	u32 x = 0;
+	x |= (u32)buffer_get_8(self);
+	x |= (u32)buffer_get_8(self) << 8;
+	x |= (u32)buffer_get_8(self) << 16;
+	x |= (u32)buffer_get_8(self) << 24;
+	return x;
 }
 
 static inline uint64_t buffer_get_le64(struct buffer *self)
 {
-	return (uint64_t) buffer_get_8(self)
-		| (uint64_t) buffer_get_8(self) << 8
-		| (uint64_t) buffer_get_8(self) << 16
-		| (uint64_t) buffer_get_8(self) << 24
-		| (uint64_t) buffer_get_8(self) << 32
-		| (uint64_t) buffer_get_8(self) << 40
-		| (uint64_t) buffer_get_8(self) << 48
-		| (uint64_t) buffer_get_8(self) << 56;
+	uint64_t x = 0;
+	x |= (uint64_t)buffer_get_8(self);
+	x |= (uint64_t)buffer_get_8(self) << 8;
+	x |= (uint64_t)buffer_get_8(self) << 16;
+	x |= (uint64_t)buffer_get_8(self) << 24;
+	x |= (uint64_t)buffer_get_8(self) << 32;
+	x |= (uint64_t)buffer_get_8(self) << 40;
+	x |= (uint64_t)buffer_get_8(self) << 48;
+	x |= (uint64_t)buffer_get_8(self) << 56;
+	return x;
 }
 
 static inline u16 buffer_get_be16(struct buffer *self)
 {
-	return buffer_get_8(self) << 8 | buffer_get_8(self);
+	u16 x = 0;
+	x |= (u16)buffer_get_8(self) << 8;
+	x |= (u16)buffer_get_8(self);
+	return x;
 }
 
 static inline void buffer_get_n(struct buffer *self, int n, char *dst)
