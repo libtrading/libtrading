@@ -270,6 +270,9 @@ static int fast_sequence_init(xmlNodePtr node, struct fast_field *field)
 	while (node && node->type != XML_ELEMENT_NODE)
 		node = node->next;
 
+	if (node == NULL)
+		goto exit;
+
 	if (xmlStrcmp(node->name, (const xmlChar *)"length"))
 		goto exit;
 
