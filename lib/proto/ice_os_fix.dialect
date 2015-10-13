@@ -14,6 +14,7 @@ tags:
   #
   # Header & Trailer:
   #
+  MsgSeqNum(34):                        { type: msgseqnum }
   SenderCompID(49):                     { type: string }
   TargetCompID(56):                     { type: string }
   TargetSubID(57):                      { type: string }
