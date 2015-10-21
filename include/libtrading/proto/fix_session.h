@@ -112,6 +112,7 @@ enum fix_send_flag {
 
 enum fix_recv_flag {
 	FIX_RECV_FLAG_MSG_DONTWAIT = 1UL << 16, // upper 16 bits
+	FIX_RECV_KEEP_IN_MSGSEQNUM = 1UL << 17
 };
 
 #ifdef __cplusplus

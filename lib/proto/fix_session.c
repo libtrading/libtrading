@@ -207,7 +207,7 @@ int fix_session_recv(struct fix_session *self, struct fix_message **res, unsigne
 
 	if (!fix_message_parse(msg, self->dialect, buffer, flags)) {
 		self->rx_timestamp = self->now;
-		self->in_msg_seq_num++;
+		if (!(flags & FIX_RECV_KEEP_IN_MSGSEQNUM)) self->in_msg_seq_num++;
 		goto parsed;
 	}
 
@@ -230,7 +230,7 @@ int fix_session_recv(struct fix_session *self, struct fix_message **res, unsigne
 
 	if (!fix_message_parse(msg, self->dialect, buffer, flags)) {
 		self->rx_timestamp = self->now;
-		self->in_msg_seq_num++;
+		if (!(flags & FIX_RECV_KEEP_IN_MSGSEQNUM)) self->in_msg_seq_num++;
 		goto parsed;
 	}
 
