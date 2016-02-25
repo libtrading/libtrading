@@ -92,7 +92,7 @@ INCLUDES += -Ilib/stringencoders
 INCLUDES += -Itools/include
 
 EXTRA_LIBS += $(shell sh -c 'xml2-config --libs')
-EXTRA_LIBS += $(shell sh -c 'pkg-config --libs glib-2.0')$
+EXTRA_LIBS += $(shell sh -c 'pkg-config --libs glib-2.0')
 
 EXTRA_LIBS += -lz
 
