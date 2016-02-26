@@ -1,5 +1,7 @@
 #include "fix/fix_common.h"
 
+#include "libtrading/compat.h"
+
 #include <string.h>
 #include <stdio.h>
 
