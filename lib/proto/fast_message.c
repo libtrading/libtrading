@@ -40,7 +40,7 @@ partial:
 
 static int parse_int(struct buffer *buffer, i64 *value)
 {
-	const int bytes = 9;
+	const int bytes = 10;
 	i64 result;
 	int i;
 	u8 c;
