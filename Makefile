@@ -86,12 +86,12 @@ PROGRAMS += tools/sim/trader
 PROGRAMS += tools/tape/tape
 
 DEFINES =
-INCLUDES += $(shell sh -c 'xml2-config --cflags')
+INCLUDES += $(shell sh -c 'pkg-config --cflags libxml-2.0')
 INCLUDES += $(shell sh -c 'pkg-config --cflags glib-2.0')
 INCLUDES += -Ilib/stringencoders
 INCLUDES += -Itools/include
 
-EXTRA_LIBS += $(shell sh -c 'xml2-config --libs')
+EXTRA_LIBS += $(shell sh -c 'pkg-config --libs libxml-2.0')
 EXTRA_LIBS += $(shell sh -c 'pkg-config --libs glib-2.0')
 
 EXTRA_LIBS += -lz
