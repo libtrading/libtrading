@@ -31,6 +31,7 @@ $ apt-get install pkg-config libxml2-dev libglib2.0-dev libncurses5-dev \
 $ yum install zlib-devel libxml2-devel glib2-devel vim-common ncurses-devel \
     python-yaml libevent-devel
 ```
+Note: on older RHEL versions you'll need to replace libevent-devel with libevent2-devel
 
 **OSX**
 
