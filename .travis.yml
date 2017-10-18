@@ -3,5 +3,5 @@ compiler:
   - gcc
   - clang
 before_install:
-  - sudo apt-get install -qq python-yaml
+  - sudo apt-get install -y pkg-config libxml2-dev libglib2.0-dev libncurses5-dev python-yaml libevent-dev
 script: make V=1 check
