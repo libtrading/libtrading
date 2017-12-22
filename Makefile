@@ -107,11 +107,13 @@ ifeq ($(uname_S),Linux)
 endif
 
 ifeq ($(uname_S),Darwin)
-	CONFIG_OPTS += -DCONFIG_NEED_CLOCK_GETTIME=1
-	COMPAT_OBJS += lib/compat/clock_gettime.o
-	export LIBRARY_PATH = /usr/local/lib
-	INCLUDES += -I/usr/local/include
-	PREFIX = /usr/local
+	ifeq ($(shell test $$(uname -r | cut -d '.' -f 1) -lt 12; echo $$?), 0)
+		CONFIG_OPTS += -DCONFIG_NEED_CLOCK_GETTIME=1
+		COMPAT_OBJS += lib/compat/clock_gettime.o
+		export LIBRARY_PATH = /usr/local/lib
+		INCLUDES += -I/usr/local/include
+		PREFIX = /usr/local
+	endif
 endif
 
 market_EXTRA_DEPS += lib/die.o
