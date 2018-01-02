@@ -36,7 +36,7 @@ void soupbin3_session_delete(struct soupbin3_session *session)
 static int soupbin3_packet_decode(struct buffer *buf, u16 len, struct soupbin3_packet *packet)
 {
 	size_t size;
-	void *start;
+	char *start;
 
 	start = buffer_start(buf);
 
