@@ -54,6 +54,7 @@ EXTRA_WARNINGS += -Wmissing-prototypes
 EXTRA_WARNINGS += -Wnested-externs
 EXTRA_WARNINGS += -Wold-style-definition
 EXTRA_WARNINGS += -Wstrict-prototypes
+EXTRA_WARNINGS += -Wpointer-arith
 
 # Compile flags
 CFLAGS		:= -I$(CURDIR)/include -Wall $(EXTRA_WARNINGS) $(CFLAGS_WERROR) -g -O3 -std=gnu99 -fPIC

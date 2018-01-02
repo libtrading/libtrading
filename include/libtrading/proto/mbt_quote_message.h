@@ -49,7 +49,7 @@ struct mbt_quote_message *mbt_quote_message_decode(struct buffer *buf);
 
 static inline void *mbt_quote_message_payload(struct mbt_quote_message *msg)
 {
-	return (void *) msg + sizeof(struct mbt_quote_message);
+	return (char *) msg + sizeof(struct mbt_quote_message);
 }
 
 #ifdef __cplusplus

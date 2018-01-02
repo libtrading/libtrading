@@ -18,7 +18,7 @@ struct buffer *buffer_new(unsigned long capacity)
 	if (!buf)
 		return NULL;
 
-	buf->data	= (void *) buf + sizeof(*buf);
+	buf->data	= (char *) buf + sizeof(*buf);
 	buf->capacity	= capacity;
 	buf->start	= 0;
 	buf->end	= 0;

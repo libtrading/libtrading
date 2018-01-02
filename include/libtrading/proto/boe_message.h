@@ -185,7 +185,7 @@ int boe_message_decode(struct buffer *buf, struct boe_message *msg, size_t size)
 
 static inline void *boe_message_payload(struct boe_message *msg)
 {
-	return (void *) msg + sizeof(struct boe_header);
+	return (char *) msg + sizeof(struct boe_header);
 }
 
 #ifdef __cplusplus
