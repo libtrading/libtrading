@@ -139,7 +139,7 @@ the already existed
 The choosen dialect is stored within a session structure and passed through
 configuration parameters. Each time a FIX message is being received a tag_type
 function is invoked. Known fields are parsed in accordance with their datatypes,
-unknow fields are stored as strings.
+unknown fields are stored as strings.
 
 ### FIX client example
 
